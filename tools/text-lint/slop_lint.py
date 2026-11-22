@@ -18,17 +18,21 @@ HARD = [  # reads as AI or ad-speak instantly in a creator video
     r"\bin today'?s fast[- ]paced\b", r"\bsay goodbye to\b", r"\bsay hello to\b", r"\blook no further\b",
     r"\bit'?s not just (a|an)\b.*\bit'?s\b", r"\bthe secret to\b", r"\bdon'?t miss out\b", r"\bindulge\b",
     r"\bboasts?\b", r"\bnestled\b", r"\bembark\b", r"\btestament to\b", r"\bunleash\b", r"\bbrace yourself\b",
-    r"\bhere'?s the (kicker|thing)\b", r"\bperfect for anyone (who|looking)\b", r"\bwhether you'?re a\b",
+    r"\bhere'?s the (kicker|thing)\b", r"\bnot just (a|an) \w+[.!,]? it'?s\b", r"\bunlock \w+", r"\btransform(s|ed)? your\b",
+    r"\beffortless(ly)?\b", r"\binnovative\b", r"\bdm me\b", r"\btoday only\b", r"\blink in (my )?bio\b", r"\bperfect for anyone (who|looking)\b", r"\bwhether you'?re a\b",
 ]
 SOFT = [  # fine once, slop when stacked
     r"\bobsessed\b", r"\bliterally\b", r"\bhonestly\b", r"\bviral\b", r"\btiktok made me buy it\b",
     r"\byou need this\b", r"\btrust me\b", r"\bnot gonna lie\b",
 ]
-BANNED = [  # compliance (RUBRIC banned-claim), duplicated here so captions get checked too
-    r"\b100 ?%\b", r"\bguarantee(d)?\b", r"\binstant results?\b", r"\bno side effects?\b",
-    r"\bcures?\b", r"\btreats?\b", r"\bprevents?\b", r"\blose \d+ ?(lbs?|pounds|kg)\b", r"\bglp-?1\b",
-    r"\b(lowest|cheapest) price\b", r"https?://", r"\bwww\.", r"@\w{3,}",
-]
+# compliance: ONE banned list, owned by the QA gate (tools/pipeline/qa.py RUBRIC_PATTERNS), so speech and text agree
+import os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "pipeline"))
+try:
+    from qa import RUBRIC_PATTERNS as _RP
+    BANNED = [p for _, p in _RP]
+except Exception:  # qa.py not importable (e.g. copied alone): fall back to a minimal list
+    BANNED = [r"\b100 ?%", r"\bguarantee[sd]?\b", r"\bcur(e|es|ed|ing)\b", r"https?://", r"\bwww\.", r"@\w{3,}"]
 
 def lint(text):
     t = text.lower()

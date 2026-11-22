@@ -14,6 +14,20 @@ class CompileError(Exception):
         self.errors = errors
 
 
+def _headline(h, total_frames):
+    """Optional on-screen hook text for the first seconds: {"text": str, "t_out": seconds (default 3.0, max 6.0)}."""
+    if not h:
+        return None
+    if isinstance(h, str):
+        h = {"text": h}
+    text = (h.get("text") or "").strip()
+    if not text:
+        raise CompileError("headline.text is empty")
+    t_out = float(h.get("t_out", 3.0))
+    if not (0.5 <= t_out <= 6.0):
+        raise CompileError("headline.t_out must be 0.5-6.0 s (hook payload rule), got %.2f" % t_out)
+    return {"text": text, "end_f": min(int(round(t_out * FPS)), total_frames)}
+
 def _load_logs(proj, clips):
     logs = {}
     for c in sorted(clips):
@@ -375,7 +389,8 @@ def compile_core(proj, variant, cl):
            "segments": segments, "cutaways": cutaways, "total_frames": total, "total_s": round(total / FPS, 3),
            "target": cl.get("target"), "beats": timeline, "emphasis_out": emph, "warnings": warnings,
            "caption_style": (cl.get("captions") or {}).get("style", "default-v1"),
-           "caption_text": cl.get("caption")}
+           "caption_text": cl.get("caption"),
+           "headline": _headline(cl.get("headline"), total)}
     return edl, out_words, dropped_words
 
 

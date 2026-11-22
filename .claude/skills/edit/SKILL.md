@@ -29,7 +29,7 @@ Brief: product + how many variants. Anchor: `studio/TASTE.md` + `analytics/learn
 - High-stakes batch (a new product, or the user asked)? Send the plan to the `critic` agent first and fix anything fatal.
 
 ## 4. Cut
-- For each variant write `cuts/<variant>.cutlist.json` (word-indexed, the `quote` must match the words exactly), then `compile <batch> <variant>`.
+- For each variant write `cuts/<variant>.cutlist.json` (word-indexed, the `quote` must match the words exactly), with `"headline": {"text": "…", "t_out": 2.5}` (the on-screen hook text, max 6s, in the creator's voice) and `"caption": "…"` (the post caption). Then `compile <batch> <variant>`.
 - Compiler errors are facts, not suggestions. Fix and recompile. **Three failed rounds on the same variant: stop and ask the user.**
 
 ## 5. Render and check
@@ -38,7 +38,7 @@ Brief: product + how many variants. Anchor: `studio/TASTE.md` + `analytics/learn
 - **Anti-slop gate on every word you wrote:** run `python3 tools/text-lint/slop_lint.py "<headline>"` for each on-screen headline, and `--file` on each post caption. Any fail means rewrite in the creator's own voice: lowercase-casual, specific, a little imperfect, the way they actually talked in the clip (steal their phrases from the transcript). Write the result to `qa/<variant>/slop.json`. Then run the `humanizer` skill in Detect mode on the caption as a second opinion.
 
 ## 6. Outside judge
-- Spawn the `video-judge` agent once for the batch. Give it the batch path and the variant list, and nothing about your reasoning. It writes `qa/<variant>/judge.json` for each.
+- Spawn the `video-judge` agent once for the batch. Give it the batch path and the variant list, and nothing about your reasoning. It writes `qa/<variant>/judge.json` for each, with the QA report's hash. **Never write or edit judge.json yourself**: `deliver` rejects any pass without the judge's hash.
 - `reject` goes back to step 4 with its `one_fix`. `unknown` gets shown to the user and decided by them.
 
 ## 7. Deliver and learn

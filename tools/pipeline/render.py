@@ -130,9 +130,10 @@ def cmd_render(batch, variant, y_center=CAPTION_CENTER_Y):
 
     info("[2/4] captions ...")
     cues = cap.make_cues(wo["words"], edl.get("emphasis_out", []), edl["total_frames"])
-    with_caps = bool(cues)
+    headline = edl.get("headline")
+    with_caps = bool(cues) or bool(headline)
     if with_caps:
-        cap.build_caption_assets(cues, bdir / "caps", edl["total_frames"], y_center=y_center)
+        cap.build_caption_assets(cues, bdir / "caps", edl["total_frames"], y_center=y_center, headline=headline)
         write_json(bdir / "caps" / "cues.json", {"schema": "cues/1", "fps": FPS, "cues": cues})
     else:
         warn("no spoken words in this variant: no captions")

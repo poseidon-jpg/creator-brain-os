@@ -103,8 +103,8 @@ def cmd_deliver(batch):
                 j = read_json(jp)
                 if j.get("verdict") != "pass":
                     why = "judge verdict is %r" % j.get("verdict")
-                elif j.get("report_sha256") and j["report_sha256"] != sha256_file(rp):
-                    why = "judge verdict was for an older QA report"
+                elif j.get("report_sha256") != sha256_file(rp):
+                    why = "judge verdict has no report_sha256 or was for an older QA report (the judge must write it)"
         if not why:
             sp = proj / "qa" / "similarity.json"
             if sp.is_file():
@@ -113,6 +113,8 @@ def cmd_deliver(batch):
                         why = "near-duplicate of %s (%.0f%% footage overlap)" % (p["a"], p["overlap"] * 100)
             else:
                 why = "run similarity first (qa/similarity.json missing)"
+        if not why:
+            why = _slop_hold(proj, bd, v, prod)
         if why:
             held.append((v, why))
             continue
@@ -135,6 +137,28 @@ def cmd_deliver(batch):
     if not variants:
         info("no variants to deliver")
     return 0 if done or not held else 1
+
+
+def _slop_hold(proj, bd, v, prod):
+    """Anti-slop gate on every word the model wrote: the headline and the post caption."""
+    import sys as _s
+    _s.path.insert(0, str(Path(__file__).resolve().parent.parent / "text-lint"))
+    from slop_lint import lint
+    edl = read_json(bd / "edl.json")
+    texts = []
+    if edl.get("headline"):
+        texts.append(("headline", edl["headline"]["text"]))
+    c = edl.get("caption_text") or {}
+    ct = (c.get("text") if isinstance(c, dict) else c) or prod.get("caption")
+    if ct:
+        texts.append(("caption", ct))
+    report, bad = {}, []
+    for k, t in texts:
+        r = lint(t); report[k] = r
+        if not r["pass"]:
+            bad.append("%s: %s" % (k, ", ".join(r["hard"] + r["banned"] + r["style"])[:120]))
+    write_json(proj / "qa" / v / "slop.json", report)
+    return ("slop: " + "; ".join(bad)) if bad else None
 
 
 def cmd_status(batch):

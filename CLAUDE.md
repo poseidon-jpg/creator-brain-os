@@ -28,6 +28,8 @@ Read [docs/ai-ambition-thesis.md](docs/ai-ambition-thesis.md). In short:
 | `critic` agent | Sonnet | Red-teams plans, hooks and scripts. Finds what's wrong, fixes nothing |
 | Hard calls | Fable (read-only reviewer) | The hardest architecture questions, final reviews |
 
+**Video editing (/edit):** Opus plans the variants and gives the final accept; Sonnet (normal effort) writes cut lists, captions and runs `video-judge`; Haiku only for scouting and corpus frame labels. Haiku is **not supported** for /edit until a blind eval across model tiers proves otherwise (DRIFT_GUARD.md question 3).
+
 Raise effort one level before switching to a bigger model. Keep the expensive model's context for decisions.
 
 ## The video pipeline (the core of this hub)

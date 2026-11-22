@@ -134,6 +134,23 @@ def luma_diff(png_a, png_b, box):
     return ImageStat.Stat(ImageChops.difference(a, b)).mean[0]
 
 
+def caption_contrast(final_png, clean_png, box, thresh=20, frac=0.2):
+    """GATE-CHANGE (audited): contrast MEASURED from pixels, not from what the renderer reports.
+    Caption pixels = where final differs from clean inside the box. Readability = contrast between the
+    brightest and darkest fifth of those pixels (glyph vs its stroke or box). White-on-white or a
+    no-stroke white glyph on a flat background leaves too few or uniform changed pixels and fails."""
+    from PIL import Image, ImageChops
+    a = Image.open(final_png).convert("L").crop(tuple(box))
+    b = Image.open(clean_png).convert("L").crop(tuple(box))
+    d = ImageChops.difference(a, b)
+    vals = sorted(p for p, q in zip(a.getdata(), d.getdata()) if q > thresh)
+    if len(vals) < 0.01 * a.size[0] * a.size[1]:
+        return 1.0
+    k = max(1, int(len(vals) * frac))
+    lo, hi = sum(vals[:k]) / k, sum(vals[-k:]) / k
+    return (rel_lum(hi) + 0.05) / (rel_lum(lo) + 0.05)
+
+
 def rel_lum(v):
     return (max(0.0, min(255.0, v)) / 255.0) ** 2.2
 
@@ -314,10 +331,11 @@ def gate_words(rep, proj, edl, wo, cues):
 
 def gate_safe(rep, boxes):
     sx0, sy0, sx1, sy1 = SAFE_BOX  # the gate's own constants win over whatever the renderer wrote
-    bad = [b for b in boxes["cues"] if not (b["box"][0] >= sx0 and b["box"][1] >= sy0 and b["box"][2] <= sx1 and b["box"][3] <= sy1)]
+    allb = boxes["cues"] + ([boxes["headline"]] if boxes.get("headline") else [])   # GATE-CHANGE: headline covered too
+    bad = [b for b in allb if not (b["box"][0] >= sx0 and b["box"][1] >= sy0 and b["box"][2] <= sx1 and b["box"][3] <= sy1)]
     rep.add("caption-safe-zone", "safe-zone", "fail" if bad else "pass",
             ("%d cue(s) outside x%d-%d y%d-%d: %s" % (len(bad), sx0, sx1, sy0, sy1, ", ".join("%s%s" % (b["id"], b["box"]) for b in bad[:4])))
-            if bad else "%d boxes inside x%d-%d y%d-%d" % (len(boxes["cues"]), sx0, sx1, sy0, sy1))
+            if bad else "%d boxes inside x%d-%d y%d-%d" % (len(allb), sx0, sx1, sy0, sy1))
 
 
 def sample_cues(cues, k=8):
@@ -364,13 +382,8 @@ def gate_caption_pixels(rep, final, clean, cues, boxes, total, work):
                 if d > PIXEL_OFF_MAX:
                     bad.append("%s: expected caption OFF at frame %d, found one (diff %.1f)" % (c["id"], f, d))
         fm = (c["start_f"] + c["end_f"]) // 2
-        if fm in cf:
-            bg = luma_stats(cf[fm], bx)
-            eff = bg * (1 - box["box_alpha"])
-            if box.get("stroke_px", 0) >= 3:   # GATE-CHANGE (native captions): a solid black stroke is the
-                eff = min(eff, 30.0)           # local background each glyph is read against; luma 30 is conservative
-            tl = rel_lum(sum(box["text_color"]) / 3.0)
-            ratio = (tl + 0.05) / (rel_lum(eff) + 0.05)
+        if fm in cf and fm in ff:
+            ratio = caption_contrast(ff[fm], cf[fm], bx)
             if ratio < CONTRAST_MIN:
                 contrast_bad.append("%s contrast %.1f" % (c["id"], ratio))
     rep.add("caption-pixel-timing", "caption-wrong", "fail" if bad else "pass",

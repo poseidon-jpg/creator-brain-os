@@ -374,6 +374,34 @@ def main():
     check("loudness planner: no headroom -> limiter path (spec finding 8: -16.65 LUFS / -3.17 dBTP)", R.plan_gain({"input_i": -16.65, "input_tp": -3.17})["mode"] == "limiter")
     check("loudness planner: headroom -> linear; near-silence -> skipped",
           R.plan_gain({"input_i": -20, "input_tp": -12})["mode"] == "linear" and R.plan_gain({"input_i": -45, "input_tp": -30})["mode"] == "skip")
+    import qa as Q, captions as CP, compiler as CMP
+    from PIL import Image as _I, ImageDraw as _D
+    tmpc = ROOT / "contrast"; tmpc.mkdir(exist_ok=True)
+    def _frame(bg, text_fill, stroke):
+        im = _I.new("RGB", (400, 200), bg); d = _D.Draw(im)
+        if text_fill:
+            d.text((40, 60), "HELLO", fill=text_fill, font=CP.load_font(72), stroke_width=stroke, stroke_fill=(0, 0, 0))
+        return im
+    _frame((240, 240, 240), None, 0).save(tmpc / "clean.png")
+    _frame((240, 240, 240), (255, 255, 255), 0).save(tmpc / "white_on_white.png")
+    _frame((240, 240, 240), (255, 255, 255), 4).save(tmpc / "native.png")
+    _frame((128, 128, 128), None, 0).save(tmpc / "clean_mid.png")
+    _frame((128, 128, 128), (255, 255, 255), 0).save(tmpc / "nostroke_mid.png")
+    bx = [0, 0, 400, 200]
+    check("NEG contrast: white text, no stroke, on a light background FAILS (measured, < 3.0)", Q.caption_contrast(tmpc / "white_on_white.png", tmpc / "clean.png", bx) < Q.CONTRAST_MIN)
+    check("NEG contrast: white text, no stroke, on mid-grey FAILS (uniform caption pixels)", Q.caption_contrast(tmpc / "nostroke_mid.png", tmpc / "clean_mid.png", bx) < Q.CONTRAST_MIN)
+    check("contrast: native white + 4px black stroke on a light background PASSES", Q.caption_contrast(tmpc / "native.png", tmpc / "clean.png", bx) >= Q.CONTRAST_MIN)
+    try:
+        CMP._headline({"text": "x", "t_out": 9}, 900); hl_ok = False
+    except CMP.CompileError:
+        hl_ok = True
+    check("NEG headline: t_out over 6 s is a compile error (hook payload rule)", hl_ok)
+    hd = ROOT / "hlcaps"
+    hb = CP.build_caption_assets([], hd, 120, headline=CMP._headline({"text": "$12 and it replaced my $80 one", "t_out": 2.5}, 120))
+    bj = json.loads((hd / "boxes.json").read_text())
+    lt = (hd / "list.txt").read_text()
+    check("headline: rendered into the first 2.5 s only, box inside the safe zone",
+          bj["headline"] and "hl_blank.png" in lt and "duration 2.500000" in lt and bj["headline"]["box"][1] >= 200, lt[:200])
     vf = hlg.hlg_to_sdr_vf()
     check("hlg: LUT chain generator has no zscale/comments and ends tagged bt709", "zscale" not in vf and vf.count("lutrgb") == 2 and vf.endswith("range=tv"))
 
@@ -384,6 +412,15 @@ def main():
     rc, out, err = cli("deliver", "t1")
     check("deliver: judge verdict fail -> v01 held, nothing copied", not (ready / "v01.mp4").exists() and "judge verdict" in out, out)
     write_json(proj / "qa" / "v01" / "judge.json", {"verdict": "pass", "judge": "test-judge"})
+    rc, out, err = cli("deliver", "t1")
+    check("NEG deliver: judge pass WITHOUT report_sha256 is held (the maker can't hand-write a pass)", not (ready / "v01.mp4").exists() and "report_sha256" in out, out)
+    rsha = hashlib.sha256((proj / "qa" / "v01" / "report.json").read_bytes()).hexdigest()
+    write_json(proj / "qa" / "v01" / "judge.json", {"verdict": "pass", "judge": "test-judge", "report_sha256": rsha})
+    ep = bd / "edl.json"; e0 = ep.read_text()
+    e = json.loads(e0); e["caption_text"] = "This Game-Changer Will Elevate Your Routine!! link in bio"; ep.write_text(json.dumps(e))
+    rc, out, err = cli("deliver", "t1")
+    check("NEG deliver: a slop caption is held (slop_lint)", not (ready / "v01.mp4").exists() and "slop" in out, out)
+    e["caption_text"] = "ok this thing actually fits in my cup holder"; ep.write_text(json.dumps(e))
     rc, out, err = cli("deliver", "t1")
     check("deliver: v01 (qa pass + judge pass) delivered with clean master, caption.txt and POSTING-CHECKLIST.md",
           all((ready / f).is_file() for f in ("v01.mp4", "v01.clean.mp4", "v01.caption.txt", "POSTING-CHECKLIST.md")), out)

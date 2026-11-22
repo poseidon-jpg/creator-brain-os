@@ -14,7 +14,7 @@ The user collects the videos; this skill measures them locally. The full protoco
 **Sample size reality:** 50-100 videos give honest norms and big effects only. Telling apart 5-8% differences takes 1,000+ per group (derived from MediaLabs' intervals), so treat small gaps as noise.
 
 ## 2. Measure (automatic)
-For each file run the pipeline's `analyze` on it as its own batch (`new corpus-<category> --product corpus`, then `ingest --from studio/corpus/inbox`, then `analyze`). That gives the per-video log: length, words with timestamps, words in the first 3s, speech rate, silences, scene cuts per second and loudness.
+For each file run the pipeline's `analyze` on it as its own batch (`new corpus-<category> --product corpus`, then `ingest corpus-<category> --from studio/corpus/inbox`, then `analyze`). That gives the per-video log: length, words with timestamps, words in the first 3s, speech rate, silences, scene cuts per second and loudness.
 On-screen text timing needs a vision read (there's no OCR in the pipeline). Then a vision pass on the thumbs/contact sheet at 0, 0.5, 1, 2 and 3s per video (Sonnet is enough): product visible by when, face on screen yes/no, caption style (native stroke / box / none), text position, setting (home / car / bathroom / outdoors), hook shape (from `creative/banks/hooks.md`).
 Write one row per video to `studio/corpus/measures.csv`.
 

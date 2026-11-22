@@ -184,7 +184,10 @@ def write_blank(path):
     Image.new("RGBA", (W, H), (0, 0, 0, 0)).save(path, compress_level=3)
 
 
-def build_caption_assets(cues, caps_dir, total_frames, y_center=CAPTION_CENTER_Y, clamp=True, y_for=None):
+HEADLINE_Y = 360   # top zone, inside the safe box (y >= 200)
+
+
+def build_caption_assets(cues, caps_dir, total_frames, y_center=CAPTION_CENTER_Y, clamp=True, y_for=None, headline=None):
     """Write cue PNGs, blank.png, list.txt (ffconcat) and boxes.json into caps_dir.
 
     y_for: optional {cue_id: y_center} overrides (the vision pass may move a cue up).
@@ -194,20 +197,41 @@ def build_caption_assets(cues, caps_dir, total_frames, y_center=CAPTION_CENTER_Y
     for old in caps_dir.glob("cue_*.png"):
         old.unlink()
     write_blank(caps_dir / "blank.png")
-    boxes, lines, t = [], ["ffconcat version 1.0"], 0
-    last = None
+    for old in caps_dir.glob("hl_*.png"):
+        old.unlink()
+    boxes, spans, t = [], [], 0          # spans: (png name, start_f, end_f)
     for c in cues:
         if c["start_f"] > t:
-            lines += ["file 'blank.png'", "duration %.6f" % ((c["start_f"] - t) / FPS)]
-            last = "blank.png"
+            spans.append(("blank.png", t, c["start_f"]))
         name = "cue_%s.png" % c["id"]
         box = render_cue(c, caps_dir / name, y_center=(y_for or {}).get(c["id"], y_center), clamp=clamp)
         boxes.append(box)
-        lines += ["file '%s'" % name, "duration %.6f" % ((c["end_f"] - c["start_f"]) / FPS)]
-        last = name
+        spans.append((name, c["start_f"], c["end_f"]))
         t = c["end_f"]
-    tail = max(0, total_frames + FPS - t)  # one spare second of blank; the output is cut with -frames:v
-    lines += ["file 'blank.png'", "duration %.6f" % (tail / FPS), "file 'blank.png'"]
+    end = total_frames + FPS             # one spare second of blank; the output is cut with -frames:v
+    spans.append(("blank.png", t, max(t, end)))
+    hl_box = None
+    if headline:
+        Image, _, _ = _pil()
+        hcue = {"id": "headline", "start_f": 0, "end_f": headline["end_f"], "text": headline["text"]}
+        hl_box = render_cue(hcue, caps_dir / "hl_text.png", y_center=HEADLINE_Y, clamp=clamp)
+        hl = Image.open(caps_dir / "hl_text.png")
+        he, out = headline["end_f"], []
+        for name, a, b in spans:          # split every span at the headline's end, composite before it
+            if a < he:
+                cname = "hl_%s" % name
+                Image.alpha_composite(Image.open(caps_dir / name).convert("RGBA"), hl).save(caps_dir / cname, compress_level=3)
+                out.append((cname, a, min(b, he)))
+                if b > he:
+                    out.append((name, he, b))
+            else:
+                out.append((name, a, b))
+        spans = out
+    lines = ["ffconcat version 1.0"]
+    for name, a, b in spans:
+        if b > a:
+            lines += ["file '%s'" % name, "duration %.6f" % ((b - a) / FPS)]
+    lines += ["file '%s'" % spans[-1][0]]
     (caps_dir / "list.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    write_json(caps_dir / "boxes.json", {"schema": "boxes/1", "canvas": [W, H], "safe_box": list(SAFE_BOX), "cues": boxes})
+    write_json(caps_dir / "boxes.json", {"schema": "boxes/1", "canvas": [W, H], "safe_box": list(SAFE_BOX), "cues": boxes, "headline": hl_box})
     return boxes

@@ -2,12 +2,12 @@
 
 Rules come from `research/lane-a-creative-meta.md` (R-numbers) and are labeled with their evidence. Defaults are **starting hypotheses**: your verdicts in `TASTE.md` and your sales in `analytics/learnings.md` overrule them.
 
-## Hard specs (checked by script, `tools/pipeline/check.sh`)
+## Hard specs (checked by script, `tools/pipeline/qa.py`)
 | Check | Pass | Code |
 |---|---|---|
 | Resolution / aspect | 1080x1920, 9:16 | `spec-res` |
 | Frame rate | constant 30 (or 60) fps | `spec-fps` |
-| Audio | present, integrated loudness -14 LUFS ±1.5, true peak ≤ -1 dBTP | `spec-audio` |
+| Audio | present, integrated loudness -14 LUFS ±1.5, true peak ≤ -1 dBTP (SAID: three open-source repos + platform tables; TikTok's own handling UNVERIFIED) | `spec-audio` |
 | Length | soft warning outside 15-60s, never a reject on length alone. Median selling video 31s, 30-60s best per view but bands differ only ~10% (Hubfluence, n=12,881 selling videos, M3, vendor sells creator software; research/corpus-measured.md) | `spec-length` (warn) |
 | Colour | not washed out / grey (an HDR tone-map failure) | `spec-color` |
 
@@ -18,7 +18,7 @@ Keep captions, headline text and the key product shot out of: the **right edge**
 | Check | Pass | Code |
 |---|---|---|
 | Hook → key message → CTA order | all three present, in order (VERIFIED) | `no-structure` |
-| Product visible by **1s** for physical products (reject line 3s), hook payload ≤ 6s | 76% of top product ads show it by 1s (Cut Marketing, n=705 paid ads, M3); TikTok: 50% of ad recall by second 2 (brand-lift) | `slow-hook` |
+| Product visible by **1s** for physical products (reject line 3s), hook payload ≤ 6s | 76% of top product ads show it by 1s (Cut Marketing: 452 product ads of 705 top Creative Center ads, 12 Nov 2026, M3); TikTok reports 50% of ad recall by second 2 (M3, TikTok-reported brand-lift, n unstated) | `slow-hook` |
 | At least 2 of face, product, on-screen text in the first second, and the product **in frame with the face**, not face alone | Person-only frames hurt sales; the product must sit in the face frame (Yang et al., Marketing Science 2025, n=2,685 Douyin videos matched to sales; Pan et al., n=3,426), peer-reviewed, China not US | `thin-hook` |
 | Opening has spoken line + on-screen headline + visual | all three in first 3s (SAID) | `thin-hook` |
 | CTA | spoken or on-screen at the end (VERIFIED structure) | `no-cta` |

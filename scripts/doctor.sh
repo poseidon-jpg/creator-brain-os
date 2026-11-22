@@ -14,6 +14,7 @@ check "ffprobe" "command -v ffprobe" "ffprobe -version" "comes with ffmpeg"
 check "Node.js" "command -v node" "node -v" "brew install node"
 check "Python 3" "command -v python3" "python3 -V" "brew install python"
 check "jq" "command -v jq" "jq --version" "brew install jq   (the drift-bot hooks need it)"
+check "Pillow (.venv)" "[ -x tools/pipeline/.venv/bin/python ] && tools/pipeline/.venv/bin/python -c 'import PIL'" "tools/pipeline/.venv/bin/python -c 'import PIL;print(\"Pillow\",PIL.__version__)'" "bash tools/pipeline/setup.sh   (makes the pipeline's local Python env)"
 check "uv" "command -v uv" "uv --version" "brew install uv"
 check "osxphotos" "command -v osxphotos" "osxphotos --version" "uv tool install osxphotos   (pulls clips out of iCloud Photos)"
 check "transcriber" "command -v whisper-cli || command -v mlx_whisper || command -v whisper || command -v parakeet-mlx" "command -v whisper-cli mlx_whisper whisper parakeet-mlx | head -1" "uv tool install parakeet-mlx   (fast local word timestamps on Apple Silicon; or: brew install whisper-cpp)"
@@ -22,7 +23,10 @@ echo
 if command -v ffmpeg >/dev/null; then
   f=$(ffmpeg -hide_banner -filters 2>/dev/null)
   for flt in loudnorm zscale libplacebo tonemap subtitles drawtext; do
-    if echo "$f" | grep -qw "$flt"; then row "  ffmpeg:$flt" "OK" ""; else row "  ffmpeg:$flt" "absent" "$( [ "$flt" = zscale ] || [ "$flt" = libplacebo ] && echo 'HDR tone-mapping unavailable: keep iPhone HDR Video OFF' || { [ "$flt" = subtitles ] || [ "$flt" = drawtext ]; } && echo 'fine: captions render through HyperFrames, not ffmpeg' || echo 'needed: brew reinstall ffmpeg')"; fi
+    if echo "$f" | grep -qw "$flt"; then row "  ffmpeg:$flt" "OK" ""
+    elif [ "$flt" = zscale ] || [ "$flt" = libplacebo ]; then row "  ffmpeg:$flt" "absent" "fine: the pipeline tone-maps iPhone HLG with stock filters"
+    elif [ "$flt" = subtitles ] || [ "$flt" = drawtext ]; then row "  ffmpeg:$flt" "absent" "fine: captions are Pillow PNGs overlaid by ffmpeg"
+    else row "  ffmpeg:$flt" "absent" "needed: brew reinstall ffmpeg"; fi
   done
 fi
 echo

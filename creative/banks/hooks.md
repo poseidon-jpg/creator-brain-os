@@ -15,14 +15,18 @@ Hooks are grouped by **shape** (the move it makes), not by wording. Rotate shape
 | Reply-to-comment | Answer a real comment on screen | "Replying to @…: yes it actually fits in a carry-on." |
 
 ## Measured priors (start here, then let your own sales overrule)
-Sales per view vs the average top seller, MediaLabs (TikTok Shop agency), n=9,285 analysed of 51,843 tracked, 19 Sep-18 Oct 2026. These are associations, not causes, and the source sells services (M3, research/corpus-measured.md):
-| Hook shape | Sales per view |
-|---|---|
-| Price / deal | **1.53x** |
-| Bold claim (that you can back up) | 1.28x |
-| Face in the first second | 1.05x |
-| Demo-first | 0.89x |
-So for each batch, make at least one price/deal variant, and don't default to demo-first openers.
+Sales per view vs the market average among top TikTok Shop US sellers, from MediaLabs (a TikTok Shop agency, so read it as an association, not a cause). Sales and views are estimates from commercial trackers, and the videos were labelled by an analyst who didn't see the sales (M3, research/corpus-measured.md lines 54-60).
+| Hook shape | Sales per view | n videos | Window |
+|---|---|---|---|
+| Price / deal | **1.53x** (1.37-1.71) | 193 | of 3,340 analysed, 2 Sep-1 Oct 2026 |
+| Bold claim (that you can back up) | 1.28x (1.20-1.37) | 478 | same |
+| Question | 1.27x (1.13-1.43) | 184 | same |
+| Straight into the demo | 0.89x (0.80-0.98) | 242 | same |
+| Borrowed TV/film/viral clip | 0.76x | — | same |
+
+Other measured signals (same source, 9,285 analysed, 19 Sep-18 Oct 2026): face, on-screen text and product **all three** in the first second 1.08x vs one element 0.88x; urgency angle 1.35x (n=235); value/deal angle 1.26x (n=1,325); curiosity-only angle 0.71x; voice-over B-roll format 1.24x (n=561); unboxing 1.20-1.37x.
+
+So in each batch, make at least one price/deal variant and one question or bold-claim variant, stack face + text + product in the first second, and don't default to demo-first openers.
 
 ## Three layers in every opening *(SAID, multiple operators)*
 1. What you **say** (from your raw audio)
