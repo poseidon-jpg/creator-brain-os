@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cards (CSS animation example)</title>
+<!-- A 1920x1080 scene animated only with CSS keyframes. No script at all. The Element Picker finds the animations with
+     document.getAnimations(), pauses them and sets their time, so you can scrub it and pick any element. -->
+<style>
+  @font-face { font-family: 'Outfit'; font-weight: 500; src: url(fonts/outfit-500.woff2) format('woff2'); }
+  @font-face { font-family: 'Outfit'; font-weight: 700; src: url(fonts/outfit-700.woff2) format('woff2'); }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f1ece0; color: #16151a; font-family: 'Outfit', system-ui, sans-serif; }
+  #wash { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: linear-gradient(120deg, #f6c453 0%, #f1ece0 55%); animation: wash 4.6s ease-out both; }
+  #title { position: absolute; left: 140px; top: 120px; font-size: 150px; font-weight: 700; letter-spacing: -.03em; animation: rise 0.9s cubic-bezier(.2, .8, .2, 1) 0.2s both; }
+  #lede { position: absolute; left: 146px; top: 330px; width: 820px; font-size: 40px; line-height: 1.35; color: #4a4854; animation: rise 0.8s ease-out 0.7s both; }
+  .row { position: absolute; left: 140px; top: 520px; display: flex; gap: 44px; }
+  .card { width: 380px; height: 340px; border-radius: 30px; background: #16151a; color: #f1ece0; box-sizing: border-box; padding: 40px; animation: pop 0.8s cubic-bezier(.3, 1.4, .5, 1) both; }
+  .card:nth-child(1) { animation-delay: 1.2s; background: #16151a; }
+  .card:nth-child(2) { animation-delay: 1.5s; background: #2630dd; }
+  .card:nth-child(3) { animation-delay: 1.8s; background: #ec3b2b; }
+  .card .num { font-size: 92px; font-weight: 700; line-height: 1; }
+  .card .lab { margin-top: 28px; font-size: 38px; font-weight: 500; }
+  .card .bar { margin-top: 26px; height: 10px; border-radius: 5px; background: rgba(255, 255, 255, .25); overflow: hidden; }
+  .card .bar b { display: block; height: 100%; background: #f1ece0; animation: fill 1.2s ease-out both; }
+  .card:nth-child(1) .bar b { animation-delay: 1.9s; width: 80%; }
+  .card:nth-child(2) .bar b { animation-delay: 2.2s; width: 55%; }
+  .card:nth-child(3) .bar b { animation-delay: 2.5s; width: 92%; }
+  #ring { position: absolute; right: 190px; top: 150px; width: 300px; height: 300px; border-radius: 50%; border: 22px solid rgba(22, 21, 26, .14); border-top-color: #ec3b2b; animation: spin 2.4s linear infinite, drop 1s ease-out 0.4s both; }
+  #dot { position: absolute; right: 322px; top: 282px; width: 36px; height: 36px; border-radius: 50%; background: #2630dd; animation: pulse 1.2s ease-in-out infinite alternate; }
+  #tag { position: absolute; right: 140px; bottom: 120px; padding: 18px 40px; border-radius: 999px; background: #f3ba2e; font-size: 38px; font-weight: 700; animation: slide 0.7s ease-out 3.4s both; }
+  #footer { position: absolute; left: 140px; bottom: 60px; font-size: 26px; letter-spacing: .3em; color: #4a4854; animation: fade 1s ease-out 3.2s both; }
+  @keyframes wash { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: none; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(70px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: translateY(110px) scale(.8) rotate(-4deg); } to { opacity: 1; transform: none; } }
+  @keyframes fill { from { transform: translateX(-100%); } to { transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes drop { from { opacity: 0; margin-top: -240px; } to { opacity: 1; margin-top: 0; } }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.8); } }
+  @keyframes slide { from { opacity: 0; transform: translateX(160px); } to { opacity: 1; transform: none; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+  <div id="wash"></div>
+  <div id="title">Three cards</div>
+  <div id="lede">Every piece here is plain HTML with CSS keyframes, so every piece can be picked.</div>
+  <div class="row">
+    <div class="card"><div class="num">01</div><div class="lab">Write it</div><div class="bar"><b></b></div></div>
+    <div class="card"><div class="num">02</div><div class="lab">Frame it</div><div class="bar"><b></b></div></div>
+    <div class="card"><div class="num">03</div><div class="lab">Ship it</div><div class="bar"><b></b></div></div>
+  </div>
+  <div id="ring"></div>
+  <div id="dot"></div>
+  <div id="tag">Pick me</div>
+  <div id="footer">CSS ANIMATION EXAMPLE</div>
+</body>
+</html>

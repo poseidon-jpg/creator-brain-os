@@ -1,0 +1,880 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentinel Grid - AI Security Operations</title>
+<meta name="description" content="Sentinel Grid runs AI-powered security operations: 24/7 AI-SOC monitoring, LLM red-team audits, model supply-chain security, and SOC 2 / ISO compliance automation.">
+<meta property="og:title" content="Sentinel Grid - AI Security Operations">
+<meta property="og:description" content="The security operations center your AI deserves. AI-SOC monitoring, LLM red-teaming, model supply-chain security, compliance automation.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%233ddcff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%233ddcff'/%3E%3Cpath d='M16 3v6M16 23v6M3 16h6M23 16h6' stroke='%233ddcff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0d1117;
+  --navy:#0f1726;
+  --navy2:#111d33;
+  --panel:#111927;
+  --line:rgba(122,168,199,.14);
+  --line2:rgba(61,220,255,.28);
+  --cyan:#3ddcff;
+  --cyan-dim:rgba(61,220,255,.12);
+  --red:#ff4d5e;
+  --text:#dbe6f1;
+  --muted:#8b99ab;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Sora',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:hidden}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-weight:300;
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(61,220,255,.25)}
+a{color:inherit;text-decoration:none}
+img,svg,canvas{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+h1,h2,h3{font-weight:600;line-height:1.15;letter-spacing:-.01em}
+.mono{font-family:var(--mono)}
+
+/* ---------- kicker labels ---------- */
+.kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--cyan);display:flex;align-items:center;gap:10px;margin-bottom:18px;
+}
+.kicker::before{content:"";width:26px;height:1px;background:var(--cyan);opacity:.7}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;inset:0 0 auto 0;z-index:50;
+  background:rgba(13,17,23,.78);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.nav-in{max-width:1180px;margin:0 auto;padding:0 32px;height:64px;display:flex;align-items:center;gap:36px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:.06em}
+.logo svg{flex:none}
+.logo em{font-style:normal;color:var(--cyan)}
+.nav-links{display:flex;gap:28px;margin-left:auto}
+.nav-links a{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);position:relative;padding:4px 0;transition:color .25s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--cyan);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 22px;border:1px solid var(--line2);color:var(--cyan);
+  background:linear-gradient(180deg,rgba(61,220,255,.08),rgba(61,220,255,.02));
+  transition:box-shadow .3s,background .3s,transform .2s;cursor:pointer;white-space:nowrap;
+}
+.btn:hover{box-shadow:0 0 24px rgba(61,220,255,.22),inset 0 0 12px rgba(61,220,255,.08);background:rgba(61,220,255,.12)}
+.btn:active{transform:translateY(1px)}
+.btn.solid{background:var(--cyan);color:#04121a;border-color:var(--cyan);font-weight:500}
+.btn.solid:hover{box-shadow:0 0 32px rgba(61,220,255,.4)}
+.btn .dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.nav-cta{margin-left:8px;padding:9px 18px}
+
+/* ---------- hero ---------- */
+header{
+  position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  overflow:hidden;border-bottom:1px solid var(--line);
+  background:radial-gradient(120% 90% at 50% 0%,#101a2e 0%,var(--bg) 62%);
+}
+#map{position:absolute;inset:0;width:100%;height:100%;opacity:.92}
+.hero-fade{position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(13,17,23,.82) 0%,rgba(13,17,23,.55) 38%,rgba(13,17,23,0) 60%),
+    linear-gradient(180deg,rgba(13,17,23,.5) 0%,rgba(13,17,23,.06) 34%,rgba(13,17,23,.14) 70%,var(--bg) 100%)}
+.hud{position:absolute;inset:84px 28px 20px;pointer-events:none;z-index:1}
+.hud i{position:absolute;width:18px;height:18px;border:1px solid rgba(61,220,255,.35)}
+.hud i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0}
+.hud i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0}
+.hud i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0}
+.hud i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0}
+.hud .readout{position:absolute;right:16px;bottom:12px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.18em;color:#5f7186;text-transform:uppercase;text-align:right;line-height:2}
+.hud .readout b{color:var(--cyan);font-weight:400}
+@media (max-width:700px){.hud .readout{display:none}}
+.hero-in{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:150px 32px 90px;width:100%}
+.hero-in h1{font-size:clamp(38px,5.4vw,68px);max-width:15ch;font-weight:700}
+.hero-in h1 span{color:var(--cyan)}
+.hero-sub{max-width:52ch;color:var(--muted);font-size:17px;margin:24px 0 34px}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap}
+.ticker{
+  margin-top:56px;border:1px solid var(--line);background:rgba(13,17,23,.6);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;gap:14px;padding:12px 18px;max-width:640px;overflow:hidden;
+}
+.ticker .tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--cyan);flex:none}
+.ticker .tag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-right:8px;animation:blink 1.8s infinite;vertical-align:1px}
+#tickline{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .4s}
+#tickline b{color:var(--text);font-weight:500}
+#tickline .r{color:var(--red)}
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:8px}
+.scroll-hint::after{content:"";width:1px;height:34px;background:linear-gradient(180deg,var(--cyan),transparent);animation:drip 2.2s infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- credibility bar ---------- */
+.cred{border-bottom:1px solid var(--line);background:var(--navy)}
+.cred-in{max-width:1180px;margin:0 auto;padding:26px 32px;display:flex;align-items:center;gap:34px;flex-wrap:wrap;justify-content:space-between}
+.cred .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.cred-logos{display:flex;gap:34px;flex-wrap:wrap;align-items:center}
+.cred-logos span{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:#5f7186;transition:color .3s;white-space:nowrap}
+.cred-logos span:hover{color:var(--text)}
+
+/* ---------- sections ---------- */
+section{padding:110px 0;position:relative}
+.sec-head{max-width:640px;margin-bottom:64px}
+.sec-head h2{font-size:clamp(28px,3.4vw,42px);margin-bottom:16px}
+.sec-head p{color:var(--muted)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.6,.2,1),transform .7s cubic-bezier(.2,.6,.2,1)}
+.rv.on{opacity:1;transform:none}
+
+/* ---------- telemetry stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.stat{background:var(--bg);padding:34px 30px;position:relative;overflow:hidden;transition:background .3s}
+.stat:hover{background:var(--navy)}
+.stat::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);opacity:0;transition:opacity .3s}
+.stat:hover::before{opacity:1}
+.stat .num{font-family:var(--mono);font-size:clamp(30px,3vw,40px);color:var(--cyan);font-weight:500;letter-spacing:-.02em;display:flex;align-items:baseline;gap:2px}
+.stat .num small{font-size:.55em;color:var(--cyan)}
+.stat .cap{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+
+/* ---------- services ---------- */
+#services{background:linear-gradient(180deg,var(--bg),var(--navy) 30%,var(--bg))}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.svc{
+  position:relative;border:1px solid var(--line);background:rgba(17,25,39,.55);padding:38px 36px;
+  transition:border-color .35s,transform .35s,box-shadow .35s;
+}
+.svc::before,.svc::after{content:"";position:absolute;width:14px;height:14px;border:1px solid var(--cyan);opacity:0;transition:opacity .35s}
+.svc::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.svc::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.svc:hover{border-color:var(--line2);transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.svc:hover::before,.svc:hover::after{opacity:1}
+.svc .idx{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.2em}
+.svc h3{font-size:21px;margin:14px 0 12px}
+.svc p{color:var(--muted);font-size:15px}
+.svc .win{margin-top:18px;padding:14px 16px;border-left:2px solid var(--cyan);background:var(--cyan-dim);font-size:14px;color:var(--text)}
+.svc .win b{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:5px;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips span{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);padding:5px 10px;transition:color .25s,border-color .25s}
+.svc:hover .chips span{border-color:rgba(61,220,255,.35);color:#a9bdd2}
+
+/* ---------- process ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;counter-reset:step}
+.step{position:relative;padding:30px 26px 26px;border:1px solid var(--line);background:var(--panel)}
+.step::before{
+  counter-increment:step;content:"0" counter(step);
+  font-family:var(--mono);font-size:12px;color:#04121a;background:var(--cyan);
+  padding:4px 10px;position:absolute;top:-13px;left:22px;font-weight:500;letter-spacing:.1em;
+}
+.step h3{font-size:17px;margin-bottom:10px;margin-top:6px}
+.step p{color:var(--muted);font-size:14px}
+.step .dur{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-top:16px;display:block}
+.steps-rail{height:1px;background:linear-gradient(90deg,transparent,var(--line2),transparent);margin:0 0 38px}
+
+/* ---------- results ---------- */
+#results{background:var(--navy)}
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.case{border:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;transition:border-color .35s,transform .35s}
+.case:hover{border-color:var(--line2);transform:translateY(-4px)}
+.case-top{padding:26px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.case-top .cl{font-weight:600;font-size:16px}
+.case-top .sec-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:4px 9px;white-space:nowrap}
+.case-body{padding:26px 28px;flex:1}
+.case-body p{color:var(--muted);font-size:14px}
+.case-metrics{padding:0 28px 28px;display:grid;gap:14px}
+.cm{display:flex;align-items:baseline;gap:12px}
+.cm .v{font-family:var(--mono);font-size:26px;color:var(--cyan);font-weight:500;min-width:118px}
+.cm .k{font-size:13px;color:var(--muted)}
+.case-quote{padding:20px 28px;border-top:1px solid var(--line);font-size:13px;color:#a9bdd2;font-style:italic}
+.case-quote span{display:block;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+/* ---------- founder note ---------- */
+.note{display:grid;grid-template-columns:280px 1fr;gap:60px;align-items:start}
+.note-card{border:1px solid var(--line);background:var(--panel);padding:30px;text-align:center}
+.note-card .avatar{width:92px;height:92px;margin:0 auto 18px;border-radius:50%;border:1px solid var(--line2);
+  background:radial-gradient(circle at 35% 30%,#1c2f4a,#0d1117);display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:26px;color:var(--cyan)}
+.note-card b{display:block;font-weight:600}
+.note-card span{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em}
+.note-txt p{color:#b6c5d6;font-size:17px;max-width:60ch}
+.note-txt p+p{margin-top:18px}
+.note-txt .sig{font-family:var(--mono);color:var(--cyan);font-size:13px;margin-top:26px;letter-spacing:.08em}
+
+/* ---------- faq ---------- */
+.faq{max-width:820px}
+details{border:1px solid var(--line);background:var(--panel);margin-bottom:12px}
+summary{
+  cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:20px 26px;font-weight:500;font-size:15px;transition:color .25s;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);color:var(--cyan);font-size:18px;transition:transform .3s;flex:none}
+details[open] summary::after{transform:rotate(45deg)}
+details[open] summary{color:var(--cyan)}
+details .a{padding:0 26px 22px;color:var(--muted);font-size:14px;max-width:64ch}
+
+/* ---------- final cta ---------- */
+#contact{border-top:1px solid var(--line);background:
+  radial-gradient(70% 120% at 50% 120%,rgba(61,220,255,.10),transparent 60%),var(--navy)}
+.cta-in{text-align:center;max-width:680px;margin:0 auto}
+.cta-in h2{font-size:clamp(30px,4vw,48px)}
+.cta-in p{color:var(--muted);margin:20px auto 36px;max-width:48ch}
+.cta-meta{margin-top:26px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:54px 0 40px;background:var(--bg)}
+.foot{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-start}
+.foot .cols{display:flex;gap:70px;flex-wrap:wrap}
+.foot h4{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;font-weight:400}
+.foot ul{list-style:none}
+.foot li{margin-bottom:9px}
+.foot li a{font-size:13px;color:#93a3b6;transition:color .25s}
+.foot li a:hover{color:var(--cyan)}
+.foot-base{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:#5f7186;letter-spacing:.06em}
+.foot-base a{color:#8b99ab}
+.foot-base a:hover{color:var(--cyan)}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .svc-grid,.cases{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr 1fr;gap:30px 24px}
+  .note{grid-template-columns:1fr;gap:34px}
+  .note-card{max-width:320px}
+}
+a:focus-visible,.btn:focus-visible,summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media (max-width:700px){
+  .nav-links{display:none}
+  .wrap{padding:0 20px}
+  .nav-in{padding:0 16px;gap:10px;justify-content:space-between}
+  .logo{font-size:13px}
+  .nav-cta{margin-left:0;padding:8px 12px;font-size:10px;letter-spacing:.08em}
+  .hero-in{padding:130px 20px 80px}
+  section{padding:80px 0}
+  .svc-grid,.cases,.steps,.stats{grid-template-columns:1fr}
+  .cred-in{padding:22px 20px;gap:18px}
+  .cm .v{min-width:96px;font-size:22px}
+  .scroll-hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none}
+}
+</style>
+
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="#top" aria-label="Sentinel Grid home">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="10" stroke="#3ddcff" stroke-width="2"/>
+        <circle cx="16" cy="16" r="3.4" fill="#3ddcff"/>
+        <path d="M16 1v6M16 25v6M1 16h6M25 16h6" stroke="#3ddcff" stroke-width="2"/>
+      </svg>
+      SENTINEL<em>GRID</em>
+    </a>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#process">Process</a>
+      <a href="#results">Results</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn nav-cta" href="#contact"><span class="dot"></span>Book a briefing</a>
+  </div>
+</nav>
+
+<header id="top">
+  <canvas id="map" aria-hidden="true"></canvas>
+  <div class="hero-fade"></div>
+  <div class="hud" aria-hidden="true"><i></i><i></i><i></i><i></i>
+    <div class="readout">Grid status <b>nominal</b><br>09 nodes · 5 regions · 24/7</div>
+  </div>
+  <div class="hero-in">
+    <div class="kicker rv on">AI Security Operations · Est. 2021</div>
+    <h1 class="rv on">Your AI is now an <span>attack surface</span>. We watch it like one.</h1>
+    <p class="hero-sub rv on">Sentinel Grid runs security operations for companies that ship AI. Machine-speed threat detection, adversarial testing of your LLMs, locked-down model supply chains, and compliance evidence that writes itself.</p>
+    <div class="hero-ctas rv on">
+      <a class="btn solid" href="#contact">Request a security briefing</a>
+      <a class="btn" href="#services">See what we run</a>
+    </div>
+    <div class="ticker rv on" aria-hidden="true">
+      <span class="tag"><i></i>LIVE</span>
+      <span id="tickline"><b>blocked</b> prompt-injection attempt · fin-assistant-prod · us-east</span>
+    </div>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</header>
+
+<div class="cred">
+  <div class="cred-in">
+    <span class="lbl">Trusted by security teams at</span>
+    <div class="cred-logos">
+      <span>MERIDIAN&nbsp;BANK</span>
+      <span>HALCYON&nbsp;HEALTH</span>
+      <span>CORVEX&nbsp;LOGISTICS</span>
+      <span>ARCLIGHT&nbsp;CAPITAL</span>
+      <span>NORTHCELL&nbsp;ENERGY</span>
+    </div>
+    <span class="lbl">SOC 2 Type II · ISO 27001</span>
+  </div>
+</div>
+
+<section id="telemetry">
+  <div class="wrap">
+    <div class="kicker rv">Grid telemetry · trailing 12 months</div>
+    <div class="stats rv">
+      <div class="stat"><div class="num"><span data-count="4.8">0</span><small>B</small></div><div class="cap">Events analyzed daily</div></div>
+      <div class="stat"><div class="num"><span data-count="6">0</span><small>min</small></div><div class="cap">Median alert-to-triage</div></div>
+      <div class="stat"><div class="num"><span data-count="140">0</span><small>+</small></div><div class="cap">Models red-teamed</div></div>
+      <div class="stat"><div class="num"><span data-count="96">0</span><small>%</small></div><div class="cap">Audit evidence automated</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">What we run</div>
+      <h2>Four disciplines. One operations grid.</h2>
+      <p>Everything plugs into the same detection fabric, so a red-team finding becomes a monitoring rule the same week, and every control ships with its own audit evidence.</p>
+    </div>
+    <div class="svc-grid">
+      <div class="svc rv">
+        <span class="idx">SVC / 01</span>
+        <h3>AI-SOC Monitoring</h3>
+        <p>A 24/7 security operations center where detection models do the first three tiers of triage. We correlate identity, endpoint, cloud, and LLM-gateway telemetry, then route only genuine incidents to a human, with the full investigation already written.</p>
+        <div class="win"><b>The client win</b>Analysts stop drowning in false positives and your median response drops from hours to minutes, without hiring a night shift.</div>
+        <div class="chips"><span>Microsoft Sentinel</span><span>CrowdStrike</span><span>Panther</span><span>Sigma rules</span><span>MITRE ATT&amp;CK</span></div>
+      </div>
+      <div class="svc rv">
+        <span class="idx">SVC / 02</span>
+        <h3>LLM Red-Team Audits</h3>
+        <p>Structured adversarial campaigns against your production assistants and agents: prompt injection, jailbreaks, data exfiltration through tool calls, and multi-turn social engineering. Every finding ships with a reproduction script and a fix.</p>
+        <div class="win"><b>The client win</b>You launch AI features knowing exactly how they break, instead of finding out from a customer or a regulator.</div>
+        <div class="chips"><span>PyRIT</span><span>Garak</span><span>OWASP LLM Top 10</span><span>MITRE ATLAS</span><span>Custom harnesses</span></div>
+      </div>
+      <div class="svc rv">
+        <span class="idx">SVC / 03</span>
+        <h3>Model Supply-Chain Security</h3>
+        <p>We inventory every model, dataset, and dependency in your ML pipeline, sign and verify artifacts end to end, and gate deployments on provenance checks, so a poisoned weight file or tampered training set never reaches production.</p>
+        <div class="win"><b>The client win</b>A complete, verifiable chain of custody for every model in production, and a deploy pipeline that blocks what it cannot prove.</div>
+        <div class="chips"><span>Sigstore</span><span>SLSA</span><span>Syft / Grype</span><span>ML-BOM</span><span>Trivy</span></div>
+      </div>
+      <div class="svc rv">
+        <span class="idx">SVC / 04</span>
+        <h3>Compliance Automation</h3>
+        <p>SOC 2 and ISO 27001 evidence collected continuously from your actual infrastructure, mapped to controls, and kept audit-ready year round. Our agents draft policies from your real configuration, not a template your team has to grow into.</p>
+        <div class="win"><b>The client win</b>Audit prep shrinks from a quarter of dread to a standing dashboard, and enterprise deals stop stalling on the security questionnaire.</div>
+        <div class="chips"><span>Vanta</span><span>Drata API</span><span>SOC 2 Type II</span><span>ISO 27001</span><span>Evidence agents</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">How an engagement runs</div>
+      <h2>From first briefing to steady state in six weeks.</h2>
+    </div>
+    <div class="steps-rail rv"></div>
+    <div class="steps">
+      <div class="step rv">
+        <h3>Baseline</h3>
+        <p>We map your AI attack surface: models, agents, data flows, identities, and the telemetry you already have. You get a scored risk register on day five.</p>
+        <span class="dur">Week 1</span>
+      </div>
+      <div class="step rv">
+        <h3>Instrument</h3>
+        <p>Detection fabric goes in: log routing, LLM-gateway sensors, provenance checks in CI, and the first tranche of detections tuned to your environment.</p>
+        <span class="dur">Weeks 2-3</span>
+      </div>
+      <div class="step rv">
+        <h3>Pressure-test</h3>
+        <p>Our red team runs live campaigns against the instrumented stack. Anything that gets through becomes a detection rule before the report is even final.</p>
+        <span class="dur">Weeks 4-5</span>
+      </div>
+      <div class="step rv">
+        <h3>Operate</h3>
+        <p>The grid goes live: 24/7 monitoring, monthly adversarial retests, and compliance evidence accruing automatically. You get one dashboard and one number to call.</p>
+        <span class="dur">Week 6 onward</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">Field results</div>
+      <h2>Numbers from the grid, not the brochure.</h2>
+      <p>Three recent engagements. Client details anonymized where required; metrics verified against ticket and pipeline data.</p>
+    </div>
+    <div class="cases">
+      <div class="case rv">
+        <div class="case-top"><span class="cl">Meridian Bank</span><span class="sec-tag">Regional banking</span></div>
+        <div class="case-body">
+          <p>An 11-person security team facing 3,000+ daily alerts from a hybrid cloud estate. We deployed the AI-SOC triage layer over their existing Sentinel and CrowdStrike stack.</p>
+        </div>
+        <div class="case-metrics">
+          <div class="cm"><span class="v">94%</span><span class="k">fewer false-positive escalations</span></div>
+          <div class="cm"><span class="v">41&#8594;6 min</span><span class="k">median alert-to-triage time</span></div>
+          <div class="cm"><span class="v">$1.2M</span><span class="k">annual analyst cost avoided</span></div>
+        </div>
+        <div class="case-quote">"The first quiet on-call weekend this team has had in four years."<span>Head of Security Operations</span></div>
+      </div>
+      <div class="case rv">
+        <div class="case-top"><span class="cl">Halcyon Health</span><span class="sec-tag">Digital health</span></div>
+        <div class="case-body">
+          <p>A patient-facing LLM assistant, six weeks from launch. Our red team ran a full adversarial campaign across prompt injection, PHI exfiltration, and tool-call abuse.</p>
+        </div>
+        <div class="case-metrics">
+          <div class="cm"><span class="v">23</span><span class="k">exploitable injection paths closed pre-launch</span></div>
+          <div class="cm"><span class="v">0</span><span class="k">PHI leakage findings at post-launch retest</span></div>
+          <div class="cm"><span class="v">On time</span><span class="k">launch date held, no scope cut</span></div>
+        </div>
+        <div class="case-quote">"They broke it in ways our own team never imagined, then handed us the fixes."<span>VP Engineering</span></div>
+      </div>
+      <div class="case rv">
+        <div class="case-top"><span class="cl">Corvex Logistics</span><span class="sec-tag">Supply chain SaaS</span></div>
+        <div class="case-body">
+          <p>Enterprise deals stalling on security review, with no formal certification. We ran compliance automation against their AWS and GitHub estate targeting SOC 2 Type II and ISO 27001.</p>
+        </div>
+        <div class="case-metrics">
+          <div class="cm"><span class="v">340&#8594;22 hrs</span><span class="k">evidence collection per audit cycle</span></div>
+          <div class="cm"><span class="v">9 wks</span><span class="k">to ISO 27001 stage-2 readiness</span></div>
+          <div class="cm"><span class="v">3</span><span class="k">enterprise contracts unblocked in Q1</span></div>
+        </div>
+        <div class="case-quote">"Compliance went from our biggest sales objection to a slide we lead with."<span>Chief Operating Officer</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="founder">
+  <div class="wrap">
+    <div class="note">
+      <div class="note-card rv">
+        <div class="avatar">MK</div>
+        <b>Mara Kessler</b>
+        <span>Founder · ex-SOC lead, 14 yrs</span>
+      </div>
+      <div class="note-txt rv">
+        <div class="kicker">A note from the founder</div>
+        <p>I spent fourteen years inside security operations centers watching good analysts burn out on bad alerts. Then I watched companies bolt LLMs onto everything and treat them like features instead of what they are: new doors into the building.</p>
+        <p>Sentinel Grid exists because both problems have the same answer. The machines should do the watching, humans should do the judging, and every AI system you ship should be attacked by us before it is attacked by anyone else.</p>
+        <div class="sig">- Mara Kessler, Founder &amp; CEO</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">Common questions</div>
+      <h2>Before you book the briefing.</h2>
+    </div>
+    <div class="faq rv">
+      <details>
+        <summary>Do you replace our existing SOC or security team?</summary>
+        <div class="a">No. We layer detection models and our operations grid on top of your current stack and team. Your analysts keep ownership; they just stop doing tier-1 triage by hand. Teams with no SOC at all can run fully managed on our grid.</div>
+      </details>
+      <details>
+        <summary>We only have one customer-facing LLM feature. Is a red-team audit overkill?</summary>
+        <div class="a">One feature is exactly when it is cheapest to fix. A scoped audit on a single assistant runs two to three weeks, and the findings usually harden the patterns your team reuses for everything you ship after it.</div>
+      </details>
+      <details>
+        <summary>How does pricing work?</summary>
+        <div class="a">Audits and supply-chain hardening are fixed-fee projects, quoted after the baseline week. AI-SOC monitoring and compliance automation are monthly retainers sized by telemetry volume and control scope. No per-alert pricing, ever; it rewards the wrong behavior.</div>
+      </details>
+      <details>
+        <summary>Where does our data live?</summary>
+        <div class="a">Telemetry stays in your tenant; our detection layer deploys into your cloud accounts and we operate it remotely. For red-team engagements, transcripts and findings live in a dedicated encrypted enclave per client and are destroyed on your schedule.</div>
+      </details>
+      <details>
+        <summary>Can you work under our existing SOC 2 or ISO scope?</summary>
+        <div class="a">Yes. We are SOC 2 Type II and ISO 27001 certified ourselves, and we routinely operate as a documented subprocessor inside client scopes. Our compliance team hands your auditor the vendor package before they ask.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="cta-in rv">
+      <div class="kicker" style="justify-content:center">Next step</div>
+      <h2>Book a 30-minute security briefing.</h2>
+      <p>Bring your architecture. We will map your AI attack surface live on the call and leave you with the top three risks, whether or not we ever work together.</p>
+      <a class="btn solid" href="mailto:ops@sentinelgrid.io">ops@sentinelgrid.io</a>
+      <div class="cta-meta">Response within one business day · NDA on request</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="logo" href="#top" style="margin-bottom:14px">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="10" stroke="#3ddcff" stroke-width="2"/>
+            <circle cx="16" cy="16" r="3.4" fill="#3ddcff"/>
+            <path d="M16 1v6M16 25v6M1 16h6M25 16h6" stroke="#3ddcff" stroke-width="2"/>
+          </svg>
+          SENTINEL<em>GRID</em>
+        </a>
+        <p style="font-size:12px;color:#5f7186;max-width:26ch;margin-top:12px">AI security operations. Watching the systems that watch everything else.</p>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#services">AI-SOC Monitoring</a></li>
+            <li><a href="#services">LLM Red-Team Audits</a></li>
+            <li><a href="#services">Supply-Chain Security</a></li>
+            <li><a href="#services">Compliance Automation</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#process">Process</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#founder">Founder</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Trust</h4>
+          <ul>
+            <li><a href="#faq">SOC 2 Type II</a></li>
+            <li><a href="#faq">ISO 27001</a></li>
+            <li><a href="#faq">Data handling</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 Sentinel Grid Pty Ltd. Fictional agency, built as a design reference.</span>
+      <span><a href="../../index.html">Part of the RoboNuggets Design Systems</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------------- reveal on scroll ---------------- */
+var rvs = document.querySelectorAll(".rv");
+if("IntersectionObserver" in window && !REDUCED){
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("on"); io.unobserve(e.target); } });
+  },{threshold:.12,rootMargin:"0px 0px -40px 0px"});
+  rvs.forEach(function(el){ io.observe(el); });
+}else{
+  rvs.forEach(function(el){ el.classList.add("on"); });
+}
+
+/* ---------------- stat count-up ---------------- */
+function countUp(el){
+  var target = parseFloat(el.getAttribute("data-count"));
+  var dec = (String(el.getAttribute("data-count")).indexOf(".") > -1) ? 1 : 0;
+  if(REDUCED){ el.textContent = target.toFixed(dec); return; }
+  var t0 = null, DUR = 1400;
+  function frame(t){
+    if(!t0) t0 = t;
+    var p = Math.min((t - t0)/DUR, 1);
+    p = 1 - Math.pow(1 - p, 3);
+    el.textContent = (target*p).toFixed(dec);
+    if(p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+var statBox = document.querySelector(".stats");
+if(statBox){
+  if("IntersectionObserver" in window){
+    var sio = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          statBox.querySelectorAll("[data-count]").forEach(countUp);
+          sio.disconnect();
+        }
+      });
+    },{threshold:.3});
+    sio.observe(statBox);
+  }else{
+    statBox.querySelectorAll("[data-count]").forEach(countUp);
+  }
+}
+
+/* ---------------- ticker ---------------- */
+var TICKS = [
+  '<b>blocked</b> prompt-injection attempt · fin-assistant-prod · us-east',
+  '<b>verified</b> model artifact signature · churn-scorer v4.2 · deploy gate',
+  '<span class="r">&#9650;</span> anomalous tool-call pattern · agent-ops-3 · contained in 1.9s',
+  '<b>closed</b> tier-1 alert cluster · 312 events correlated · no action needed',
+  '<b>collected</b> SOC 2 evidence · CC7.2 access review · auto-filed',
+  '<span class="r">&#9650;</span> jailbreak variant detected · support-bot-eu · guardrail held',
+  '<b>rotated</b> exposed credential · ci-runner-14 · 42s end to end'
+];
+var tickEl = document.getElementById("tickline"), ti = 0;
+if(tickEl && !REDUCED){
+  setInterval(function(){
+    tickEl.style.opacity = "0";
+    setTimeout(function(){
+      ti = (ti+1) % TICKS.length;
+      tickEl.innerHTML = TICKS[ti];
+      tickEl.style.opacity = "1";
+    }, 400);
+  }, 3600);
+}
+
+/* ---------------- world threat map ---------------- */
+var canvas = document.getElementById("map");
+if(!canvas || !canvas.getContext) return;
+var ctx = canvas.getContext("2d");
+
+/* continent outlines, [lon,lat] */
+var LAND = [
+  /* North + Central America */
+  [[-166,66],[-160,70],[-148,71],[-135,69],[-125,71],[-118,73],[-105,73],[-92,74],[-82,73],[-75,72],[-68,68],[-62,60],[-55,52],[-60,47],[-66,44],[-70,42],[-74,38],[-76,34],[-80,31],[-81,25],[-83,29],[-89,29],[-94,28],[-97,25],[-97,20],[-95,17],[-91,14],[-87,13],[-84,10],[-80,8],[-83,9],[-88,16],[-92,17],[-97,17],[-102,18],[-106,24],[-110,24],[-113,29],[-117,33],[-122,37],[-124,42],[-124,48],[-128,52],[-132,56],[-140,60],[-150,60],[-158,58],[-166,60]],
+  /* South America */
+  [[-78,7],[-72,12],[-64,11],[-60,8],[-52,5],[-50,0],[-44,-3],[-37,-6],[-35,-9],[-39,-14],[-40,-20],[-45,-24],[-48,-28],[-52,-33],[-56,-35],[-58,-39],[-63,-41],[-65,-45],[-66,-49],[-68,-53],[-72,-54],[-74,-50],[-73,-45],[-72,-40],[-71,-33],[-70,-25],[-70,-18],[-75,-15],[-79,-8],[-81,-4],[-80,0],[-78,3]],
+  /* Greenland */
+  [[-52,60],[-44,60],[-40,64],[-32,68],[-22,70],[-20,75],[-25,80],[-38,82],[-52,82],[-60,80],[-66,77],[-60,73],[-56,68],[-54,64]],
+  /* Eurasia */
+  [[-9,37],[-9,43],[-1,44],[0,47],[-4,48],[2,51],[8,54],[8,57],[5,58],[5,62],[12,65],[18,70],[28,71],[40,68],[45,68],[55,69],[68,69],[75,72],[90,75],[105,77],[115,74],[130,72],[145,72],[160,70],[170,67],[178,65],[178,62],[170,60],[162,58],[158,52],[150,45],[140,42],[135,44],[130,42],[126,38],[122,32],[121,26],[115,22],[108,17],[105,12],[103,7],[100,7],[98,12],[97,17],[94,20],[91,22],[88,22],[85,20],[82,15],[80,9],[77,8],[74,13],[71,20],[67,24],[62,25],[57,26],[52,28],[48,30],[50,26],[54,25],[57,20],[54,15],[48,13],[43,12],[39,17],[34,28],[32,31],[35,36],[30,36],[27,37],[26,40],[23,37],[22,38],[20,40],[19,42],[16,41],[18,40],[16,38],[15,38],[13,41],[11,44],[8,44],[6,43],[3,43],[0,40],[-2,37],[-6,36]],
+  /* Africa */
+  [[-6,35],[3,37],[10,37],[19,32],[25,32],[32,31],[34,28],[37,21],[38,18],[40,15],[43,11],[48,11],[51,12],[46,5],[42,0],[40,-7],[38,-14],[35,-20],[33,-26],[28,-33],[22,-34],[18,-33],[15,-27],[12,-18],[13,-10],[9,-2],[8,4],[4,6],[-4,5],[-8,4],[-13,8],[-17,12],[-17,15],[-16,20],[-13,26],[-10,31]],
+  /* Australia */
+  [[113,-22],[114,-30],[116,-34],[122,-34],[126,-32],[130,-32],[132,-35],[136,-35],[138,-33],[140,-38],[145,-39],[148,-38],[150,-37],[153,-32],[153,-27],[151,-24],[149,-20],[146,-18],[143,-14],[142,-11],[138,-12],[136,-12],[133,-11],[130,-13],[127,-14],[124,-16],[121,-19],[117,-21]],
+  /* Japan */
+  [[130,31],[132,33],[135,34],[137,35],[140,36],[141,39],[142,42],[143,44],[145,44],[142,45],[140,42],[139,38],[136,36],[133,34],[130,33]],
+  /* UK + Ireland */
+  [[-10,52],[-6,55],[-8,54],[-5,50],[-6,52],[-5,55],[-6,58],[-3,58],[-2,54],[1,52],[0,51],[-5,50]],
+  /* New Zealand */
+  [[166,-46],[170,-44],[173,-42],[172,-40],[175,-38],[177,-38],[175,-41],[172,-44],[168,-47]],
+  /* Madagascar */
+  [[44,-25],[47,-25],[50,-16],[49,-13],[47,-15],[45,-20]],
+  /* Sumatra */
+  [[95,5],[99,2],[103,-2],[106,-6],[104,-6],[100,0],[95,4]],
+  /* Borneo */
+  [[109,1],[113,4],[117,4],[118,0],[116,-3],[112,-3],[109,-1]],
+  /* New Guinea */
+  [[131,-1],[136,-2],[141,-3],[146,-6],[150,-9],[147,-9],[142,-8],[137,-7],[133,-3]]
+];
+
+var HUBS = [
+  {n:"SFO", lon:-122.4, lat:37.8},
+  {n:"NYC", lon:-74.0,  lat:40.7},
+  {n:"GRU", lon:-46.6,  lat:-23.5},
+  {n:"LON", lon:-0.1,   lat:51.5},
+  {n:"FRA", lon:8.7,    lat:50.1},
+  {n:"DXB", lon:55.3,   lat:25.2},
+  {n:"SIN", lon:103.8,  lat:1.3},
+  {n:"TYO", lon:139.7,  lat:35.7},
+  {n:"SYD", lon:151.2,  lat:-33.9}
+];
+
+var W=0, H=0, DPR=1, dots=[], hubPx=[], arcs=[], pulses=[], baseLayer=null;
+var LAT_TOP=78, LAT_BOT=-58;
+
+function proj(lon,lat){
+  /* fit world into canvas, slight vertical bias upward */
+  var mw = W, mh = H;
+  var x = (lon+180)/360 * mw;
+  var y = (LAT_TOP-lat)/(LAT_TOP-LAT_BOT) * mh * 0.92 + mh*0.02;
+  return [x,y];
+}
+function inPoly(lon,lat,poly){
+  var inside=false;
+  for(var i=0,j=poly.length-1;i<poly.length;j=i++){
+    var xi=poly[i][0], yi=poly[i][1], xj=poly[j][0], yj=poly[j][1];
+    if(((yi>lat)!==(yj>lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+function isLand(lon,lat){
+  for(var k=0;k<LAND.length;k++){ if(inPoly(lon,lat,LAND[k])) return true; }
+  return false;
+}
+
+function build(){
+  var rect = canvas.parentElement.getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = rect.width; H = rect.height;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+
+  /* sample grid */
+  dots = [];
+  var stepLon = W < 700 ? 3.4 : 2.3;
+  var stepLat = stepLon;
+  for(var lat=LAT_BOT; lat<=LAT_TOP; lat+=stepLat){
+    for(var lon=-180; lon<=180; lon+=stepLon){
+      if(isLand(lon,lat)){
+        var p = proj(lon,lat);
+        dots.push({x:p[0], y:p[1], r:(Math.random()*0.5+0.9)});
+      }
+    }
+  }
+  hubPx = HUBS.map(function(h){ var p=proj(h.lon,h.lat); return {n:h.n,x:p[0],y:p[1]}; });
+
+  /* prerender base dots to offscreen layer */
+  baseLayer = document.createElement("canvas");
+  baseLayer.width = W*DPR; baseLayer.height = H*DPR;
+  var bc = baseLayer.getContext("2d");
+  bc.setTransform(DPR,0,0,DPR,0,0);
+  bc.fillStyle = "rgba(110,178,214,0.42)";
+  for(var i=0;i<dots.length;i++){
+    bc.beginPath(); bc.arc(dots[i].x, dots[i].y, dots[i].r, 0, 6.2832); bc.fill();
+  }
+  /* hub base rings + labels */
+  bc.font = "10px 'IBM Plex Mono', monospace";
+  for(var j=0;j<hubPx.length;j++){
+    var hh=hubPx[j];
+    bc.fillStyle="rgba(61,220,255,0.9)";
+    bc.beginPath(); bc.arc(hh.x,hh.y,2.4,0,6.2832); bc.fill();
+    bc.strokeStyle="rgba(61,220,255,0.35)";
+    bc.lineWidth=1;
+    bc.beginPath(); bc.arc(hh.x,hh.y,5.5,0,6.2832); bc.stroke();
+    if(W >= 700){
+      bc.fillStyle="rgba(139,153,171,0.75)";
+      bc.fillText(hh.n, hh.x+9, hh.y+3);
+    }
+  }
+}
+
+function newArc(){
+  var a = hubPx[Math.floor(Math.random()*hubPx.length)], b;
+  do { b = hubPx[Math.floor(Math.random()*hubPx.length)]; } while(b===a);
+  var mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  var dx=b.x-a.x, dy=b.y-a.y;
+  var d=Math.sqrt(dx*dx+dy*dy);
+  var lift = Math.min(d*0.28, 130);
+  return {a:a,b:b,cx:mx-dy/d*lift,cy:my+dx/d*lift - lift*0.6,t:0,speed:(0.0035+Math.random()*0.0035),dead:false};
+}
+function arcPt(arc,t){
+  var u=1-t;
+  return [u*u*arc.a.x + 2*u*t*arc.cx + t*t*arc.b.x,
+          u*u*arc.a.y + 2*u*t*arc.cy + t*t*arc.b.y];
+}
+
+var lastPulse = 0;
+function frame(now){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(baseLayer,0,0,W,H);
+
+  /* arcs */
+  if(arcs.length < 4 && Math.random() < 0.02) arcs.push(newArc());
+  ctx.lineCap="round";
+  for(var i=arcs.length-1;i>=0;i--){
+    var A = arcs[i];
+    A.t += A.speed;
+    if(A.t >= 1.25){ arcs.splice(i,1); continue; }
+    var head = Math.min(A.t,1);
+    var tail = Math.max(A.t-0.32, 0);
+    if(tail < 1){
+      ctx.beginPath();
+      var p0 = arcPt(A,tail);
+      ctx.moveTo(p0[0],p0[1]);
+      for(var s=1;s<=18;s++){
+        var tt = tail + (head-tail)*s/18;
+        var pp = arcPt(A,tt);
+        ctx.lineTo(pp[0],pp[1]);
+      }
+      var hp = arcPt(A,head);
+      var grad = ctx.createLinearGradient(p0[0],p0[1],hp[0],hp[1]);
+      grad.addColorStop(0,"rgba(61,220,255,0)");
+      grad.addColorStop(1,"rgba(61,220,255,0.75)");
+      ctx.strokeStyle=grad; ctx.lineWidth=1.2; ctx.stroke();
+      if(A.t<=1){
+        ctx.fillStyle="rgba(61,220,255,1)";
+        ctx.beginPath(); ctx.arc(hp[0],hp[1],1.9,0,6.2832); ctx.fill();
+      }
+    }
+    /* arrival ring */
+    if(A.t>1){
+      var pr = (A.t-1)/0.25;
+      ctx.strokeStyle="rgba(61,220,255,"+(0.5*(1-pr))+")";
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(A.b.x,A.b.y,3+pr*10,0,6.2832); ctx.stroke();
+    }
+  }
+
+  /* threat pulses (tiny, red, rare) */
+  if(now - lastPulse > 2600 && dots.length){
+    lastPulse = now + Math.random()*2200;
+    var d0 = dots[Math.floor(Math.random()*dots.length)];
+    pulses.push({x:d0.x,y:d0.y,t:0});
+  }
+  for(var k=pulses.length-1;k>=0;k--){
+    var P = pulses[k];
+    P.t += 0.014;
+    if(P.t>=1){ pulses.splice(k,1); continue; }
+    var al = 1-P.t;
+    ctx.strokeStyle="rgba(255,77,94,"+(0.55*al)+")";
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(P.x,P.y,1.5+P.t*11,0,6.2832); ctx.stroke();
+    ctx.fillStyle="rgba(255,77,94,"+(0.85*al)+")";
+    ctx.beginPath(); ctx.arc(P.x,P.y,1.4,0,6.2832); ctx.fill();
+  }
+
+  if(running) rafId = requestAnimationFrame(frame);
+}
+
+function staticFrame(){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(baseLayer,0,0,W,H);
+  /* a few static arcs for the reduced-motion / paused view */
+  ctx.lineWidth=1;
+  for(var i=0;i<3;i++){
+    var A = newArc();
+    ctx.beginPath();
+    var p0=arcPt(A,0); ctx.moveTo(p0[0],p0[1]);
+    for(var s=1;s<=24;s++){ var pp=arcPt(A,s/24); ctx.lineTo(pp[0],pp[1]); }
+    ctx.strokeStyle="rgba(61,220,255,0.28)"; ctx.stroke();
+  }
+}
+
+var running=false, rafId=null;
+function start(){ if(running || REDUCED) return; running=true; rafId=requestAnimationFrame(frame); }
+function stop(){ running=false; if(rafId) cancelAnimationFrame(rafId); }
+
+build();
+if(REDUCED){ staticFrame(); } else { start(); }
+
+var rT;
+window.addEventListener("resize",function(){
+  clearTimeout(rT);
+  rT=setTimeout(function(){ build(); if(REDUCED) staticFrame(); },180);
+});
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden) stop(); else start();
+});
+if("IntersectionObserver" in window){
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting) start(); else stop(); });
+  },{threshold:0}).observe(canvas);
+}
+})();
+</script>

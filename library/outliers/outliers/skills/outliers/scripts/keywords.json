@@ -1,0 +1,41 @@
+{
+  "_niche_note": "EXAMPLE values below, for AI and automation creators. On the first run your agent asks for your niche, writes it into _niche (it titles the results page) and replaces the sets and niche terms below.",
+  "_niche": "AI and automation",
+  "_note": "Keyword sets for the YouTube scan. Each keyword is one YouTube search, of 100 free searches a day. Edit freely - the scanner reads this file every run.",
+  "_own_channel_note": "Your channel name (or part of it). Your own videos are left off the results page. Leave empty if you have no channel.",
+  "_own_channel": "",
+  "_niche_terms_note": "A video found by keyword search must mention at least one of these in its title or description, or it gets dropped. Keeps general news and off-topic results out. Pick specific words: a broad one lets spam in. Empty the list to switch the guard off. Peer channels skip this check.",
+  "niche_terms": [
+    "ai", "a.i.", "llm", "gpt", "agent", "agentic", "mcp", "vibe coding", "automation",
+    "n8n", "make.com", "zapier", "workflow", "no code", "nocode", "prompt",
+    "saas", "build an app", "coding", "developer", "api"
+  ],
+  "_exclude_note": "Channel titles to skip in keyword search, exact match, case insensitive. Add any brand, news or official company account that keeps showing up: a company's launch clip is not an idea you can copy.",
+  "exclude_channels": [
+    "hackerrank", "byteplus", "arduino", "cnn", "bloomberg technology"
+  ],
+  "_podcast_note": "Podcasts are skipped in keyword search: interviews and clips are not a format most creators can copy. A video counts as a podcast when its channel or title says podcast, its description calls itself the podcast (a Spotify or Apple link alone is not enough, solo creators post audio copies there), or its channel is listed here (for shows whose descriptions don't say so). Rule lives in podcast.mjs.",
+  "podcast_channels": [
+    "the diary of a ceo", "the diary of a ceo clips", "lex fridman", "lex clips", "the iced coffee hour"
+  ],
+  "sets": {
+    "default": [
+      "ai coding agent",
+      "ai agents",
+      "vibe coding",
+      "mcp server",
+      "ai automation",
+      "build app with ai",
+      "ai coding tools",
+      "n8n automation",
+      "ai agent business",
+      "ai tutorial for beginners"
+    ],
+    "shorts": [
+      "ai coding tips",
+      "ai agent hack",
+      "ai tool shorts",
+      "ai productivity tips"
+    ]
+  }
+}

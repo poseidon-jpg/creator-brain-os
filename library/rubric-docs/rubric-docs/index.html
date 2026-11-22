@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rubric Docs</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --border: #1a1a1a;
+      --border-hover: #333;
+      --text: #fff;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --green: #50e3c2;
+      --accent: #50e3c2;
+      --red: #e00;
+      --amber: #f5a623;
+      --radius-card: 16px;
+      --radius-pill: 20px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: 'Outfit', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==================== HEADER ==================== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .header-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-brand svg { opacity: 0.5; }
+    .header-credit {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .header-credit a { color: var(--text-muted); text-decoration: none; }
+    .header-credit a:hover { color: var(--text-secondary); }
+
+    /* ==================== DOCS ==================== */
+    .docs-container { display: flex; height: calc(100vh - 42px); overflow: hidden; }
+
+    .docs-sidebar { width: 260px; min-width: 200px; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .docs-sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .docs-icon-btn { background: none; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; padding: 4px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-family: 'Outfit', sans-serif; }
+    .docs-icon-btn:hover { color: var(--text); background: #1a1a1a; }
+    .docs-danger-btn:hover { color: #e44; }
+    .docs-tree { flex: 1; overflow-y: auto; padding: 6px 0; font-size: 13px; }
+    .docs-tree-item { display: flex; align-items: center; gap: 6px; padding: 4px 14px; cursor: pointer; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .docs-tree-item:hover { background: #111; color: var(--text); }
+    .docs-tree-item.active { background: #1a1a1a; color: var(--accent); }
+    .docs-tree-folder { padding-left: calc(14px + var(--depth, 0) * 16px); }
+    .docs-tree-file { padding-left: calc(14px + var(--depth, 0) * 16px); }
+    .docs-tree-icon { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.5; }
+    .docs-tree-chevron { width: 10px; height: 10px; flex-shrink: 0; transition: transform 0.15s; }
+    .docs-tree-chevron.open { transform: rotate(90deg); }
+
+    .docs-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .docs-topbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid var(--border); min-height: 40px; position: sticky; top: 0; z-index: 10; background: var(--bg); }
+    .docs-topbar-actions { display: flex; gap: 4px; }
+    .docs-breadcrumb { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .docs-breadcrumb span { cursor: pointer; }
+    .docs-breadcrumb span:hover { color: var(--text); }
+    .docs-breadcrumb .sep { color: #333; }
+
+    .docs-viewer { flex: 1; overflow-y: auto; padding: 20px 24px; font-size: 14px; line-height: 1.7; color: var(--text-secondary); display: none; }
+    .docs-viewer h1:first-child { font-size: 28px; color: #f5a623; margin: -20px -24px 16px; font-weight: 700; line-height: 1.3; position: sticky; top: -20px; z-index: 5; background: var(--bg); padding: 20px 24px 12px; border-bottom: 1px solid var(--border); }
+    .docs-viewer h1:not(:first-child) { font-size: 28px; color: #f5a623; margin: 0 0 16px; font-weight: 700; line-height: 1.3; }
+    .docs-viewer h2 { font-size: 22px; color: #e8913d; margin: 28px 0 10px; font-weight: 600; line-height: 1.3; }
+    .docs-viewer h3 { font-size: 18px; color: #d47b4a; margin: 22px 0 8px; font-weight: 600; line-height: 1.4; }
+    .docs-viewer h4 { font-size: 15px; color: #c06850; margin: 18px 0 6px; font-weight: 600; line-height: 1.4; }
+    .docs-viewer p { margin: 0 0 12px; }
+    .docs-viewer ul, .docs-viewer ol { margin: 0 0 12px; padding-left: 20px; }
+    .docs-viewer li { margin: 2px 0; }
+    .docs-viewer code { background: #1a1a1a; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+    .docs-viewer pre { background: #0a0a0a; border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 0 0 12px; }
+    .docs-viewer pre code { background: none; padding: 0; }
+    .docs-viewer a { color: var(--accent); }
+    .docs-viewer strong { color: var(--text); }
+    .docs-viewer blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--text-muted); margin: 0 0 12px; }
+    .docs-viewer hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .docs-viewer table { width: 100%; border-collapse: collapse; margin: 0 0 12px; }
+    .docs-viewer th, .docs-viewer td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; font-size: 13px; }
+    .docs-viewer th { background: var(--surface); color: var(--text); font-weight: 600; }
+
+    /* Doc Comments */
+    .doc-comment-btn {
+      background: #1a1a1a; border: 1px solid #333;
+      color: #e0e0e0; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      font-size: 12px; font-family: 'Outfit', sans-serif;
+      transition: background 0.15s; white-space: nowrap;
+    }
+    .doc-comment-btn:hover { background: #2a2a2a; }
+    .doc-comment-popover {
+      position: absolute; right: 12px; top: 0; z-index: 1001; background: #111; border: 1px solid #333;
+      border-radius: 8px; padding: 10px; width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    .doc-comment-popover textarea {
+      width: 100%; height: 60px; background: #0a0a0a; border: 1px solid #222;
+      color: #e0e0e0; border-radius: 4px; padding: 6px 8px; font-size: 12px;
+      font-family: 'Outfit', sans-serif; resize: vertical; outline: none;
+      box-sizing: border-box;
+    }
+    .doc-comment-popover textarea:focus { border-color: #e8913d; }
+    .doc-comment-popover-actions {
+      display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px;
+    }
+    .doc-comment-popover-actions button {
+      padding: 3px 10px; border-radius: 4px; border: none; cursor: pointer;
+      font-size: 11px; font-family: 'Outfit', sans-serif;
+    }
+    .doc-comment-save { background: #e8913d; color: #000; }
+    .doc-comment-save:hover { background: #d47b4a; }
+    .doc-comment-cancel { background: #222; color: #999; }
+    .doc-comment-cancel:hover { background: #333; color: #ccc; }
+    .doc-comment-highlight {
+      background: rgba(245, 166, 35, 0.15); border-bottom: 1px dashed rgba(245, 166, 35, 0.4);
+      cursor: pointer; position: relative;
+    }
+    .doc-comment-highlight:hover { background: rgba(245, 166, 35, 0.3); cursor: pointer; }
+    .doc-comment-highlight.resolved {
+      background: rgba(255,255,255,0.03); border-bottom-color: rgba(255,255,255,0.1);
+      opacity: 0.5;
+    }
+    .doc-comment-tooltip {
+      position: absolute; z-index: 1002; background: #151515; border: 1px solid #e8913d;
+      border-radius: 10px; padding: 16px; width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(232,145,61,0.2);
+      font-size: 13px; color: #e0e0e0;
+    }
+    .doc-comment-tooltip .comment-text { margin-bottom: 12px; line-height: 1.6; font-size: 13px; }
+    .doc-comment-tooltip .comment-meta { font-size: 11px; color: #888; margin-bottom: 8px; }
+    .doc-comment-tooltip .comment-actions { display: flex; gap: 8px; }
+    .doc-comment-tooltip .comment-actions button {
+      padding: 4px 12px; border-radius: 4px; border: none; cursor: pointer;
+      font-size: 11px; font-family: 'Outfit', sans-serif;
+    }
+    .doc-comment-resolve { background: #2a4a2a; color: #6c6; }
+    .doc-comment-resolve:hover { background: #3a5a3a; }
+    .doc-comment-delete { background: #3a1a1a; color: #c66; }
+    .doc-comment-delete:hover { background: #4a2a2a; }
+    .doc-comment-unresolve { background: #2a2a3a; color: #88f; }
+    .doc-comment-unresolve:hover { background: #3a3a4a; }
+    .doc-comment-count {
+      position: absolute; top: 8px; right: 8px; background: rgba(245, 166, 35, 0.15);
+      color: #f5a623; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+      font-family: 'Outfit', sans-serif; cursor: pointer; z-index: 10;
+    }
+    .doc-comment-count:hover { background: rgba(245, 166, 35, 0.25); }
+
+    .docs-editor { flex: 1; background: #050505; color: var(--text); border: none; padding: 20px 24px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: none; outline: none; }
+    .docs-editor-toolbar { display: flex; align-items: center; gap: 2px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: #0a0a0a; }
+    .docs-split-editor {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .docs-split-editor .docs-editor {
+      width: 50%;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .docs-split-preview {
+      width: 50%;
+      overflow-y: auto;
+      padding: 20px 24px;
+      background: var(--bg);
+    }
+    .docs-split-preview h1, .docs-split-preview h2, .docs-split-preview h3 { color: var(--text); margin: 16px 0 8px; }
+    .docs-split-preview h1 { font-size: 22px; }
+    .docs-split-preview h2 { font-size: 17px; }
+    .docs-split-preview h3 { font-size: 14px; font-weight: 600; }
+    .docs-split-preview p { margin: 8px 0; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+    .docs-split-preview code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .docs-split-preview pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; overflow-x: auto; margin: 10px 0; }
+    .docs-split-preview pre code { background: none; padding: 0; }
+    .docs-split-preview ul, .docs-split-preview ol { padding-left: 20px; margin: 8px 0; }
+    .docs-split-preview li { margin: 4px 0; color: var(--text-secondary); font-size: 14px; }
+    .docs-split-preview blockquote { border-left: 3px solid var(--border-hover); padding: 4px 12px; margin: 8px 0; color: var(--text-muted); }
+    .docs-split-preview a { color: var(--green); text-decoration: none; }
+    .docs-split-preview hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .docs-split-preview strong { color: var(--text); }
+    .docs-split-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      padding: 6px 24px 0;
+      background: #050505;
+    }
+    .docs-split-label.preview-label { background: var(--bg); }
+    @media (max-width: 768px) {
+      .docs-container { flex-direction: column; }
+      .docs-sidebar { width: 100%; min-width: unset; max-height: 200px; border-right: none; border-bottom: 1px solid var(--border); }
+      .docs-split-editor { flex-direction: column; }
+      .docs-split-editor .docs-editor { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border); }
+      .docs-split-preview { width: 100%; height: 60%; }
+    }
+    .docs-tb-btn { background: none; border: 1px solid transparent; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: 'Outfit', sans-serif; }
+    .docs-tb-btn:hover { background: #1a1a1a; color: var(--text); }
+    .docs-save-btn { background: var(--accent); color: #000; border: none; border-radius: 4px; padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; }
+    .docs-cancel-btn { background: #222; color: var(--text); border: none; border-radius: 4px; padding: 4px 12px; font-size: 11px; cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+    .docs-viewer.docs-editing { outline: none; border-left: 2px solid var(--accent); cursor: text; }
+    .docs-viewer.docs-editing:focus { background: rgba(255,255,255,0.01); }
+    .docs-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+    .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 16px; overflow-y: auto; flex: 1; }
+    .docs-grid-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.15s; }
+    .docs-grid-card:hover { border-color: var(--accent); }
+    .docs-grid-card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .docs-grid-card-preview { font-size: 11px; color: var(--text-muted); line-height: 1.4; max-height: 42px; overflow: hidden; }
+    .docs-grid-card-meta { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+    .docs-grid-folder { border-left: 3px solid var(--accent); }
+
+    .docs-context-menu { position: fixed; background: #111; border: 1px solid var(--border); border-radius: 6px; padding: 4px 0; z-index: 1000; min-width: 140px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .docs-context-item { padding: 6px 14px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+    .docs-context-item:hover { background: #1a1a1a; color: var(--text); }
+    .docs-context-item.danger { color: #e44; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-brand">
+      <svg viewBox="0 0 48 48" fill="none" stroke="#ff6b1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M24 6l18 10v16L24 42 6 32V16Z"/><path d="M24 6v16l18 10" opacity="0.5"/><path d="M24 22L6 32" opacity="0.5"/></svg>
+      <span id="brand-name">RUBRIC Docs</span>
+      <span style="font-size:10px;color:#555;margin-left:8px;">The command center for AI agents</span>
+    </div>
+    <div class="header-credit">Created by RoboLabs · <a href="https://robonuggets.com" target="_blank">Learn more at RoboNuggets</a></div>
+  </div>
+
+  <!-- Docs UI -->
+  <div class="docs-container">
+    <div class="docs-sidebar" id="docs-sidebar">
+      <div class="docs-sidebar-header">
+        <span style="font-size:13px;font-weight:600;">Files</span>
+        <div style="display:flex;gap:4px;">
+          <button class="docs-icon-btn" id="docs-search-toggle" title="Search files">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <button class="docs-icon-btn" id="docs-new-file-btn" title="New File">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </button>
+          <button class="docs-icon-btn" id="docs-new-folder-btn" title="New Folder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </button>
+          <button class="docs-icon-btn" id="docs-toggle-view" title="Toggle grid view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="docs-search-bar" style="display:none; padding:8px 12px; border-bottom:1px solid var(--border);">
+        <input id="docs-search-input" type="text" placeholder="Search files..." style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 10px; color:var(--text); font-family:inherit; font-size:12px; outline:none;" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="docs-tree" id="docs-tree"></div>
+    </div>
+    <div class="docs-main" id="docs-main">
+      <div class="docs-topbar" id="docs-topbar" style="display:none;">
+        <button class="docs-icon-btn" id="docs-home-btn" title="Back to files" style="margin-right:8px;flex-shrink:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
+        <div class="docs-breadcrumb" id="docs-breadcrumb"></div>
+        <div class="docs-topbar-actions" id="docs-topbar-actions">
+          <button class="docs-icon-btn" id="docs-refresh-btn" title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+          <button class="docs-icon-btn" id="docs-edit-btn" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>
+          <button class="docs-icon-btn" id="docs-rename-btn" title="Rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+          <button class="docs-icon-btn" id="docs-download-btn" title="Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <button class="docs-icon-btn docs-danger-btn" id="docs-delete-btn" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+        </div>
+      </div>
+      <div class="docs-editor-toolbar" id="docs-editor-toolbar" style="display:none;">
+        <button class="docs-tb-btn" data-action="bold" title="Bold"><b>B</b></button>
+        <button class="docs-tb-btn" data-action="italic" title="Italic"><i>I</i></button>
+        <button class="docs-tb-btn" data-action="h1" title="Heading 1">H1</button>
+        <button class="docs-tb-btn" data-action="h2" title="Heading 2">H2</button>
+        <button class="docs-tb-btn" data-action="h3" title="Heading 3">H3</button>
+        <button class="docs-tb-btn" data-action="ul" title="List">List</button>
+        <button class="docs-tb-btn" data-action="link" title="Link">Link</button>
+        <button class="docs-tb-btn" data-action="code" title="Code">Code</button>
+        <div style="flex:1;"></div>
+        <button class="docs-save-btn" id="docs-save-btn">Save</button>
+        <button class="docs-cancel-btn" id="docs-cancel-btn">Cancel</button>
+      </div>
+      <div class="docs-viewer" id="docs-viewer"></div>
+      <div class="docs-split-editor" id="docs-split-editor" style="display:none;">
+        <div style="display:flex;flex-direction:column;width:50%;border-right:1px solid var(--border);">
+          <div class="docs-split-label">Markdown</div>
+          <textarea class="docs-editor" id="docs-editor" style="display:block;width:100%;flex:1;"></textarea>
+        </div>
+        <div style="display:flex;flex-direction:column;width:50%;">
+          <div class="docs-split-label preview-label">Preview</div>
+          <div class="docs-split-preview" id="docs-split-preview"></div>
+        </div>
+      </div>
+      <div class="docs-welcome" id="docs-welcome">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:0.2;margin-bottom:16px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <h3 style="margin:0 0 8px;font-size:16px;color:var(--text-secondary);">Your Documents</h3>
+        <p style="color:var(--text-muted);font-size:13px;margin:0;" id="docs-stats">Loading...</p>
+      </div>
+      <div class="docs-grid" id="docs-grid" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+  // Optional API auth: set window.RUBRIC_TOKEN to the server's RUBRIC_TOKEN to authorize /api calls
+  (function () {
+    const _fetch = window.fetch;
+    window.fetch = function (url, opts) {
+      opts = opts || {};
+      try {
+        const u = typeof url === 'string' ? url : (url && url.url) || '';
+        if (window.RUBRIC_TOKEN && u.indexOf('/api/') !== -1) {
+          opts.headers = Object.assign({}, opts.headers, { 'x-rubric-token': window.RUBRIC_TOKEN });
+        }
+      } catch (e) {}
+      return _fetch.call(this, url, opts);
+    };
+  })();
+  (function() {
+    let treeData = [];
+    let currentFile = null;
+    let isEditing = false;
+    let isGridView = false;
+    let currentGridPath = '';
+
+    // Use marked.js if available, fallback to simple parser
+    function md2html(md) {
+      if (typeof marked !== 'undefined') {
+        return marked.parse(md);
+      }
+      // Fallback simple parser
+      let html = md
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/^---$/gm, '<hr>')
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+      html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+      html = html.replace(/```[\w]*\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      html = html.split('\n\n').map(p => {
+        p = p.trim();
+        if (!p) return '';
+        if (p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<ol') || p.startsWith('<pre') || p.startsWith('<hr') || p.startsWith('<blockquote')) return p;
+        return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
+      }).join('\n');
+      return html;
+    }
+
+    async function loadTree() {
+      try {
+        const r = await fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'tree'}) });
+        const data = await r.json();
+        treeData = data.tree || [];
+        renderTree();
+        updateStats();
+      } catch(e) { console.error('Docs tree failed', e); }
+    }
+
+    function countFiles(nodes) {
+      let files = 0, folders = 0;
+      nodes.forEach(n => {
+        if (n.type === 'folder') { folders++; const sub = countFiles(n.children || []); files += sub.files; folders += sub.folders; }
+        else files++;
+      });
+      return { files, folders };
+    }
+
+    function updateStats() {
+      const { files, folders } = countFiles(treeData);
+      const el = document.getElementById('docs-stats');
+      if (el) el.textContent = `${files} files in ${folders} folders`;
+    }
+
+    function renderTree() {
+      const container = document.getElementById('docs-tree');
+      container.innerHTML = renderTreeNodes(treeData, 0);
+    }
+
+    function renderTreeNodes(nodes, depth) {
+      return nodes.map(n => {
+        if (n.type === 'folder') {
+          const chevron = '<svg class="docs-tree-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+          const icon = '<svg class="docs-tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+          const fp = escapeHtml(n.path), fnm = escapeHtml(n.name);
+          return `<div class="docs-tree-item docs-tree-folder" style="--depth:${depth}" data-path="${fp}" data-type="folder" oncontextmenu="docsContextMenu(event,'${fp}','folder')">${chevron}${icon}<span>${fnm}</span></div><div class="docs-tree-children" style="display:none;">${renderTreeNodes(n.children || [], depth + 1)}</div>`;
+        }
+        const icon = '<svg class="docs-tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>';
+        const p = escapeHtml(n.path), nm = escapeHtml(n.name);
+        return `<div class="docs-tree-item docs-tree-file" style="--depth:${depth}" data-path="${p}" data-type="file" oncontextmenu="docsContextMenu(event,'${p}','file')">${icon}<span>${nm}</span></div>`;
+      }).join('');
+    }
+
+    // Search functionality
+    (function() {
+      const searchToggle = document.getElementById('docs-search-toggle');
+      const searchBar = document.getElementById('docs-search-bar');
+      const searchInput = document.getElementById('docs-search-input');
+      const treeContainer = document.getElementById('docs-tree');
+      let searchVisible = false;
+
+      searchToggle.addEventListener('click', function() {
+        searchVisible = !searchVisible;
+        searchBar.style.display = searchVisible ? 'block' : 'none';
+        if (searchVisible) {
+          searchInput.focus();
+        } else {
+          searchInput.value = '';
+          renderTree();
+          treeContainer.querySelectorAll('.docs-tree-children').forEach(el => el.style.display = 'none');
+          treeContainer.querySelectorAll('.docs-tree-chevron').forEach(el => el.classList.remove('open'));
+        }
+      });
+
+      function flattenTree(nodes) {
+        let results = [];
+        for (const n of nodes) {
+          results.push({ name: n.name, path: n.path, type: n.type });
+          if (n.children) results = results.concat(flattenTree(n.children));
+        }
+        return results;
+      }
+
+      function renderSearchResults(query) {
+        if (!query) { renderTree(); return; }
+        const q = query.toLowerCase();
+        const flat = flattenTree(treeData);
+        const matches = flat.filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q));
+        if (matches.length === 0) {
+          treeContainer.innerHTML = '<div style="padding:16px 14px;color:var(--text-muted);font-size:12px;">No files found</div>';
+          return;
+        }
+        const fileIcon = '<svg class="docs-tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>';
+        const folderIcon = '<svg class="docs-tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+        treeContainer.innerHTML = matches.map(m => {
+          const icon = m.type === 'folder' ? folderIcon : fileIcon;
+          const mp = escapeHtml(m.path);
+          const pathHint = m.path.includes('/') ? '<span style="font-size:10px;color:var(--text-muted);display:block;margin-top:1px;">' + mp + '</span>' : '';
+          return '<div class="docs-tree-item docs-tree-file" style="--depth:0" data-path="' + mp + '" data-type="' + escapeHtml(m.type) + '">' + icon + '<span>' + highlightMatch(m.name, q) + pathHint + '</span></div>';
+        }).join('');
+      }
+
+      function highlightMatch(text, query) {
+        const idx = text.toLowerCase().indexOf(query);
+        if (idx === -1) return escapeHtml(text);
+        return escapeHtml(text.substring(0, idx)) + '<mark style="background:var(--accent);color:#000;border-radius:2px;padding:0 1px;">' + escapeHtml(text.substring(idx, idx + query.length)) + '</mark>' + escapeHtml(text.substring(idx + query.length));
+      }
+
+      let searchTimeout;
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => renderSearchResults(this.value.trim()), 150);
+      });
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') searchToggle.click();
+      });
+    })();
+
+    // Tree click handlers
+    document.getElementById('docs-tree').addEventListener('click', function(e) {
+      const item = e.target.closest('.docs-tree-item');
+      if (!item) return;
+      const path = item.dataset.path;
+      const type = item.dataset.type;
+      if (type === 'folder') {
+        const children = item.nextElementSibling;
+        if (children) children.style.display = children.style.display === 'none' ? 'block' : 'none';
+        const chevron = item.querySelector('.docs-tree-chevron');
+        if (chevron) chevron.classList.toggle('open');
+        if (isGridView) { currentGridPath = path; loadGridView(path); }
+      } else {
+        openFile(path);
+      }
+    });
+
+    window.openDocFile = openFile;
+    async function openFile(filePath) {
+      try {
+        const r = await fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'read', path: filePath}) });
+        const data = await r.json();
+        currentFile = { path: filePath, content: data.content, modified: data.modified };
+        document.getElementById('docs-welcome').style.display = 'none';
+        document.getElementById('docs-grid').style.display = 'none';
+        document.getElementById('docs-topbar').style.display = 'flex';
+        document.getElementById('docs-viewer').style.display = 'block';
+        document.getElementById('docs-editor-toolbar').style.display = 'none';
+        const viewer = document.getElementById('docs-viewer');
+        viewer.contentEditable = 'false';
+        viewer.classList.remove('docs-editing');
+        viewer.innerHTML = md2html(data.content);
+        isEditing = false;
+        // Breadcrumb
+        const parts = filePath.split('/');
+        document.getElementById('docs-breadcrumb').innerHTML = '<span onclick="docsNavTo(\'\')">docs</span>' + parts.map((p, i) => '<span class="sep">/</span><span onclick="docsNavTo(\'' + escapeHtml(parts.slice(0, i+1).join('/')) + '\')">' + escapeHtml(p) + '</span>').join('');
+        // Highlight in tree
+        document.querySelectorAll('.docs-tree-item').forEach(el => el.classList.remove('active'));
+        const pathParts = filePath.split('/');
+        for (let i = 1; i < pathParts.length; i++) {
+          const parentPath = pathParts.slice(0, i).join('/');
+          const folderItem = document.querySelector(`.docs-tree-item[data-path="${parentPath}"][data-type="folder"]`);
+          if (folderItem) {
+            const children = folderItem.nextElementSibling;
+            if (children && children.style.display === 'none') children.style.display = 'block';
+            const chevron = folderItem.querySelector('.docs-tree-chevron');
+            if (chevron) chevron.classList.add('open');
+          }
+        }
+        const treeItem = document.querySelector(`.docs-tree-item[data-path="${filePath}"]`);
+        if (treeItem) {
+          treeItem.classList.add('active');
+          treeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      } catch(e) { console.error('Failed to open file', e); }
+    }
+
+    // HTML to markdown converter
+    function html2md(el) {
+      let md = '';
+      function walk(node) {
+        if (node.nodeType === 3) { md += node.textContent; return; }
+        if (node.nodeType !== 1) return;
+        const tag = node.tagName.toLowerCase();
+        const kids = () => { for (const c of node.childNodes) walk(c); };
+        switch(tag) {
+          case 'h1': md += '# '; kids(); md += '\n\n'; break;
+          case 'h2': md += '## '; kids(); md += '\n\n'; break;
+          case 'h3': md += '### '; kids(); md += '\n\n'; break;
+          case 'h4': md += '#### '; kids(); md += '\n\n'; break;
+          case 'p': kids(); md += '\n\n'; break;
+          case 'strong': case 'b': md += '**'; kids(); md += '**'; break;
+          case 'em': case 'i': md += '*'; kids(); md += '*'; break;
+          case 'code':
+            if (node.parentElement && node.parentElement.tagName === 'PRE') { kids(); }
+            else { md += '`'; kids(); md += '`'; }
+            break;
+          case 'pre': md += '```\n'; kids(); md += '\n```\n\n'; break;
+          case 'ul': case 'ol': kids(); md += '\n'; break;
+          case 'li': md += '- '; kids(); md += '\n'; break;
+          case 'a': md += '['; kids(); md += '](' + (node.getAttribute('href') || '') + ')'; break;
+          case 'blockquote': md += '> '; kids(); md += '\n\n'; break;
+          case 'hr': md += '---\n\n'; break;
+          case 'br': md += '\n'; break;
+          case 'div': kids(); md += '\n'; break;
+          default: kids(); break;
+        }
+      }
+      for (const c of el.childNodes) walk(c);
+      return md.replace(/\n{3,}/g, '\n\n').trim() + '\n';
+    }
+
+    // Home button
+    document.getElementById('docs-home-btn').addEventListener('click', () => {
+      document.querySelectorAll('.docs-tree-children').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.docs-tree-chevron').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.docs-tree-item').forEach(el => el.classList.remove('active'));
+      const homeDoc = localStorage.getItem('docs-home');
+      if (homeDoc) {
+        openFile(homeDoc);
+      } else {
+        currentFile = null;
+        isEditing = false;
+        const viewer = document.getElementById('docs-viewer');
+        viewer.contentEditable = 'false';
+        viewer.classList.remove('docs-editing');
+        document.getElementById('docs-viewer').style.display = 'none';
+        document.getElementById('docs-editor-toolbar').style.display = 'none';
+        document.getElementById('docs-topbar').style.display = 'none';
+        document.getElementById('docs-grid').style.display = 'none';
+        document.getElementById('docs-welcome').style.display = 'flex';
+        currentGridPath = '';
+      }
+    });
+
+    // Refresh
+    document.getElementById('docs-refresh-btn').addEventListener('click', () => {
+      if (currentFile && currentFile.path) openFile(currentFile.path);
+    });
+
+    // Edit mode
+    document.getElementById('docs-edit-btn').addEventListener('click', () => {
+      if (!currentFile) return;
+      isEditing = true;
+      const viewer = document.getElementById('docs-viewer');
+      viewer.contentEditable = 'true';
+      viewer.classList.add('docs-editing');
+      viewer.focus();
+      document.getElementById('docs-editor-toolbar').style.display = 'flex';
+    });
+
+    // Cancel edit
+    document.getElementById('docs-cancel-btn').addEventListener('click', () => {
+      isEditing = false;
+      const viewer = document.getElementById('docs-viewer');
+      viewer.contentEditable = 'false';
+      viewer.classList.remove('docs-editing');
+      viewer.innerHTML = md2html(currentFile.content);
+      document.getElementById('docs-editor-toolbar').style.display = 'none';
+    });
+
+    // Save
+    document.getElementById('docs-save-btn').addEventListener('click', async () => {
+      if (!currentFile) return;
+      const viewer = document.getElementById('docs-viewer');
+      const content = html2md(viewer);
+      await fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'write', path: currentFile.path, content}) });
+      currentFile.content = content;
+      viewer.contentEditable = 'false';
+      viewer.classList.remove('docs-editing');
+      viewer.innerHTML = md2html(content);
+      document.getElementById('docs-editor-toolbar').style.display = 'none';
+      isEditing = false;
+    });
+
+    // Keyboard shortcuts in editor
+    document.getElementById('docs-viewer').addEventListener('keydown', (e) => {
+      if (!isEditing) return;
+      if (e.ctrlKey && e.key === 's') { e.preventDefault(); document.getElementById('docs-save-btn').click(); }
+      if (e.key === 'Escape') document.getElementById('docs-cancel-btn').click();
+    });
+
+    // Rich text toolbar
+    document.querySelectorAll('.docs-tb-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        const viewer = document.getElementById('docs-viewer');
+        viewer.focus();
+        switch(action) {
+          case 'bold': document.execCommand('bold'); break;
+          case 'italic': document.execCommand('italic'); break;
+          case 'h1': document.execCommand('formatBlock', false, 'h1'); break;
+          case 'h2': document.execCommand('formatBlock', false, 'h2'); break;
+          case 'h3': document.execCommand('formatBlock', false, 'h3'); break;
+          case 'ul': document.execCommand('insertUnorderedList'); break;
+          case 'link':
+            const url = prompt('URL:');
+            if (url) document.execCommand('createLink', false, url);
+            break;
+          case 'code':
+            const sel = window.getSelection();
+            if (sel.rangeCount) {
+              const range = sel.getRangeAt(0);
+              const code = document.createElement('code');
+              range.surroundContents(code);
+            }
+            break;
+        }
+      });
+    });
+
+    // New file
+    document.getElementById('docs-new-file-btn').addEventListener('click', () => {
+      const name = prompt('File name (without .md):');
+      if (!name) return;
+      const filePath = (currentGridPath ? currentGridPath + '/' : '') + name.replace(/[^a-zA-Z0-9-_ ]/g, '') + '.md';
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'create', path: filePath}) })
+        .then(r => r.json()).then(() => { loadTree(); openFile(filePath); });
+    });
+
+    // New folder
+    document.getElementById('docs-new-folder-btn').addEventListener('click', () => {
+      const name = prompt('Folder name:');
+      if (!name) return;
+      const folderPath = (currentGridPath ? currentGridPath + '/' : '') + name.replace(/[^a-zA-Z0-9-_ ]/g, '');
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'mkdir', path: folderPath}) })
+        .then(r => r.json()).then(() => loadTree());
+    });
+
+    // Rename
+    document.getElementById('docs-rename-btn').addEventListener('click', () => {
+      if (!currentFile) return;
+      const parts = currentFile.path.split('/');
+      const oldName = parts.pop();
+      const newName = prompt('New name:', oldName);
+      if (!newName || newName === oldName) return;
+      const newPath = parts.length ? parts.join('/') + '/' + newName : newName;
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'rename', from: currentFile.path, to: newPath}) })
+        .then(r => r.json()).then(() => { loadTree(); openFile(newPath); });
+    });
+
+    // Download
+    document.getElementById('docs-download-btn').addEventListener('click', () => {
+      if (!currentFile) return;
+      const a = document.createElement('a');
+      a.href = '/api/docs/download?path=' + encodeURIComponent(currentFile.path);
+      a.download = currentFile.path.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+    // Delete
+    document.getElementById('docs-delete-btn').addEventListener('click', () => {
+      if (!currentFile) return;
+      if (!confirm('Move "' + currentFile.path.split('/').pop() + '" to trash?')) return;
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'delete', path: currentFile.path}) })
+        .then(r => r.json()).then(() => {
+          currentFile = null;
+          document.getElementById('docs-topbar').style.display = 'none';
+          document.getElementById('docs-viewer').style.display = 'none';
+          document.getElementById('docs-welcome').style.display = 'flex';
+          loadTree();
+        });
+    });
+
+    // Grid/tree toggle
+    document.getElementById('docs-toggle-view').addEventListener('click', () => {
+      isGridView = !isGridView;
+      if (isGridView) {
+        document.getElementById('docs-welcome').style.display = 'none';
+        document.getElementById('docs-viewer').style.display = 'none';
+        document.getElementById('docs-topbar').style.display = 'none';
+        document.getElementById('docs-grid').style.display = 'grid';
+        loadGridView(currentGridPath);
+      } else {
+        document.getElementById('docs-grid').style.display = 'none';
+        if (currentFile) {
+          document.getElementById('docs-viewer').style.display = 'block';
+          document.getElementById('docs-topbar').style.display = 'flex';
+        } else {
+          document.getElementById('docs-welcome').style.display = 'flex';
+        }
+      }
+    });
+
+    window.loadGridView = async function(gridPath) {
+      try {
+        const r = await fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'list', path: gridPath}) });
+        const data = await r.json();
+        const grid = document.getElementById('docs-grid');
+        if (!data.items || !data.items.length) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Empty folder</div>';
+          return;
+        }
+        grid.innerHTML = data.items.map(item => {
+          const nm = escapeHtml(item.name);
+          const navPath = escapeHtml(gridPath ? gridPath + '/' + item.name : item.name);
+          if (item.type === 'folder') {
+            return `<div class="docs-grid-card docs-grid-folder" onclick="docsGridNav('${navPath}')"><div class="docs-grid-card-title">${nm}/</div><div class="docs-grid-card-meta">Folder</div></div>`;
+          }
+          const preview = escapeHtml((item.preview || '').replace(/^#+ /gm, '').replace(/[*_`]/g, '').slice(0, 100));
+          const date = new Date(item.modified).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+          return `<div class="docs-grid-card" onclick="docsGridOpen('${navPath}')"><div class="docs-grid-card-title">${nm}</div><div class="docs-grid-card-preview">${preview}</div><div class="docs-grid-card-meta">${date}</div></div>`;
+        }).join('');
+      } catch(e) { console.error('Grid load failed', e); }
+    };
+
+    // Context menu
+    window.docsContextMenu = function(e, ctxPath, type) {
+      e.preventDefault();
+      const existing = document.querySelector('.docs-context-menu');
+      if (existing) existing.remove();
+      const menu = document.createElement('div');
+      menu.className = 'docs-context-menu';
+      menu.style.left = e.clientX + 'px';
+      menu.style.top = e.clientY + 'px';
+      let items = '';
+      const cp = escapeHtml(ctxPath);
+      if (type === 'file') {
+        const isHome = localStorage.getItem('docs-home') === ctxPath;
+        items = `<div class="docs-context-item" onclick="docsGridOpen('${cp}');this.parentElement.remove()">Open</div>
+          <div class="docs-context-item" onclick="docsSetHome('${cp}');this.parentElement.remove()">${isHome ? 'Unset Home' : 'Set as Home'}</div>
+          <div class="docs-context-item" onclick="docsRenameItem('${cp}');this.parentElement.remove()">Rename</div>
+          <div class="docs-context-item danger" onclick="docsDeleteItem('${cp}');this.parentElement.remove()">Delete</div>`;
+      } else {
+        items = `<div class="docs-context-item" onclick="docsNewFileIn('${cp}');this.parentElement.remove()">New File</div>
+          <div class="docs-context-item" onclick="docsNewFolderIn('${cp}');this.parentElement.remove()">New Folder</div>
+          <div class="docs-context-item" onclick="docsRenameItem('${cp}');this.parentElement.remove()">Rename</div>
+          <div class="docs-context-item danger" onclick="docsDeleteItem('${cp}');this.parentElement.remove()">Delete</div>`;
+      }
+      menu.innerHTML = items;
+      document.body.appendChild(menu);
+      document.addEventListener('click', () => menu.remove(), { once: true });
+    };
+
+    window.docsGridNav = function(navPath) { currentGridPath = navPath; loadGridView(navPath); };
+    window.docsGridOpen = function(openPath) { isGridView = false; document.getElementById('docs-grid').style.display = 'none'; openFile(openPath); };
+    window.docsNavTo = function(navPath) {
+      if (!navPath) { currentGridPath = ''; if (isGridView) loadGridView(''); return; }
+      const node = findNode(treeData, navPath);
+      if (node && node.type === 'folder') { currentGridPath = navPath; if (isGridView) loadGridView(navPath); }
+      else openFile(navPath);
+    };
+    function findNode(nodes, searchPath) {
+      for (const n of nodes) {
+        if (n.path === searchPath) return n;
+        if (n.children) { const found = findNode(n.children, searchPath); if (found) return found; }
+      }
+      return null;
+    }
+    window.docsSetHome = function(homePath) {
+      const current = localStorage.getItem('docs-home');
+      if (current === homePath) localStorage.removeItem('docs-home');
+      else localStorage.setItem('docs-home', homePath);
+    };
+    window.docsRenameItem = function(itemPath) {
+      const parts = itemPath.split('/');
+      const oldName = parts.pop();
+      const newName = prompt('New name:', oldName);
+      if (!newName || newName === oldName) return;
+      const newPath = parts.length ? parts.join('/') + '/' + newName : newName;
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'rename', from: itemPath, to: newPath}) })
+        .then(() => loadTree());
+    };
+    window.docsDeleteItem = function(delPath) {
+      if (!confirm('Move "' + delPath.split('/').pop() + '" to trash?')) return;
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'delete', path: delPath}) })
+        .then(() => { if (currentFile && currentFile.path === delPath) { currentFile = null; document.getElementById('docs-topbar').style.display='none'; document.getElementById('docs-viewer').style.display='none'; document.getElementById('docs-welcome').style.display='flex'; } loadTree(); });
+    };
+    window.docsNewFileIn = function(folder) {
+      const name = prompt('File name (without .md):');
+      if (!name) return;
+      const newPath = folder + '/' + name.replace(/[^a-zA-Z0-9-_ ]/g, '') + '.md';
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'create', path: newPath}) })
+        .then(() => { loadTree(); openFile(newPath); });
+    };
+    window.docsNewFolderIn = function(folder) {
+      const name = prompt('Folder name:');
+      if (!name) return;
+      const newPath = folder + '/' + name.replace(/[^a-zA-Z0-9-_ ]/g, '');
+      fetch('/api/docs', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({_action:'mkdir', path: newPath}) })
+        .then(() => loadTree());
+    };
+
+    // ==================== DOC COMMENTS ====================
+    let docComments = [];
+    let commentBtn = null;
+    let commentPopover = null;
+    let commentTooltip = null;
+    let commentCountEl = null;
+
+    async function loadDocComments() {
+      if (!currentFile) return;
+      try {
+        const r = await fetch('/api/doc-comments?path=' + encodeURIComponent(currentFile.path));
+        const data = await r.json();
+        docComments = data.comments || [];
+      } catch(e) { docComments = []; }
+    }
+
+    function applyCommentHighlights() {
+      const viewer = document.getElementById('docs-viewer');
+      if (!viewer || !currentFile || isEditing) return;
+      viewer.querySelectorAll('.doc-comment-highlight').forEach(el => {
+        const parent = el.parentNode;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        parent.removeChild(el);
+      });
+      if (commentCountEl) { commentCountEl.remove(); commentCountEl = null; }
+      if (docComments.length === 0) return;
+      const unresolvedCount = docComments.filter(c => !c.resolved).length;
+      if (unresolvedCount > 0) {
+        commentCountEl = document.createElement('div');
+        commentCountEl.className = 'doc-comment-count';
+        commentCountEl.textContent = unresolvedCount + ' comment' + (unresolvedCount !== 1 ? 's' : '');
+        commentCountEl.onclick = () => {
+          const first = viewer.querySelector('.doc-comment-highlight:not(.resolved)');
+          if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+        viewer.style.position = 'relative';
+        viewer.appendChild(commentCountEl);
+      }
+      for (const comment of docComments) {
+        if (!comment.selection || comment.resolved) continue;
+        highlightTextInViewer(viewer, comment);
+      }
+    }
+
+    function highlightTextInViewer(container, comment) {
+      const searchText = comment.selection;
+      if (!searchText) return;
+      const normSearch = searchText.replace(/\s+/g, ' ').trim();
+
+      // Strategy 1: exact match in a single text node
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+      let node;
+      while (node = walker.nextNode()) {
+        if (node.parentElement.closest('.doc-comment-highlight')) continue;
+        const idx = node.textContent.indexOf(searchText);
+        if (idx !== -1) {
+          try {
+            const range = document.createRange();
+            range.setStart(node, idx);
+            range.setEnd(node, idx + searchText.length);
+            const span = document.createElement('span');
+            span.className = 'doc-comment-highlight' + (comment.resolved ? ' resolved' : '');
+            span.dataset.commentId = comment.id;
+            span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); showCommentTooltip(comment, span); });
+            span.addEventListener('mouseup', (e) => { e.stopPropagation(); });
+            span.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+            range.surroundContents(span);
+            return;
+          } catch(e) {}
+        }
+      }
+
+      // Strategy 2: normalized whitespace match
+      const walker2 = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+      while (node = walker2.nextNode()) {
+        if (node.parentElement.closest('.doc-comment-highlight')) continue;
+        const normNode = node.textContent.replace(/\s+/g, ' ');
+        const idx = normNode.indexOf(normSearch);
+        if (idx !== -1) {
+          try {
+            const range = document.createRange();
+            range.setStart(node, idx);
+            range.setEnd(node, Math.min(idx + normSearch.length, node.textContent.length));
+            const span = document.createElement('span');
+            span.className = 'doc-comment-highlight' + (comment.resolved ? ' resolved' : '');
+            span.dataset.commentId = comment.id;
+            span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); showCommentTooltip(comment, span); });
+            span.addEventListener('mouseup', (e) => { e.stopPropagation(); });
+            span.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+            range.surroundContents(span);
+            return;
+          } catch(e) {}
+        }
+      }
+
+      // Strategy 3: cross-element match
+      const textNodes = [];
+      const walker3 = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+      while (node = walker3.nextNode()) {
+        if (!node.parentElement.closest('.doc-comment-highlight')) textNodes.push(node);
+      }
+      let combined = '';
+      const nodeMap = [];
+      for (const tn of textNodes) {
+        nodeMap.push({ node: tn, start: combined.length });
+        combined += tn.textContent;
+      }
+      const cIdx = combined.indexOf(searchText);
+      if (cIdx === -1) return;
+      const matchEnd = cIdx + searchText.length;
+      const startEntry = nodeMap.find(e => cIdx >= e.start && cIdx < e.start + e.node.textContent.length);
+      const endEntry = nodeMap.find(e => matchEnd > e.start && matchEnd <= e.start + e.node.textContent.length);
+      if (!startEntry || !endEntry) return;
+      if (startEntry.node === endEntry.node) {
+        try {
+          const localStart = cIdx - startEntry.start;
+          const range = document.createRange();
+          range.setStart(startEntry.node, localStart);
+          range.setEnd(startEntry.node, localStart + searchText.length);
+          const span = document.createElement('span');
+          span.className = 'doc-comment-highlight' + (comment.resolved ? ' resolved' : '');
+          span.dataset.commentId = comment.id;
+          span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); showCommentTooltip(comment, span); });
+          span.addEventListener('mouseup', (e) => { e.stopPropagation(); });
+          span.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+          range.surroundContents(span);
+        } catch(e) {}
+        return;
+      }
+      try {
+        const localStart = cIdx - startEntry.start;
+        const range = document.createRange();
+        range.setStart(startEntry.node, localStart);
+        range.setEnd(startEntry.node, startEntry.node.textContent.length);
+        const span = document.createElement('span');
+        span.className = 'doc-comment-highlight' + (comment.resolved ? ' resolved' : '');
+        span.dataset.commentId = comment.id;
+        span.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); showCommentTooltip(comment, span); });
+        span.addEventListener('mouseup', (e) => { e.stopPropagation(); });
+        span.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+        range.surroundContents(span);
+      } catch(e) {}
+    }
+
+    function showCommentTooltip(comment, anchorEl) {
+      removeCommentTooltip();
+      commentTooltip = document.createElement('div');
+      commentTooltip.className = 'doc-comment-tooltip';
+      commentTooltip.innerHTML = `
+        <div class="comment-meta">${new Date(comment.createdAt).toLocaleString()}</div>
+        <div class="comment-text">${escapeHtml(comment.comment)}</div>
+        <textarea class="comment-edit-area" style="display:none;width:100%;min-height:60px;background:#0a0a0a;border:1px solid #333;border-radius:4px;color:#e0e0e0;padding:6px;font-size:12px;font-family:'Outfit',sans-serif;resize:vertical;margin-bottom:8px;">${escapeHtml(comment.comment)}</textarea>
+        <div class="comment-actions">
+          <button class="doc-comment-resolve" data-action="edit" style="background:#1a2a3a;color:#58abf5;">Edit</button>
+          ${comment.resolved
+            ? '<button class="doc-comment-unresolve" data-action="unresolve">Reopen</button>'
+            : '<button class="doc-comment-resolve" data-action="resolve">Resolve</button>'}
+          <button class="doc-comment-delete" data-action="delete">Delete</button>
+        </div>
+        <div class="comment-edit-actions" style="display:none;gap:6px;margin-top:4px;">
+          <button class="doc-comment-delete" data-action="cancel-edit">Cancel</button>
+          <button data-action="save-edit" style="background:#e8913d;color:#000;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'Outfit',sans-serif;">Save</button>
+        </div>
+      `;
+      const topbar = document.getElementById('docs-topbar');
+      const topbarH = topbar ? topbar.offsetHeight : 40;
+      commentTooltip.style.right = '12px';
+      commentTooltip.style.left = 'auto';
+      commentTooltip.style.top = topbarH + 'px';
+      // Edit handler
+      commentTooltip.querySelector('[data-action="edit"]').addEventListener('click', () => {
+        commentTooltip.querySelector('.comment-text').style.display = 'none';
+        commentTooltip.querySelector('.comment-edit-area').style.display = 'block';
+        commentTooltip.querySelector('.comment-actions').style.display = 'none';
+        commentTooltip.querySelector('.comment-edit-actions').style.display = 'flex';
+        commentTooltip.querySelector('.comment-edit-area').focus();
+      });
+      commentTooltip.querySelector('[data-action="cancel-edit"]').addEventListener('click', () => {
+        commentTooltip.querySelector('.comment-text').style.display = 'block';
+        commentTooltip.querySelector('.comment-edit-area').style.display = 'none';
+        commentTooltip.querySelector('.comment-actions').style.display = 'flex';
+        commentTooltip.querySelector('.comment-edit-actions').style.display = 'none';
+      });
+      commentTooltip.querySelector('[data-action="save-edit"]').addEventListener('click', async () => {
+        const newText = commentTooltip.querySelector('.comment-edit-area').value.trim();
+        if (!newText) return;
+        await fetch('/api/doc-comments/' + comment.id, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ comment: newText })
+        });
+        removeCommentTooltip();
+        await loadDocComments();
+        applyCommentHighlights();
+      });
+      // Resolve/unresolve
+      const resolveBtn = commentTooltip.querySelector('[data-action="resolve"], [data-action="unresolve"]');
+      resolveBtn.addEventListener('click', async () => {
+        await fetch('/api/doc-comments/' + comment.id, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resolved: !comment.resolved })
+        });
+        removeCommentTooltip();
+        await loadDocComments();
+        applyCommentHighlights();
+      });
+      // Delete
+      commentTooltip.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+        await fetch('/api/doc-comments/' + comment.id, { method: 'DELETE' });
+        removeCommentTooltip();
+        await loadDocComments();
+        applyCommentHighlights();
+      });
+      const mainContainer = document.getElementById('docs-main');
+      mainContainer.style.position = 'relative';
+      mainContainer.appendChild(commentTooltip);
+      setTimeout(() => {
+        document.addEventListener('click', closeTooltipOnOutsideClick);
+      }, 200);
+    }
+
+    function closeTooltipOnOutsideClick(e) {
+      if (commentTooltip && !commentTooltip.contains(e.target) && !e.target.closest('.doc-comment-highlight')) {
+        removeCommentTooltip();
+      }
+    }
+
+    function removeCommentTooltip() {
+      if (commentTooltip) { commentTooltip.remove(); commentTooltip = null; }
+      document.removeEventListener('click', closeTooltipOnOutsideClick);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function removeCommentBtn() {
+      if (commentBtn) { commentBtn.remove(); commentBtn = null; }
+    }
+
+    function removeCommentPopover() {
+      if (commentPopover) { commentPopover.remove(); commentPopover = null; }
+    }
+
+    // Show comment button on text selection
+    document.getElementById('docs-viewer').addEventListener('mouseup', (e) => {
+      if (isEditing) return;
+      if (e.target.closest('.doc-comment-highlight')) return;
+      if (commentBtn && commentBtn.contains(e.target)) return;
+      removeCommentBtn();
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
+      const viewer = document.getElementById('docs-viewer');
+      if (!viewer.contains(sel.anchorNode) || !viewer.contains(sel.focusNode)) return;
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const viewerRect = viewer.getBoundingClientRect();
+      const selectedText = sel.toString().trim();
+      commentBtn = document.createElement('button');
+      commentBtn.className = 'doc-comment-btn';
+      commentBtn.textContent = 'Comment';
+      commentBtn.addEventListener('mousedown', (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        removeCommentBtn();
+        showCommentPopover(selectedText, rect, viewerRect);
+      });
+      const topbarActions = document.getElementById('docs-topbar-actions');
+      if (topbarActions) topbarActions.prepend(commentBtn);
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      if (commentBtn && !commentBtn.contains(e.target)) removeCommentBtn();
+    });
+
+    function showCommentPopover(selectedText, selRect, viewerRect) {
+      removeCommentPopover();
+      let lineStart = null;
+      if (currentFile && currentFile.content) {
+        const lines = currentFile.content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].includes(selectedText.split('\n')[0])) {
+            lineStart = i + 1;
+            break;
+          }
+        }
+      }
+      commentPopover = document.createElement('div');
+      commentPopover.className = 'doc-comment-popover';
+      const topbar = document.getElementById('docs-topbar');
+      const topbarH = topbar ? topbar.offsetHeight : 40;
+      commentPopover.style.right = '12px';
+      commentPopover.style.left = 'auto';
+      commentPopover.style.top = topbarH + 'px';
+      commentPopover.innerHTML = `
+        <div style="font-size:11px;color:#888;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">"${escapeHtml(selectedText.slice(0, 60))}${selectedText.length > 60 ? '...' : ''}"</div>
+        <textarea placeholder="Add your comment..." autofocus></textarea>
+        <div class="doc-comment-popover-actions">
+          <button class="doc-comment-cancel">Cancel</button>
+          <button class="doc-comment-save">Save</button>
+        </div>
+      `;
+      const textarea = commentPopover.querySelector('textarea');
+      commentPopover.querySelector('.doc-comment-cancel').addEventListener('click', () => removeCommentPopover());
+      commentPopover.querySelector('.doc-comment-save').addEventListener('click', async () => {
+        const commentText = textarea.value.trim();
+        if (!commentText) return;
+        await fetch('/api/doc-comments', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: currentFile.path,
+            selection: selectedText,
+            lineStart: lineStart,
+            lineEnd: lineStart,
+            comment: commentText
+          })
+        });
+        removeCommentPopover();
+        window.getSelection().removeAllRanges();
+        await loadDocComments();
+        applyCommentHighlights();
+      });
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          commentPopover.querySelector('.doc-comment-save').click();
+        }
+        if (e.key === 'Escape') removeCommentPopover();
+      });
+      const mainContainer = document.getElementById('docs-main');
+      mainContainer.style.position = 'relative';
+      mainContainer.appendChild(commentPopover);
+      setTimeout(() => textarea.focus(), 10);
+    }
+
+    // MutationObserver to apply comment highlights when content changes
+    const docsViewerEl = document.getElementById('docs-viewer');
+    let commentObserverPaused = false;
+    const commentObserver = new MutationObserver(() => {
+      if (!currentFile || isEditing || commentObserverPaused) return;
+      clearTimeout(commentObserver._timer);
+      commentObserver._timer = setTimeout(async () => {
+        commentObserverPaused = true;
+        await loadDocComments();
+        applyCommentHighlights();
+        commentObserverPaused = false;
+      }, 150);
+    });
+    commentObserver.observe(docsViewerEl, { childList: true });
+
+    // Load config and set brand name
+    fetch('/config.json').then(r => r.ok ? r.json() : null).then(cfg => {
+      if (cfg && cfg.brandName) {
+        document.getElementById('brand-name').textContent = cfg.brandName;
+        document.title = cfg.brandName;
+      }
+    }).catch(() => {});
+
+    // Initial load
+    loadTree();
+    const homeDoc = localStorage.getItem('docs-home');
+    if (homeDoc) setTimeout(() => openFile(homeDoc), 300);
+
+  })();
+  </script>
+</body>
+</html>

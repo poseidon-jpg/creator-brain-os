@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aurora (canvas example)</title>
+<!-- A 1920x1080 page with no web page elements at all: a WebGL canvas (the moving aurora) with a 2D canvas on top (glass cards and text).
+     It follows the page contract (window.DURATION, window.renderAt(t) returning a promise, window.ready), but it does NOT describe
+     its own elements, so the Element Picker uses Region mode: you drag a rectangle and it cuts that part out of both canvases.
+     The WebGL canvas keeps the default drawing buffer, so the picker must ask for a fresh frame right before it reads the pixels. -->
+<style>
+  @font-face { font-family: 'Inter'; src: url('assets/inter.woff2') format('woff2'); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: 'Outfit'; src: url('assets/outfit.woff2') format('woff2'); font-weight: 100 900; font-display: block; }
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #04051a; }
+  canvas { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+</style>
+</head>
+<body>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<canvas id="fx" width="1920" height="1080"></canvas>
+<script>
+(() => {
+  'use strict';
+  const W = 1920, H = 1080;
+  window.DURATION = 5;
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const sat = (x) => clamp(x, 0, 1);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const eOut = (x) => 1 - Math.pow(1 - sat(x), 3);
+  const eBack = (x) => { x = sat(x); const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+  // ---------------- layer 1: WebGL aurora ----------------
+  const gl = document.getElementById('gl').getContext('webgl');
+  const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+  const FRAG = `precision highp float;
+    uniform vec2 uRes; uniform float uTime;
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+    void main(){
+      vec2 uv = gl_FragCoord.xy / uRes;
+      vec3 col = mix(vec3(0.015, 0.02, 0.10), vec3(0.03, 0.07, 0.20), uv.y);
+      for (int i = 0; i < 3; i++) {
+        float fi = float(i);
+        float y = 0.52 + 0.13 * fi + 0.08 * sin(uv.x * 3.0 + uTime * 0.7 + fi * 2.0) + 0.05 * noise(vec2(uv.x * 5.0 + uTime * 0.3, fi * 7.0));
+        float d = (uv.y - y) * 7.0;
+        float band = exp(-d * d);
+        vec3 c = fi < 0.5 ? vec3(0.1, 0.9, 0.7) : (fi < 1.5 ? vec3(0.4, 0.5, 1.0) : vec3(0.8, 0.4, 1.0));
+        col += c * band * (0.6 - 0.12 * fi);
+      }
+      gl_FragColor = vec4(col, 1.0);
+    }`;
+  let uRes, uTime;
+  function initGL() {
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+    const pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(pr);
+    gl.useProgram(pr);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    uRes = gl.getUniformLocation(pr, 'uRes');
+    uTime = gl.getUniformLocation(pr, 'uTime');
+    gl.viewport(0, 0, W, H);
+  }
+  function drawGL(t) {
+    gl.uniform2f(uRes, W, H);
+    gl.uniform1f(uTime, t);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  // ---------------- layer 2: 2D canvas, glass cards and text ----------------
+  const fx = document.getElementById('fx').getContext('2d');
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+  function card(g, x, y, w, h, a, title, line, value) {
+    if (a <= 0.01) return;
+    g.save();
+    g.globalAlpha = a;
+    const grad = g.createLinearGradient(x, y, x, y + h);
+    grad.addColorStop(0, 'rgba(255,255,255,0.20)');
+    grad.addColorStop(1, 'rgba(255,255,255,0.06)');
+    rr(g, x, y, w, h, 34);
+    g.fillStyle = grad; g.fill();
+    g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,0.35)'; g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.96)'; g.font = '600 40px Inter'; g.fillText(title, x + 40, y + 78);
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.font = '400 26px Inter'; g.fillText(line, x + 40, y + 124);
+    g.fillStyle = 'rgba(255,255,255,0.97)'; g.font = '200 120px Outfit'; g.fillText(value, x + 40, y + h - 50);
+    g.restore();
+  }
+  function draw2D(t) {
+    fx.clearRect(0, 0, W, H);
+    // the headline
+    const a = eOut((t - 0.1) / 0.8);
+    fx.save();
+    fx.globalAlpha = a;
+    fx.font = '200 170px Outfit'; fx.fillStyle = '#ffffff';
+    fx.fillText('Aurora', 160, 250 + (1 - a) * 40);
+    fx.font = '500 34px Inter'; fx.fillStyle = 'rgba(255,255,255,0.7)';
+    fx.fillText('TWO CANVASES, ONE FRAME', 168, 320);
+    fx.restore();
+    // three glass cards
+    const xs = [160, 700, 1240];
+    const data = [['WebGL', 'the moving light', '01'], ['2D canvas', 'cards and text', '02'], ['Region', 'drag to pick', '03']];
+    data.forEach((d, i) => {
+      const k = eBack((t - 1.0 - i * 0.28) / 0.8);
+      card(fx, xs[i], lerp(900, 480, k), 520, 380, sat(k * 1.4), d[0], d[1], d[2]);
+    });
+    // a glowing orb and a ring
+    const o = eOut((t - 2.2) / 0.9);
+    if (o > 0.01) {
+      const cx = 1560, cy = 250, r = 80 * o;
+      const rg = fx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.8);
+      rg.addColorStop(0, 'rgba(255,255,255,0.95)'); rg.addColorStop(0.35, 'rgba(120,225,255,0.65)'); rg.addColorStop(1, 'rgba(120,225,255,0)');
+      fx.fillStyle = rg; fx.beginPath(); fx.arc(cx, cy, r * 1.8, 0, Math.PI * 2); fx.fill();
+      fx.lineWidth = 6; fx.strokeStyle = 'rgba(255,255,255,0.8)';
+      fx.beginPath(); fx.arc(cx, cy, 130 * o, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * sat((t - 2.3) / 2.2)); fx.stroke();
+    }
+    // a label pill
+    const p = eOut((t - 3.4) / 0.6);
+    if (p > 0.01) {
+      fx.save(); fx.globalAlpha = p;
+      rr(fx, 160, 960, 420, 70, 35); fx.fillStyle = 'rgba(255,255,255,0.16)'; fx.fill();
+      fx.fillStyle = '#ffffff'; fx.font = '600 30px Inter'; fx.fillText('CANVAS EXAMPLE', 208, 1006);
+      fx.restore();
+    }
+  }
+
+  function render(t) {
+    t = clamp(+t || 0, 0, window.DURATION);
+    drawGL(t);
+    draw2D(t);
+  }
+  window.ready = (async () => {
+    await Promise.all([document.fonts.load('200 100px Outfit'), document.fonts.load('600 40px Inter'), document.fonts.load('400 26px Inter')]);
+    initGL();
+  })();
+  window.renderAt = (t) => window.ready.then(() => render(t));
+  if (!location.search.includes('capture')) {
+    window.ready.then(() => { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })(); });
+  }
+})();
+</script>
+</body>
+</html>

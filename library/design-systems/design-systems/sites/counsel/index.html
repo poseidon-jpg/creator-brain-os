@@ -1,0 +1,865 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counsel &amp; Code | AI Counsel for the Modern Firm</title>
+<meta name="description" content="Counsel &amp; Code is a legal AI consultancy: contract intelligence, e-discovery AI, research copilots, and AI governance built for privilege, precision, and partner-level scrutiny.">
+<meta property="og:title" content="Counsel &amp; Code | AI Counsel for the Modern Firm">
+<meta property="og:description" content="Contract review automation, e-discovery AI, legal research copilots, and AI governance for firms that cannot afford to be wrong.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23f6f1e7'/%3E%3Cpath d='M32 10v40M18 18h28' stroke='%236d1a2d' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='18' cy='34' r='9' fill='none' stroke='%23b08d3e' stroke-width='3'/%3E%3Ccircle cx='46' cy='34' r='9' fill='none' stroke='%23b08d3e' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --cream:#f6f1e7;
+  --cream-deep:#efe7d7;
+  --paper:#fbf8f1;
+  --ink:#1c1712;
+  --ink-soft:#4a423a;
+  --ink-faint:#7d7266;
+  --oxblood:#6d1a2d;
+  --oxblood-deep:#521221;
+  --gold:#b08d3e;
+  --gold-soft:#d8c194;
+  --serif:'Source Serif 4', Georgia, serif;
+  --sans:'Inter', -apple-system, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+body{
+  font-family:var(--serif);
+  background:var(--cream);
+  color:var(--ink);
+  line-height:1.6;
+  font-size:17px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* subtle paper grain */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0 0.32 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+::selection{background:var(--oxblood);color:var(--cream)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,48px);position:relative;z-index:2}
+
+/* ------- engraved hairline rules ------- */
+.rule{border:0;height:1px;background:var(--gold);box-shadow:0 1px 0 rgba(255,255,255,.7);opacity:.65}
+.rule-orn{display:flex;align-items:center;gap:14px;margin:0 auto;max-width:1180px;padding:0 clamp(20px,4vw,48px)}
+.rule-orn::before,.rule-orn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold));box-shadow:0 1px 0 rgba(255,255,255,.7)}
+.rule-orn::after{background:linear-gradient(90deg,var(--gold),transparent)}
+.rule-orn svg{flex:none;opacity:.8}
+section .rule-orn{padding:0;margin-bottom:clamp(44px,6vw,72px)}
+section[id]{scroll-margin-top:84px}
+
+/* ------- type utilities ------- */
+.eyebrow{
+  font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--oxblood);display:flex;align-items:center;gap:12px;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--gold)}
+h1,h2,h3{font-weight:500;letter-spacing:-.01em}
+.section-head{max-width:640px;margin-bottom:clamp(36px,5vw,64px)}
+.section-head h2{font-size:clamp(30px,4vw,44px);line-height:1.15;margin:16px 0 14px}
+.section-head p{color:var(--ink-soft);font-size:18px}
+section{padding:clamp(64px,9vw,120px) 0}
+
+/* ------- reveal ------- */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none}}
+
+/* ------- header ------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb, var(--cream) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(176,141,62,.35);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:74px;max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+.logo{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+.logo .mark{font-size:21px;font-weight:600;letter-spacing:.02em}
+.logo .amp{color:var(--oxblood);font-style:italic;font-weight:400}
+.logo .est{font-family:var(--sans);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+nav.links{display:flex;gap:30px;font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.04em}
+nav.links a{text-decoration:none;color:var(--ink-soft);position:relative;padding:4px 0}
+nav.links a::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--oxblood);transform:scaleX(0);transform-origin:right;transition:transform .3s ease}
+nav.links a:hover{color:var(--ink)}
+nav.links a:hover::after{transform:scaleX(1);transform-origin:left}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;font-family:var(--sans);font-size:13px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;text-decoration:none;padding:14px 26px;
+  background:var(--oxblood);color:var(--cream);border:1px solid var(--oxblood);
+  transition:background .25s ease,color .25s ease,box-shadow .25s ease,transform .25s ease;cursor:pointer;
+}
+.btn:hover{background:var(--oxblood-deep);box-shadow:0 6px 18px rgba(109,26,45,.28);transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--oxblood);border-color:rgba(109,26,45,.45)}
+.btn.ghost:hover{background:var(--oxblood);color:var(--cream)}
+.btn svg{transition:transform .25s ease}
+.btn:hover svg{transform:translateX(3px)}
+.nav .btn{padding:11px 20px;font-size:12px}
+.logo{white-space:nowrap}
+@media(max-width:860px){nav.links{display:none}}
+@media(max-width:520px){
+  .logo .est{display:none}
+  .logo .mark{font-size:18px}
+  .nav{height:64px}
+  .nav .btn{padding:10px 14px;font-size:11px;letter-spacing:.04em}
+}
+
+/* ------- hero ------- */
+.hero{padding:clamp(56px,8vw,100px) 0 clamp(60px,8vw,110px)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,5vw,72px);align-items:center}
+@media(max-width:960px){.hero-grid{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(38px,5.2vw,62px);line-height:1.08;margin:22px 0 20px}
+.hero h1 em{font-style:italic;color:var(--oxblood)}
+.hero .lede{font-size:clamp(17px,1.5vw,20px);color:var(--ink-soft);max-width:52ch;margin-bottom:34px}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-note{font-family:var(--sans);font-size:12px;color:var(--ink-faint);margin-top:18px}
+
+/* ------- the redline document (signature) ------- */
+.doc-frame{position:relative}
+.doc-frame::before{
+  content:"";position:absolute;inset:14px -14px -14px 14px;
+  background:var(--cream-deep);border:1px solid rgba(176,141,62,.4);z-index:0;
+}
+.doc{
+  position:relative;z-index:1;background:var(--paper);
+  border:1px solid rgba(176,141,62,.5);
+  box-shadow:0 24px 60px -28px rgba(28,23,18,.35);
+  padding:0;
+}
+.doc-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 20px;border-bottom:1px solid rgba(176,141,62,.4);
+  font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);
+}
+.doc-bar .live{display:flex;align-items:center;gap:8px;color:var(--oxblood);font-weight:600}
+.doc-bar .live i{width:7px;height:7px;border-radius:50%;background:var(--oxblood);animation:pulse 1.6s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.doc-body{padding:26px clamp(20px,2.4vw,34px) 24px;font-size:15.5px;line-height:1.95}
+.doc-body h4{font-size:12px;font-family:var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-bottom:14px}
+.doc-body .clause-no{color:var(--gold);font-variant-numeric:tabular-nums}
+.tok{opacity:1}
+.tok.del{color:var(--ink-faint);transition:color .4s ease;text-decoration:line-through;text-decoration-color:transparent;text-decoration-thickness:1.5px;transition:color .4s ease,text-decoration-color .45s ease}
+.tok.del.struck{color:rgba(125,114,102,.6);text-decoration-color:var(--oxblood)}
+.tok.ins{color:var(--oxblood);border-bottom:1.5px solid rgba(109,26,45,.55);font-weight:500}
+.tok.ins:empty{border-bottom:none}
+.caret{
+  display:inline-block;width:2px;height:1.05em;background:var(--oxblood);vertical-align:-0.18em;
+  margin-left:1px;animation:blink 0.9s step-end infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.doc-comments{border-top:1px dashed rgba(176,141,62,.5);padding:16px clamp(20px,2.4vw,34px) 20px;display:grid;gap:10px;min-height:118px}
+.comment{
+  display:flex;gap:10px;align-items:flex-start;font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);
+  opacity:0;transform:translateX(10px);transition:opacity .5s ease,transform .5s ease;
+}
+.comment.on{opacity:1;transform:none}
+.comment .tag{
+  flex:none;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border:1px solid rgba(109,26,45,.4);color:var(--oxblood);margin-top:1px;background:rgba(109,26,45,.05);
+}
+.comment b{color:var(--ink)}
+.doc-footer{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:12px 20px;border-top:1px solid rgba(176,141,62,.4);
+  font-family:var(--sans);font-size:11px;color:var(--ink-faint);
+}
+.doc-footer .stat b{color:var(--oxblood);font-variant-numeric:tabular-nums}
+.replay{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:4px 0;border-bottom:1px solid transparent}
+.replay:hover{color:var(--oxblood);border-bottom-color:var(--oxblood)}
+@media(max-width:960px){.doc-frame::before{inset:10px -10px -10px 10px}}
+
+/* ------- credibility bar ------- */
+.cred{padding:30px 0;border-top:1px solid rgba(176,141,62,.35);border-bottom:1px solid rgba(176,141,62,.35);background:var(--cream-deep)}
+.cred .wrap{display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.cred .label{font-family:var(--sans);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);flex:none}
+.cred ul{display:flex;gap:clamp(22px,4vw,52px);list-style:none;flex-wrap:wrap;align-items:center}
+.cred li{font-family:var(--serif);font-size:16px;font-weight:500;letter-spacing:.02em;color:var(--ink-soft);white-space:nowrap}
+.cred li span{color:var(--gold);font-style:italic;font-weight:400}
+
+/* ------- about ------- */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(36px,5vw,80px);align-items:center}
+@media(max-width:900px){.about-grid{grid-template-columns:1fr}}
+.about-copy p{margin-bottom:18px;color:var(--ink-soft);font-size:18px}
+.about-copy p.dropcap::first-letter{
+  font-size:3.4em;float:left;line-height:.82;padding:6px 12px 0 0;color:var(--oxblood);font-weight:500;
+}
+.about-img{position:relative}
+.about-img img{border:1px solid rgba(176,141,62,.5);filter:sepia(.14) saturate(.92);aspect-ratio:16/11;object-fit:cover;width:100%}
+.about-img::after{
+  content:"";position:absolute;inset:16px;border:1px solid rgba(246,241,231,.5);pointer-events:none;
+}
+.about-img figcaption{
+  position:absolute;left:0;bottom:-14px;background:var(--oxblood);color:var(--cream);
+  font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;padding:9px 16px;
+}
+.about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(176,141,62,.4);border:1px solid rgba(176,141,62,.4);margin-top:34px}
+.about-stats div{background:var(--cream);padding:18px 16px}
+.about-stats b{display:block;font-size:26px;font-weight:600;color:var(--oxblood);font-variant-numeric:tabular-nums}
+.about-stats span{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ------- services ------- */
+#services{background:var(--paper);border-top:1px solid rgba(176,141,62,.35);border-bottom:1px solid rgba(176,141,62,.35)}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(176,141,62,.4);border:1px solid rgba(176,141,62,.4)}
+@media(max-width:820px){.svc-grid{grid-template-columns:1fr}}
+.svc{background:var(--paper);padding:clamp(26px,3vw,42px);position:relative;transition:background .3s ease}
+.svc:hover{background:var(--cream)}
+.svc .no{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--gold)}
+.svc h3{font-size:24px;margin:10px 0 12px}
+.svc h3 a{text-decoration:none}
+.svc p{color:var(--ink-soft);font-size:15.5px;margin-bottom:16px}
+.svc .win{
+  border-left:2px solid var(--oxblood);padding:4px 0 4px 14px;font-style:italic;font-size:15px;
+  color:var(--ink);margin-bottom:16px;
+}
+.svc .tools{font-family:var(--sans);font-size:11px;letter-spacing:.06em;color:var(--ink-faint);text-transform:uppercase}
+.svc .tools b{color:var(--oxblood);font-weight:600}
+.svc::after{
+  content:"";position:absolute;left:0;top:0;width:100%;height:2px;background:var(--oxblood);
+  transform:scaleX(0);transform-origin:left;transition:transform .35s ease;
+}
+.svc:hover::after{transform:scaleX(1)}
+
+/* ------- assurance strip ------- */
+.assure{background:var(--ink);color:var(--cream);padding:clamp(44px,6vw,64px) 0}
+.assure .wrap{display:grid;grid-template-columns:auto 1fr;gap:clamp(28px,5vw,72px);align-items:center}
+@media(max-width:900px){.assure .wrap{grid-template-columns:1fr}}
+.assure h3{font-size:clamp(22px,2.4vw,28px);font-weight:500;max-width:14ch;line-height:1.25}
+.assure h3 em{color:var(--gold-soft);font-style:italic}
+.assure ul{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 36px;list-style:none}
+@media(max-width:640px){.assure ul{grid-template-columns:1fr}}
+.assure li{display:flex;gap:14px;align-items:flex-start;font-size:15px;color:rgba(246,241,231,.82)}
+.assure li svg{flex:none;margin-top:3px}
+.assure li b{display:block;font-family:var(--sans);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:3px;font-weight:600}
+
+/* ------- process ------- */
+.proc{counter-reset:step;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,2.5vw,36px)}
+@media(max-width:960px){.proc{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.proc{grid-template-columns:1fr}}
+.step{position:relative;padding-top:22px}
+.step::before{
+  counter-increment:step;content:counter(step,upper-roman);
+  font-family:var(--serif);font-style:italic;font-size:15px;color:var(--gold);
+  position:absolute;top:0;left:0;
+}
+.step::after{content:"";position:absolute;top:8px;left:44px;right:0;height:1px;background:linear-gradient(90deg,rgba(176,141,62,.6),transparent)}
+.step h3{font-size:20px;margin-bottom:10px}
+.step p{font-size:15px;color:var(--ink-soft)}
+
+/* ------- case studies ------- */
+#results{background:var(--paper);border-top:1px solid rgba(176,141,62,.35);border-bottom:1px solid rgba(176,141,62,.35)}
+.cases{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(32px,4vw,64px);align-items:start}
+@media(max-width:960px){.cases{grid-template-columns:1fr}}
+.case-img{position:sticky;top:110px}
+@media(max-width:960px){.case-img{position:static;max-width:480px}}
+.case-img img{border:1px solid rgba(176,141,62,.5);aspect-ratio:4/5;object-fit:cover;filter:sepia(.1)}
+.case-img figcaption{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-top:12px}
+.case{padding:clamp(24px,3vw,36px) 0;border-bottom:1px solid rgba(176,141,62,.4)}
+.case:first-child{padding-top:0}
+.case:last-child{border-bottom:0;padding-bottom:0}
+.case .client{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--oxblood)}
+.case h3{font-size:23px;margin:10px 0 12px}
+.case>p{color:var(--ink-soft);font-size:15.5px;margin-bottom:20px;max-width:56ch}
+.case>p::first-letter{font-size:2.6em;float:left;line-height:.85;padding:4px 10px 0 0;color:var(--oxblood);font-weight:500}
+.metrics{display:flex;gap:clamp(20px,3vw,44px);flex-wrap:wrap}
+.metric b{display:block;font-size:clamp(26px,2.6vw,34px);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+.metric b sup{font-size:.5em;color:var(--oxblood)}
+.metric span{font-family:var(--sans);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ------- credentials bar ------- */
+.creds{padding:34px 0;border-bottom:1px solid rgba(176,141,62,.35)}
+.creds .wrap{display:flex;justify-content:center;gap:clamp(22px,4vw,56px);flex-wrap:wrap;font-family:var(--sans);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+.creds span{display:flex;align-items:center;gap:9px}
+.creds svg{flex:none}
+
+/* ------- FAQ ------- */
+.faq{max-width:760px}
+details{border-bottom:1px solid rgba(176,141,62,.4)}
+details summary{
+  cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:22px 0;font-size:19px;font-weight:500;
+}
+details summary::-webkit-details-marker{display:none}
+details summary{transition:color .25s ease}
+details summary:hover{color:var(--oxblood)}
+:focus-visible{outline:2px solid var(--oxblood);outline-offset:3px}
+details summary .ico{flex:none;width:26px;height:26px;border:1px solid rgba(176,141,62,.6);display:grid;place-items:center;color:var(--oxblood);font-family:var(--sans);font-size:15px;transition:transform .3s ease,background .3s ease,color .3s ease}
+details[open] summary .ico{transform:rotate(45deg);background:var(--oxblood);color:var(--cream);border-color:var(--oxblood)}
+details .ans{padding:0 40px 24px 0;color:var(--ink-soft);font-size:16px}
+details .ans p+p{margin-top:10px}
+
+/* ------- CTA ------- */
+.cta{background:var(--oxblood);color:var(--cream);text-align:center;position:relative;overflow:hidden}
+.cta::before{
+  content:"§";position:absolute;font-size:clamp(300px,40vw,560px);line-height:1;color:rgba(246,241,231,.05);
+  left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--serif);pointer-events:none;
+}
+.cta .wrap{position:relative}
+.cta .eyebrow{color:var(--gold-soft);justify-content:center}
+.cta .eyebrow::before{background:var(--gold-soft)}
+.cta h2{font-size:clamp(32px,4.4vw,52px);margin:18px auto 16px;max-width:18ch;line-height:1.12}
+.cta p{color:rgba(246,241,231,.78);max-width:52ch;margin:0 auto 34px;font-size:18px}
+.cta .btn{background:var(--cream);color:var(--oxblood);border-color:var(--cream)}
+.cta .btn:hover{background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cta .sub{font-family:var(--sans);font-size:12px;color:rgba(246,241,231,.6);margin-top:18px}
+
+/* ------- footer ------- */
+footer{background:var(--ink);color:rgba(246,241,231,.7);padding:clamp(48px,6vw,72px) 0 36px;font-size:14px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:clamp(28px,4vw,56px);margin-bottom:44px}
+@media(max-width:860px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.foot-grid{grid-template-columns:1fr}}
+footer .logo .mark{color:var(--cream)}
+footer .logo .est{color:rgba(246,241,231,.5)}
+footer h4{font-family:var(--sans);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:16px;font-weight:600}
+footer ul{list-style:none;display:grid;gap:10px}
+footer a{text-decoration:none;color:rgba(246,241,231,.7);transition:color .2s}
+footer a:hover{color:var(--cream)}
+.foot-note{font-size:13px;color:rgba(246,241,231,.5);max-width:36ch;margin-top:16px;line-height:1.6}
+.foot-bottom{border-top:1px solid rgba(246,241,231,.14);padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--sans);font-size:12px;color:rgba(246,241,231,.45)}
+.foot-bottom a{color:rgba(246,241,231,.6)}
+</style>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="nav">
+    <a class="logo" href="#top" aria-label="Counsel and Code home">
+      <span class="mark">Counsel <span class="amp">&amp;</span> Code</span>
+      <span class="est">MMXXII</span>
+    </a>
+    <nav class="links" aria-label="Primary">
+      <a href="#practice">Practice</a>
+      <a href="#services">Services</a>
+      <a href="#process">Engagement</a>
+      <a href="#results">Results</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn" href="#consult">Book a Consultation</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Legal AI Consultancy</p>
+      <h1>AI counsel for firms that <em>cannot afford</em> to be wrong.</h1>
+      <p class="lede">Counsel &amp; Code designs, deploys, and governs artificial intelligence for law firms and in-house teams. Contract review that never sleeps, discovery that finds the needle, and research copilots your partners will actually trust.</p>
+      <div class="hero-ctas">
+        <a class="btn" href="#consult">Book a Privileged Consultation
+          <svg width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true"><path d="M1 6h11M8 1.5 12.5 6 8 10.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        </a>
+        <a class="btn ghost" href="#services">Our Practice Areas</a>
+      </div>
+      <p class="hero-note">Engagements begin under NDA. Kaplan protocol available on request.</p>
+    </div>
+
+    <!-- signature: live document redline -->
+    <div class="doc-frame rv" aria-label="Animated demonstration of AI contract redlining">
+      <div class="doc">
+        <div class="doc-bar">
+          <span>Master Services Agreement, cl. 8.2</span>
+          <span class="live"><i></i> Live review</span>
+        </div>
+        <div class="doc-body">
+          <h4>Article VIII, Data &amp; Liability</h4>
+          <p id="redline"><span class="clause-no">8.2</span>&nbsp;</p>
+        </div>
+        <div class="doc-comments" id="comments" aria-live="polite">
+          <div class="comment" data-at="1"><span class="tag">Flag</span><span><b>Unbounded data use.</b> Vendor may train models on client data. Privilege and confidentiality exposure.</span></div>
+          <div class="comment" data-at="2"><span class="tag">Flag</span><span><b>Unlimited liability, wrong direction.</b> Cap absent for vendor, present for client. Redraft to mutual cap.</span></div>
+          <div class="comment" data-at="3"><span class="tag">Done</span><span><b>Two clauses redrafted</b> against your playbook. Confidence 0.97. Sent to partner for sign-off.</span></div>
+        </div>
+        <div class="doc-footer">
+          <span class="stat">Review time: <b id="clock">0.0s</b></span>
+          <span class="stat">Risks flagged: <b id="riskcount">0</b></span>
+          <button class="replay" id="replay" type="button">Replay review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CREDIBILITY BAR ============ -->
+<div class="cred rv">
+  <div class="wrap">
+    <span class="label">Trusted by counsel at</span>
+    <ul>
+      <li>Whitmore <span>&amp;</span> Hale</li>
+      <li>Ardent Grove LLP</li>
+      <li>Meridian Chambers</li>
+      <li>Castellan Legal</li>
+      <li>The Farrow Group</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ ABOUT / PRACTICE ============ -->
+<section id="practice">
+  <div class="wrap about-grid">
+    <div class="about-copy rv">
+      <p class="eyebrow">The Practice</p>
+      <h2 style="font-size:clamp(28px,3.6vw,40px);margin:16px 0 22px;line-height:1.18">Built by lawyers who learned to ship, and engineers who learned the law.</h2>
+      <p class="dropcap">Most AI vendors treat a law firm like any other enterprise account. We do not. Privilege, discoverability, conflicts, and professional liability change everything about how these systems must be designed, and we have spent four years designing for exactly that.</p>
+      <p>Our team pairs former practitioners from top-fifty firms with machine learning engineers who have deployed models inside regulated environments. Every engagement is scoped like a matter: defined issues, a documented standard of care, and a partner who signs their name to the result.</p>
+      <div class="about-stats">
+        <div><b>2.4M</b><span>Documents reviewed by our systems</span></div>
+        <div><b>38</b><span>Firms and legal teams served</span></div>
+        <div><b>0</b><span>Privilege incidents. Ever.</span></div>
+      </div>
+    </div>
+    <figure class="about-img rv">
+      <img src="../../assets/counsel-1.jpg" alt="A traditional law library with tall wooden shelves and warm reading lamps" loading="lazy">
+      <figcaption>Precedent, meet inference.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">Practice Areas</p>
+      <h2>Four disciplines. One standard of care.</h2>
+      <p>Each service is delivered as a scoped engagement with defined deliverables, validation benchmarks, and documentation fit for your risk committee.</p>
+    </div>
+    <div class="svc-grid">
+      <article class="svc rv">
+        <span class="no">i.</span>
+        <h3>Contract Intelligence</h3>
+        <p>Automated first-pass review against your negotiation playbook. Risky clauses flagged, fallback language proposed as tracked changes, and every suggestion cited to your own precedent bank.</p>
+        <p class="win">The win: first-pass review drops from hours to minutes, and associates start at 80% done.</p>
+        <p class="tools"><b>Built on</b> Claude, custom clause classifiers, your DMS (iManage / NetDocuments)</p>
+      </article>
+      <article class="svc rv">
+        <span class="no">ii.</span>
+        <h3>E-Discovery AI</h3>
+        <p>Technology-assisted review with modern language models layered over your existing platform. Defensible workflows, privilege screens, and statistically validated recall reporting for the meet-and-confer.</p>
+        <p class="win">The win: review populations cut by two-thirds before a human opens a single document.</p>
+        <p class="tools"><b>Built on</b> Relativity, custom TAR 3.0 models, validation notebooks</p>
+      </article>
+      <article class="svc rv">
+        <span class="no">iii.</span>
+        <h3>Research Copilots</h3>
+        <p>Firm-private assistants grounded in your matter files, briefs, and internal know-how. Every answer carries pin citations to source documents, and hallucination checks run before the lawyer sees a word.</p>
+        <p class="win">The win: institutional knowledge stops walking out the door when senior associates do.</p>
+        <p class="tools"><b>Built on</b> retrieval pipelines over your knowledge base, citation verifiers, SSO</p>
+      </article>
+      <article class="svc rv">
+        <span class="no">iv.</span>
+        <h3>AI Policy &amp; Governance</h3>
+        <p>Firm-wide AI use policies, vendor due-diligence frameworks, and model risk registers, drafted to satisfy clients' outside counsel guidelines and your professional indemnity insurers.</p>
+        <p class="win">The win: you answer client AI questionnaires in a day, not a quarter.</p>
+        <p class="tools"><b>Built on</b> ISO 42001 alignment, ABA Formal Opinion 512 guidance, bespoke training</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ASSURANCE STRIP ============ -->
+<section class="assure" aria-label="Confidentiality and security assurances">
+  <div class="wrap">
+    <h3 class="rv">Confidentiality is <em>the</em> product.</h3>
+    <ul>
+      <li class="rv">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1.5 15 4v4.5c0 3.6-2.4 6.6-6 8-3.6-1.4-6-4.4-6-8V4l6-2.5Z" stroke="#d8c194" stroke-width="1.3"/><path d="m6.2 9 2 2 3.6-4" stroke="#d8c194" stroke-width="1.3"/></svg>
+        <span><b>Privilege-aware by design</b>Systems trained to recognise and quarantine privileged material before any model call.</span>
+      </li>
+      <li class="rv">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="7" width="14" height="9" rx="1" stroke="#d8c194" stroke-width="1.3"/><path d="M5.5 7V5a3.5 3.5 0 0 1 7 0v2" stroke="#d8c194" stroke-width="1.3"/></svg>
+        <span><b>On-prem &amp; private cloud</b>Deploy inside your perimeter or a dedicated tenancy. Zero data retention with model providers.</span>
+      </li>
+      <li class="rv">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="#d8c194" stroke-width="1.3"/><path d="m5.8 9.2 2.1 2.1 4.3-4.6" stroke="#d8c194" stroke-width="1.3"/></svg>
+        <span><b>SOC 2 Type II</b>Audited controls, annual penetration testing, and encryption at rest and in transit as table stakes.</span>
+      </li>
+      <li class="rv">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 15V7.5L9 3l6 4.5V15" stroke="#d8c194" stroke-width="1.3"/><path d="M7 15v-4h4v4" stroke="#d8c194" stroke-width="1.3"/></svg>
+        <span><b>Conflicts-clean engagement</b>Matter-level isolation, ethical walls honoured in software, full audit trail for every query.</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process">
+  <div class="wrap">
+    <div class="rule-orn rv" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 3v20M6 7h14" stroke="#b08d3e" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="13.5" r="4" stroke="#b08d3e" stroke-width="1.2"/><circle cx="20" cy="13.5" r="4" stroke="#b08d3e" stroke-width="1.2"/></svg></div>
+    <div class="section-head rv">
+      <p class="eyebrow">The Engagement</p>
+      <h2>Scoped like a matter, delivered like a product.</h2>
+      <p>Four stages, each with a defined deliverable. You can stop after any of them and keep everything we have produced.</p>
+    </div>
+    <div class="proc">
+      <div class="step rv">
+        <h3>Privileged Audit</h3>
+        <p>Two weeks inside your workflows under NDA. We map where hours go, where risk lives, and rank the opportunities by defensibility and return.</p>
+      </div>
+      <div class="step rv">
+        <h3>Pilot Matter</h3>
+        <p>One live matter, one system, side by side with your existing process. Benchmarked against associate output, precision and recall documented.</p>
+      </div>
+      <div class="step rv">
+        <h3>Deployment</h3>
+        <p>Integration with your DMS and review platform, security review with your IT and insurers, and training for partners, associates, and staff.</p>
+      </div>
+      <div class="step rv">
+        <h3>Standing Counsel</h3>
+        <p>Quarterly model validation, policy updates as regulation moves, and a named engineer who knows your stack on retainer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CASE STUDIES ============ -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">Matters of Record</p>
+      <h2>Results our clients put their names to.</h2>
+      <p>Names anonymised where required by engagement letters. Every figure below survived a partner's review.</p>
+    </div>
+    <div class="cases">
+      <figure class="case-img rv">
+        <img src="../../assets/counsel-2.jpg" alt="Close-up of a printed contract page with red annotation marks" loading="lazy">
+        <figcaption>Exhibit A. First-pass review, machine draft, partner sign-off.</figcaption>
+      </figure>
+      <div>
+        <article class="case rv">
+          <p class="client">Ardent Grove LLP, 240 lawyers</p>
+          <h3>Commercial contracts desk, rebuilt around review automation</h3>
+          <p>Ardent Grove's commercial team was losing fixed-fee work to pricing pressure. We deployed contract intelligence tuned to their playbook across NDAs, MSAs, and supply agreements, with every machine suggestion routed through associate sign-off.</p>
+          <div class="metrics">
+            <div class="metric"><b>71<sup>%</sup></b><span>First-pass review hours cut</span></div>
+            <div class="metric"><b>$1.9M</b><span>Annual margin recovered on fixed fees</span></div>
+            <div class="metric"><b>11 days</b><span>Faster average deal cycle</span></div>
+          </div>
+        </article>
+        <article class="case rv">
+          <p class="client">Confidential, AmLaw 100 firm</p>
+          <h3>Second-request discovery, 3.1 million documents</h3>
+          <p>Facing an HSR second request with an eight-week clock, the firm engaged us to layer model-driven review over Relativity. Our validated workflow cut the human review population to a fraction while exceeding the agreed recall threshold.</p>
+          <div class="metrics">
+            <div class="metric"><b>94.6<sup>%</sup></b><span>Validated recall rate</span></div>
+            <div class="metric"><b>68<sup>%</sup></b><span>Fewer documents to human review</span></div>
+            <div class="metric"><b>19,400</b><span>Review hours avoided</span></div>
+          </div>
+        </article>
+        <article class="case rv">
+          <p class="client">Castellan Legal, in-house team of 14</p>
+          <h3>A research copilot grounded in 12 years of matter history</h3>
+          <p>Castellan's legal team answered the same questions from the business over and over. We built a firm-private copilot over their matter files and advice archive, with pin citations on every answer and a hallucination gate before delivery.</p>
+          <div class="metrics">
+            <div class="metric"><b>83<sup>%</sup></b><span>Routine queries self-served</span></div>
+            <div class="metric"><b>6.2 hrs</b><span>Saved per lawyer, per week</span></div>
+            <div class="metric"><b>100<sup>%</sup></b><span>Answers with verifiable citations</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CREDENTIALS BAR ============ -->
+<div class="creds rv" aria-label="Credentials">
+  <div class="wrap">
+    <span><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1.5 15 4v4.5c0 3.6-2.4 6.6-6 8-3.6-1.4-6-4.4-6-8V4l6-2.5Z" stroke="#6d1a2d" stroke-width="1.3"/></svg>SOC 2 Type II Audited</span>
+    <span><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="#6d1a2d" stroke-width="1.3"/><path d="M9 4.5V9l3 2" stroke="#6d1a2d" stroke-width="1.3"/></svg>ISO 42001 Aligned</span>
+    <span><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 15h12M4.5 15V8m3 7V8m3 7V8m3 7V8M2.5 5.5 9 2.5l6.5 3v1h-13v-1Z" stroke="#6d1a2d" stroke-width="1.2"/></svg>Former AmLaw 50 practitioners</span>
+    <span><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="13" height="11" rx="1" stroke="#6d1a2d" stroke-width="1.3"/><path d="M5.5 7h7m-7 3h4.5" stroke="#6d1a2d" stroke-width="1.3"/></svg>ABA Op. 512 compliant workflows</span>
+    <span><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="7" width="14" height="9" rx="1" stroke="#6d1a2d" stroke-width="1.3"/><path d="M5.5 7V5a3.5 3.5 0 0 1 7 0v2" stroke="#6d1a2d" stroke-width="1.3"/></svg>Zero-retention model contracts</span>
+  </div>
+</div>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="rule-orn rv" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 3v20M6 7h14" stroke="#b08d3e" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="13.5" r="4" stroke="#b08d3e" stroke-width="1.2"/><circle cx="20" cy="13.5" r="4" stroke="#b08d3e" stroke-width="1.2"/></svg></div>
+    <div class="section-head rv">
+      <p class="eyebrow">Questions of First Impression</p>
+      <h2>What managing partners ask us.</h2>
+    </div>
+    <div class="faq rv">
+      <details>
+        <summary>Does client data ever touch a public model?<span class="ico">+</span></summary>
+        <div class="ans"><p>No. Engagements run either fully on-premises or in a dedicated private tenancy with zero-retention agreements executed with every model provider. Nothing your firm processes is used to train anyone's models, ours included, and we will put that in the engagement letter.</p></div>
+      </details>
+      <details>
+        <summary>How do you handle privilege?<span class="ico">+</span></summary>
+        <div class="ans"><p>Privilege screens run before any document reaches a model: pattern detection, custodian rules, and your privilege log conventions. Flagged material is quarantined for human review. In four years and 2.4 million documents, we have had zero privilege incidents.</p></div>
+      </details>
+      <details>
+        <summary>Will this survive a defensibility challenge in discovery?<span class="ico">+</span></summary>
+        <div class="ans"><p>Our TAR workflows follow established case law on technology-assisted review, and every project ships with statistically validated recall reporting, seed-set documentation, and an expert declaration template. We have supported meet-and-confers and have yet to have a protocol rejected.</p></div>
+      </details>
+      <details>
+        <summary>What does an engagement cost?<span class="ico">+</span></summary>
+        <div class="ans"><p>The Privileged Audit is a fixed fee. Pilots and deployments are scoped per matter and typically land between the cost of one and three associate-years, with documented returns several multiples of that in year one. We will give you the number before you commit to anything.</p></div>
+      </details>
+      <details>
+        <summary>Our insurers and clients have AI restrictions. Can you work within them?<span class="ico">+</span></summary>
+        <div class="ans"><p>Yes, that is half our governance practice. We map every deployment against your professional indemnity terms and your clients' outside counsel guidelines, and we draft the disclosures and questionnaire responses for you.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta" id="consult">
+  <div class="wrap rv">
+    <p class="eyebrow">Retain Us</p>
+    <h2>Book a privileged consultation.</h2>
+    <p>Forty-five minutes with a partner and an engineer, under NDA from the first word. Bring your worst workflow. We will tell you honestly whether AI belongs in it.</p>
+    <a class="btn" href="mailto:chambers@counselandcode.com?subject=Privileged%20Consultation%20Request">Request the Consultation
+      <svg width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true"><path d="M1 6h11M8 1.5 12.5 6 8 10.5" stroke="currentColor" stroke-width="1.5"/></svg>
+    </a>
+    <p class="sub">Conflicts check completed before the call. No obligation, no pitch deck.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" href="#top"><span class="mark">Counsel <span class="amp">&amp;</span> Code</span><span class="est">MMXXII</span></a>
+        <p class="foot-note">A legal AI consultancy. Contract intelligence, e-discovery AI, research copilots, and AI governance for firms and in-house teams.</p>
+      </div>
+      <div>
+        <h4>Practice</h4>
+        <ul>
+          <li><a href="#services">Contract Intelligence</a></li>
+          <li><a href="#services">E-Discovery AI</a></li>
+          <li><a href="#services">Research Copilots</a></li>
+          <li><a href="#services">AI Governance</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Firm</h4>
+        <ul>
+          <li><a href="#practice">About the Practice</a></li>
+          <li><a href="#process">Engagement Model</a></li>
+          <li><a href="#results">Matters of Record</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Chambers</h4>
+        <ul>
+          <li><a href="mailto:chambers@counselandcode.com">chambers@counselandcode.com</a></li>
+          <li>1 Exchequer Court, Suite 900</li>
+          <li>New York, NY 10005</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Counsel &amp; Code Advisory LLC. Attorney advertising. Prior results do not guarantee a similar outcome.</span>
+      <span><a href="../../index.html">Part of the RoboNuggets Design Systems</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- scroll reveals ---------- */
+  var rvs = document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); }
+      });
+    },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    rvs.forEach(function(el){ io.observe(el); });
+  } else {
+    rvs.forEach(function(el){ el.classList.add('on'); });
+  }
+
+  /* ---------- signature: live redline ---------- */
+  // Token script: t = plain text, d = deletion (struck), i = insertion (typed), c = fire comment N, p = pause ms
+  var script = [
+    {t:'The Vendor may collect and process Client Data '},
+    {d:'for any purpose, including the training and improvement of its machine learning models, without notice to the Client'},
+    {c:1},
+    {i:'solely as necessary to provide the Services, and for no other purpose'},
+    {t:'. Client Data shall remain the exclusive property of the Client. '},
+    {t:'The liability of the Client under this Agreement '},
+    {d:'shall be unlimited'},
+    {c:2},
+    {i:'and of the Vendor shall each be capped at the fees paid in the twelve (12) months preceding the claim'},
+    {t:', save for breaches of confidentiality, which remain uncapped.'},
+    {p:500},{c:3}
+  ];
+
+  var line = document.getElementById('redline');
+  var clock = document.getElementById('clock');
+  var riskEl = document.getElementById('riskcount');
+  var comments = document.querySelectorAll('.comment');
+  var replayBtn = document.getElementById('replay');
+  var caret = document.createElement('span');
+  caret.className = 'caret';
+  var startTs = 0, risks = 0, timers = [], running = false;
+  var clockTimer = null;
+
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; if(clockTimer) clearInterval(clockTimer); }
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+
+  function resetDoc(){
+    clearTimers();
+    // keep the leading clause number, wipe the rest
+    line.innerHTML = '<span class="clause-no">8.2</span>&nbsp;';
+    comments.forEach(function(c){ c.classList.remove('on'); });
+    risks = 0; riskEl.textContent = '0'; clock.textContent = '0.0s';
+  }
+
+  function finalState(){
+    resetDoc();
+    script.forEach(function(step){
+      if(step.t !== undefined){ line.appendChild(spanFor('tok', step.t)); }
+      if(step.d !== undefined){ var d = spanFor('tok del struck', step.d + ' '); line.appendChild(d); }
+      if(step.i !== undefined){ line.appendChild(spanFor('tok ins', step.i)); }
+      if(step.c !== undefined){ fireComment(step.c); }
+    });
+    risks = 2; riskEl.textContent = '2'; clock.textContent = '4.2s';
+  }
+
+  function spanFor(cls, text){
+    var s = document.createElement('span');
+    s.className = cls; s.textContent = text || '';
+    return s;
+  }
+
+  function fireComment(n){
+    var c = document.querySelector('.comment[data-at="'+n+'"]');
+    if(c) c.classList.add('on');
+    if(n <= 2){ risks = Math.max(risks, n); riskEl.textContent = String(risks); }
+  }
+
+  function typeInto(el, text, speed, done){
+    var i = 0;
+    el.appendChild(caret);
+    (function tick(){
+      if(i < text.length){
+        var chunk = text.slice(i, i + 2);
+        i += 2;
+        caret.before(document.createTextNode(chunk));
+        later(tick, speed);
+      } else {
+        done && done();
+      }
+    })();
+  }
+
+  function play(){
+    if(reduced){ finalState(); return; }
+    resetDoc();
+    running = true;
+    startTs = performance.now();
+    clockTimer = setInterval(function(){
+      clock.textContent = ((performance.now() - startTs) / 1000).toFixed(1) + 's';
+    }, 100);
+
+    var idx = 0;
+    function next(){
+      if(idx >= script.length){
+        running = false;
+        if(clockTimer) clearInterval(clockTimer);
+        caret.remove();
+        return;
+      }
+      var step = script[idx++];
+      if(step.t !== undefined){
+        var t = spanFor('tok', '');
+        line.appendChild(t);
+        typeInto(t, step.t, 14, next);
+      } else if(step.d !== undefined){
+        var d = spanFor('tok del', '');
+        line.appendChild(d);
+        typeInto(d, step.d + ' ', 8, function(){
+          later(function(){
+            d.classList.add('struck');
+            later(next, 550);
+          }, 250);
+        });
+      } else if(step.i !== undefined){
+        var ins = spanFor('tok ins', '');
+        line.appendChild(ins);
+        later(function(){ typeInto(ins, step.i, 26, next); }, 200);
+      } else if(step.c !== undefined){
+        fireComment(step.c); next();
+      } else if(step.p !== undefined){
+        later(next, step.p);
+      }
+    }
+    next();
+  }
+
+  replayBtn.addEventListener('click', function(){ play(); });
+
+  /* ---------- count-up stats ---------- */
+  function animateNumber(el){
+    // find the first text node containing a digit
+    var node = null;
+    for(var i = 0; i < el.childNodes.length; i++){
+      var n = el.childNodes[i];
+      if(n.nodeType === 3 && /\d/.test(n.nodeValue)){ node = n; break; }
+    }
+    if(!node) return;
+    var raw = node.nodeValue;
+    var m = raw.match(/([^0-9]*)([0-9][0-9,]*\.?[0-9]*)(.*)/);
+    if(!m) return;
+    var prefix = m[1], numStr = m[2], suffix = m[3];
+    var target = parseFloat(numStr.replace(/,/g, ''));
+    var decimals = (numStr.split('.')[1] || '').length;
+    var hasComma = numStr.indexOf(',') > -1;
+    var t0 = null, dur = 1400;
+    function fmt(v){
+      var s = v.toFixed(decimals);
+      if(hasComma) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return s;
+    }
+    function frame(ts){
+      if(!t0) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      node.nodeValue = prefix + fmt(target * eased) + suffix;
+      if(p < 1) requestAnimationFrame(frame);
+      else node.nodeValue = raw;
+    }
+    requestAnimationFrame(frame);
+  }
+  var nums = document.querySelectorAll('.metric b, .about-stats b');
+  if('IntersectionObserver' in window && !reduced){
+    var nio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ animateNumber(e.target); nio.unobserve(e.target); }
+      });
+    },{threshold:.6});
+    nums.forEach(function(el){ nio.observe(el); });
+  }
+
+  // start when the doc scrolls into view (or immediately if visible)
+  var docEl = document.querySelector('.doc-frame');
+  if('IntersectionObserver' in window){
+    var started = false;
+    var dio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting && !started){ started = true; later(play, 600); dio.unobserve(e.target); }
+      });
+    },{threshold:.3});
+    dio.observe(docEl);
+  } else {
+    later(play, 600);
+  }
+})();
+</script>

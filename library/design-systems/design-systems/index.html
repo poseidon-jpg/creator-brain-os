@@ -1,0 +1,282 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoboNuggets Design Systems</title>
+<meta name="description" content="35 complete, fundamentally different websites - made exclusively for RoboNuggets members by Jay. Every tile opens a live site.">
+<meta property="og:title" content="RoboNuggets Design Systems">
+<meta property="og:description" content="35 complete, fundamentally different websites - made exclusively for RoboNuggets members by Jay.">
+<meta name="theme-color" content="#131311">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M38 18 L58 24 L62 42 L48 60 L24 56 L18 34 Z' fill='%23ff6b1a'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root,html[data-theme="dark"]{--paper:#131311;--card:#24221c;--ink:#ece6d6;--muted:#8f8975;--orange:#ff6b1a;
+  --line:rgba(236,230,214,.14);--shadow:#000;--tile-border:#24221c;--dot:rgba(236,230,214,.16);--dot-hi:#ff6b1a;color-scheme:dark;}
+html[data-theme="light"]{--paper:#f1eee6;--card:#faf8f2;--ink:#1c1a16;--muted:#6f6a5c;--orange:#e85d10;
+  --line:rgba(28,26,22,.14);--shadow:rgba(28,26,22,.9);--tile-border:#1c1a16;--dot:rgba(28,26,22,.14);--dot-hi:#e85d10;color-scheme:light;}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.55 'Outfit',system-ui,sans-serif;
+  transition:background .3s,color .3s;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::selection{background:#ff6b1a;color:#fff}
+#dots{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:clamp(34px,6vw,72px) clamp(20px,4vw,44px) 100px}
+.kicker{font-weight:500;letter-spacing:6px;text-transform:uppercase;font-size:12px;color:var(--muted)}
+h1{font-weight:600;letter-spacing:-1.8px;font-size:clamp(40px,7vw,84px);line-height:.98;margin:12px 0 18px}
+h1 .doto{font-family:'Doto',monospace;font-weight:900;color:var(--orange)}
+.lead{font-size:clamp(16px,1.5vw,19px);color:var(--muted);max-width:62ch}
+.lead b{color:var(--ink);font-weight:500}
+.hero-meta{display:flex;gap:34px;flex-wrap:wrap;margin-top:26px;font-family:'Doto',monospace}
+.hero-meta div{display:flex;flex-direction:column;gap:2px}
+.hero-meta .n{font-weight:900;font-size:30px;color:var(--orange);line-height:1}
+.hero-meta .l{font-family:'Outfit';font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:40px 0 12px}
+#q{flex:1 1 240px;max-width:340px;border:2px solid var(--tile-border);background:var(--card);color:var(--ink);
+  padding:11px 15px;font:inherit;font-size:15px;border-radius:8px;box-shadow:4px 4px 0 rgba(255,107,26,0);
+  transition:box-shadow .3s ease,border-color .3s ease}
+#q:focus{outline:none;box-shadow:4px 4px 0 rgba(255,107,26,1);border-color:var(--orange)}
+#themeToggle{margin-left:auto;border:2px solid var(--tile-border);background:var(--card);color:var(--ink);width:42px;height:42px;
+  font-size:18px;cursor:pointer;border-radius:8px;box-shadow:0 0 0 rgba(0,0,0,0);transition:transform .15s ease,box-shadow .15s ease;line-height:1}
+#themeToggle:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--shadow)}
+#themeToggle:active{transform:translate(1px,1px);box-shadow:0 0 0 rgba(0,0,0,0);transition-duration:.06s}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chip{border:1.5px solid var(--tile-border);background:var(--card);color:var(--ink);padding:7px 14px;font:600 13px 'Outfit';
+  cursor:pointer;border-radius:8px;transition:.12s}
+.chip.on{background:var(--ink);color:var(--paper)}
+.chip .c{font-family:'Doto';font-weight:900;color:var(--orange);margin-left:6px}
+.count{font-size:13px;color:var(--muted);margin:8px 2px 22px}
+.count b{font-family:'Doto';font-weight:900;color:var(--orange);font-size:15px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:20px}
+.tile{display:flex;flex-direction:column;border:2px solid var(--tile-border);background:var(--card);border-radius:8px;
+  box-shadow:6px 6px 0 var(--shadow);transition:transform .18s ease,box-shadow .18s ease;overflow:hidden}
+.tile:hover{transform:translate(-2px,-4px);box-shadow:9px 9px 0 var(--shadow)}
+.tile:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.shot{aspect-ratio:16/10;border-bottom:2px solid var(--ink);overflow:hidden;position:relative;background:var(--paper)}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;transition:transform .35s ease}
+.tile:hover .shot img{transform:scale(1.05)}
+.shot .ph{position:absolute;inset:0;display:grid;place-items:center;font-family:'Doto';font-weight:900;font-size:26px;color:var(--orange);
+  background:repeating-linear-gradient(135deg,transparent 0 9px,var(--dot) 9px 10px)}
+.shot .idx{position:absolute;top:8px;left:8px;font-family:'Doto';font-weight:900;font-size:12px;color:var(--paper);
+  background:var(--ink);padding:3px 7px;z-index:2}
+.tile .body{padding:13px 15px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+.tile .name{font-size:18px;font-weight:600;letter-spacing:-.3px;line-height:1.12}
+.tile .desc{font-size:13px;color:var(--muted);line-height:1.45;flex:1}
+.tile .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px}
+.tile .cat{font:600 10.5px 'Outfit';letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.tile .go{font:700 11px 'Outfit';letter-spacing:.5px;text-transform:uppercase;color:var(--orange);display:flex;align-items:center;gap:4px}
+.tile:hover .go{gap:8px}
+.tile .cpy{border:1.5px solid var(--tile-border);background:var(--card);color:var(--ink);padding:5px 10px;font:700 10.5px 'Outfit';
+  letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:.12s}
+.tile .cpy:hover{background:var(--orange);border-color:var(--orange);color:#fff}
+.tile .cpy:active{transform:translate(1px,1px);transition-duration:.06s}
+.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,120px);background:var(--orange);color:#fff;
+  font:600 14px 'Outfit';padding:13px 24px;border-radius:8px;box-shadow:6px 6px 0 var(--shadow);
+  z-index:90;transition:transform .35s ease;max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+.none{display:none;padding:40px 2px;color:var(--muted)}
+.none.show{display:block}
+
+footer{position:relative;z-index:1;max-width:1240px;margin:60px auto 0;padding:22px clamp(20px,4vw,44px) 46px;
+  border-top:2px solid var(--ink);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+footer b{color:var(--ink);font-weight:500}
+@media(max-width:560px){.hero-meta{gap:22px}.tile:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style></head>
+<body>
+<canvas id="dots" aria-hidden="true"></canvas>
+<div class="wrap">
+<header>
+  <div class="kicker">RoboNuggets</div>
+  <h1>Design <span class="doto">SYSTEMS</span></h1>
+  <p class="lead"><b>35 complete, fundamentally different websites</b> - made exclusively for <b>RoboNuggets members</b> by Jay. Open any site to explore it, or hit <b>Copy ref</b> and paste straight into Claude to build in that exact visual language.</p>
+  <div class="hero-meta">
+    <div><span class="n" data-c="35">0</span><span class="l">Websites</span></div>
+    <div><span class="n" data-c="7">0</span><span class="l">Categories</span></div>
+    <div><span class="n" data-c="100">0</span><span class="l">% member-exclusive</span></div>
+  </div>
+
+  <div class="tools">
+    <input id="q" type="search" placeholder="Search a niche or a vibe..." aria-label="Search sites">
+    <button id="themeToggle" title="Toggle dark / light" aria-label="Toggle theme">◐</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <p class="count"><b id="n">35</b> sites shown</p>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <p class="none" id="none">Nothing matches that - try a shorter search.</p>
+</main>
+</div>
+<footer>
+  <span>RoboNuggets Design Systems · <b>35 sites</b> · made exclusively for RoboNuggets members by Jay</span>
+  <span>skool.com/robonuggets</span>
+</footer>
+
+<script>
+// cat = one of 7 thematic categories
+const SITES = [
+  // AI agency builds first
+  {href:'sites/sentinel/',    key:'ai-sentinel',   num:'01', name:'Sentinel Grid',        cat:'Agencies & Studios',     desc:'AI security operations - AI-SOC monitoring, LLM red-teaming and compliance automation on a live canvas threat map.'},
+  {href:'sites/vocalis/',     key:'ai-vocalis',    num:'02', name:'Vocalis',              cat:'Agencies & Studios',     desc:'Voice AI agents - every call answered, in your voice, in any language. A cursor-reactive waveform you can hear.'},
+  {href:'sites/atelier/',     key:'ai-atelier',    num:'03', name:'Atelier Nine',         cat:'Agencies & Studios',     desc:'An AI design studio - craft stays human, volume goes machine. Editorial whitespace and a morphing iridescent accent.'},
+  {href:'sites/cartfuel/',    key:'ai-cartfuel',   num:'04', name:'Cartfuel',             cat:'Agencies & Studios',     desc:'E-commerce AI - recommendation engines, support agents and CRO that compounds revenue, with a live product-card demo.'},
+  {href:'sites/forge/',       key:'ai-forge',      num:'05', name:'Forgeworks AI',        cat:'Agencies & Studios',     desc:'Industrial AI - computer-vision QC, predictive maintenance and digital twins, with a live defect-detection conveyor.'},
+  {href:'sites/counsel/',     key:'ai-counsel',    num:'06', name:'Counsel & Code',       cat:'Professional Services',  desc:'Legal AI consultancy - contract intelligence and governance built for privilege, with a live document-redline hero.'},
+  {href:'sites/ledger/',      key:'ai-ledger',     num:'07', name:'Ledgerline',           cat:'Professional Services',  desc:'Finance AI - close automation, forecasting and audit-ready controls in broadsheet-precise typography.'},
+  {href:'sites/pulse/',       key:'ai-pulse',      num:'08', name:'Pulseframe Health',    cat:'Professional Services',  desc:'Healthcare AI - clinical documentation and triage models, with a self-drawing ECG and a no-PHI-egress diagram.'},
+  {href:'sites/haven/',       key:'ai-haven',      num:'09', name:'HavenIQ',              cat:'Professional Services',  desc:'Real estate AI - instant valuations, listing generation and lead-qualifying agents, with an interactive valuation widget.'},
+  {href:'sites/concierge/',   key:'ai-concierge',  num:'10', name:'Concierge Labs',       cat:'Hospitality & Travel',   desc:'Hospitality AI - guest agents that book, recover and delight, with a scripted live chat demo in boutique-hotel warmth.'},
+  // Fable 25
+  {href:'fable/01-maison-noire/', key:'fable-01-maison-noire', num:'11', name:'Maison Noire',        cat:'Craft & Fashion',      desc:'A Parisian couture house in shadow tones, draped in a live WebGL silk shader.'},
+  {href:'fable/02-terra/',        key:'fable-02-terra',        num:'12', name:'Terra',               cat:'Craft & Fashion',      desc:'A sun-baked pottery atelier where organic blobs morph and clay glazes swap live.'},
+  {href:'fable/03-neon-district/',key:'fable-03-neon-district',num:'13', name:'Neon District',       cat:'Retro & Tech',         desc:'A cyberpunk Tokyo arcade with glitch neon, katakana rain and a coin that always calls.'},
+  {href:'fable/04-helvetia/',     key:'fable-04-helvetia',     num:'14', name:'Helvetia 26',         cat:'Arts & Culture',       desc:'A Swiss brutalist congress where the grid itself is the star - press G to expose it.'},
+  {href:'fable/05-aurora/',       key:'fable-05-aurora',       num:'15', name:'Aurora Lab',          cat:'Journeys & Stories',   desc:'An Arctic station streaming live telemetry beneath a real-time canvas aurora.'},
+  {href:'fable/06-fold/',         key:'fable-06-fold',         num:'16', name:'Fold',                cat:'Craft & Fashion',      desc:'A tactile origami studio where every section folds open like paper as you scroll.'},
+  {href:'fable/07-abyss/',        key:'fable-07-abyss',        num:'17', name:'Abyss',               cat:'Journeys & Stories',   desc:'Scroll to sink 10,935 metres through five ocean zones with a live pressure HUD.'},
+  {href:'fable/08-terminal-84/',  key:'fable-08-terminal-84',  num:'18', name:'Terminal_84',         cat:'Retro & Tech',         desc:'A retro computing museum rendered as a living phosphor CRT, with a real command line.'},
+  {href:'fable/09-herbarium/',    key:'fable-09-herbarium',    num:'19', name:'Aldersgate Herbarium',cat:'Arts & Culture',       desc:'A Victorian archive of engraved plates with a brass loupe and candlelight mode.'},
+  {href:'fable/10-kinetic/',      key:'fable-10-kinetic',      num:'20', name:'Kinetic',             cat:'Arts & Culture',       desc:'A foundry where typography is the whole site - every moment a variable font in motion.'},
+  {href:'fable/11-bauhaus-now/',  key:'fable-11-bauhaus-now',  num:'21', name:'Bauhaus Now',         cat:'Arts & Culture',       desc:'A Bauhaus poster that learned to scroll, with geometric shape choreography.'},
+  {href:'fable/12-chrome-dreams/',key:'fable-12-chrome-dreams',num:'22', name:'Chrome Dreams',       cat:'Retro & Tech',         desc:'A liquid-metal Three.js blob and holographic type resurrect year-2000 optimism.'},
+  {href:'fable/13-noir/',         key:'fable-13-noir',         num:'23', name:'The Long Goodbye',    cat:'Journeys & Stories',   desc:'A 1948 missing-person case told as a chaptered scroll you read by flashlight.'},
+  {href:'fable/14-orbit/',        key:'fable-14-orbit',        num:'24', name:'Orbit',               cat:'Journeys & Stories',   desc:'Scroll to fly one continuous shot from the Sun past all eight planets.'},
+  {href:'fable/15-kissaten/',     key:'fable-15-kissaten',     num:'25', name:'Kissaten',            cat:'Hospitality & Travel', desc:'A wabi-sabi tea house in washi white and sumi ink where the menu changes with the season.'},
+  {href:'fable/16-acid-garden/',  key:'fable-16-acid-garden',  num:'26', name:'Acid Garden',         cat:'Arts & Culture',       desc:'A blacklight rave where the typography melts and the checkerboard warps.'},
+  {href:'fable/17-nimbus/',       key:'fable-17-nimbus',       num:'27', name:'Nimbus',              cat:'Journeys & Stories',   desc:'A pastel cloud museum where scrolling moves the sun from dawn to nightfall.'},
+  {href:'fable/18-datapoem/',     key:'fable-18-datapoem',     num:'28', name:'Datapoem',            cat:'Agencies & Studios',   desc:'A generative studio where thousands of particles spell poems and scatter at your cursor.'},
+  {href:'fable/19-summit/',       key:'fable-19-summit',       num:'29', name:'Summit',              cat:'Hospitality & Travel', desc:'An expedition company where an altimeter climbs to the summit of Everest as you scroll.'},
+  {href:'fable/20-meridian/',     key:'fable-20-meridian',     num:'30', name:'The Meridian',        cat:'Hospitality & Travel', desc:'A 1925 grand hotel where gold ornament is stamped in like letterpress.'},
+  {href:'fable/21-blueprint/',    key:'fable-21-blueprint',    num:'31', name:'Atelier B',           cat:'Agencies & Studios',   desc:'An architecture site as a living blueprint - every elevation draws itself in white linework.'},
+  {href:'fable/22-velvet/',       key:'fable-22-velvet',       num:'32', name:'Velvet',              cat:'Arts & Culture',       desc:'A vinyl label where you drop the needle and the page fills with code-synthesized sound.'},
+  {href:'fable/23-grind/',        key:'fable-23-grind',        num:'33', name:'Grind',               cat:'Craft & Fashion',      desc:'A xeroxed skate zine you can scroll - torn paper, tape, stickers and zero permission.'},
+  {href:'fable/24-mirage/',       key:'fable-24-mirage',       num:'34', name:'Mirage',              cat:'Journeys & Stories',   desc:'Eleven days across the Namib on extinct aerochrome film, under a live heat shimmer.'},
+  {href:'fable/25-horologe/',     key:'fable-25-horologe',     num:'35', name:'Horologe',            cat:'Craft & Fashion',      desc:'A Swiss watchmaker whose gear train meshes tooth by tooth as you scroll.'},
+];
+
+const grid=document.getElementById('grid');
+SITES.forEach(item=>{
+  const el=document.createElement('a');
+  el.className='tile'; el.href=item.href; el.target='_blank'; el.rel='noopener';
+  el.dataset.text=(item.name+' '+item.cat+' '+item.desc).toLowerCase();
+  el.dataset.cat=item.cat;
+  el.innerHTML=`
+    <div class="shot">
+      <span class="idx">${item.num}</span>
+      <div class="ph">${item.name.split(' ')[0]}</div>
+      <img src="assets/thumbs-showcase/${item.key}.jpg" loading="lazy" alt="${item.name} preview"
+           onload="this.previousElementSibling.style.display='none'"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="body">
+      <span class="name">${item.name}</span>
+      <span class="desc">${item.desc}</span>
+      <div class="foot"><span class="cat">${item.cat}</span><button class="cpy" type="button">Copy ref</button><span class="go">Open &rarr;</span></div>
+    </div>`;
+  el.querySelector('.cpy').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();
+    copyText(refText(item)).then(()=>toast(`${item.name} reference copied - paste it to Claude`))
+      .catch(()=>toast('Copy failed - open the site and save its URL instead'));
+  });
+  grid.appendChild(el);
+});
+
+function refText(item){
+  return `https://robonuggets-design-systems.vercel.app/${item.href}
+(Design reference "${item.name}" - I have this locally too: ${item.href}index.html inside the design-systems repo I cloned from GitHub. Use its visual system as the reference for what you build for me.)`;
+}
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); }
+  catch(e){
+    const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+  }
+}
+let toastT;
+function toast(msg){
+  let el=document.getElementById('toast');
+  if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el);}
+  el.textContent=msg;requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+// category chips (7 + All), counts computed from data
+let cat='All';
+const q=document.getElementById('q'), none=document.getElementById('none'), nEl=document.getElementById('n');
+const CATS=['All',...new Set(SITES.map(s=>s.cat))];
+const chipsWrap=document.getElementById('chips');
+function drawChips(){
+  chipsWrap.innerHTML='';
+  CATS.forEach(c=>{
+    const count=c==='All'?SITES.length:SITES.filter(s=>s.cat===c).length;
+    const b=document.createElement('button');
+    b.className='chip'+(c===cat?' on':'');
+    b.innerHTML=`${c}<span class="c">${count}</span>`;
+    b.onclick=()=>{cat=c;drawChips();apply();};
+    chipsWrap.appendChild(b);
+  });
+}
+function apply(){
+  const term=q.value.trim().toLowerCase(); let shown=0;
+  document.querySelectorAll('.tile').forEach(t=>{
+    const ok=(cat==='All'||t.dataset.cat===cat)&&(!term||t.dataset.text.includes(term));
+    t.style.display=ok?'':'none'; if(ok)shown++;
+  });
+  nEl.textContent=shown;
+  none.classList.toggle('show',!shown);
+}
+drawChips();
+q.addEventListener('input',apply);
+
+// count-up hero metrics
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){
+  const t=+e.target.dataset.c,el=e.target,t0=performance.now();
+  const step=x=>{const p=Math.min((x-t0)/900,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);io.unobserve(el);}}),{threshold:.6});
+document.querySelectorAll('.hero-meta .n').forEach(n=>io.observe(n));
+
+// theme
+const saved=localStorage.getItem('robo-theme')||'dark';
+document.documentElement.dataset.theme=saved;
+document.getElementById('themeToggle').onclick=()=>{
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;localStorage.setItem('robo-theme',next);
+};
+
+// ---------- interactive dot-matrix background ----------
+const cv=document.getElementById('dots'), ctx=cv.getContext('2d');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W,H,pts=[],mx=-999,my=-999,GAP=30;
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function build(){
+  W=cv.width=innerWidth;H=cv.height=innerHeight;pts=[];
+  const cols=Math.ceil(W/GAP)+1,rows=Math.ceil(H/GAP)+1;
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)pts.push({x:x*GAP,y:y*GAP,ph:(x+y)*0.5});
+}
+build();addEventListener('resize',build);
+addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY;});
+addEventListener('pointerleave',()=>{mx=my=-999;});
+function draw(t){
+  ctx.clearRect(0,0,W,H);
+  const base=css('--dot'),hi=css('--dot-hi'),R=130;
+  for(const p of pts){
+    const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);
+    const wob=Math.sin(t*0.0011+p.ph)*0.35+0.65;
+    if(d<R){const f=1-d/R;
+      ctx.globalAlpha=0.35+f*0.65;ctx.fillStyle=hi;
+      ctx.beginPath();ctx.arc(p.x+dx*f*-0.08,p.y+dy*f*-0.08,0.9+wob*0.5+f*2.6,0,7);ctx.fill();
+    }else{
+      ctx.globalAlpha=1;ctx.fillStyle=base;
+      ctx.beginPath();ctx.arc(p.x,p.y,0.9+wob*0.5,0,7);ctx.fill();
+    }
+  }
+  ctx.globalAlpha=1;requestAnimationFrame(draw);
+}
+if(reduced){
+  const paint=()=>{ctx.clearRect(0,0,W,H);ctx.fillStyle=css('--dot');for(const p of pts){ctx.beginPath();ctx.arc(p.x,p.y,1.1,0,7);ctx.fill();}};
+  paint();addEventListener('resize',paint);
+}else{requestAnimationFrame(draw);}
+</script>
+</body></html>

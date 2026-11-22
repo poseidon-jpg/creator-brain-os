@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sonnet 5.5 - Flat Vector</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #2A1EF4; }
+  svg { display: block; }
+  text { font-family: 'Fredoka', sans-serif; }
+</style>
+</head>
+<body>
+<svg id="s" width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+'use strict';
+/* =====================================================================
+   SONNET 5.5 - FLAT VECTOR
+   One continuous take, one coral dot. Every frame is drawn by renderAt(t)
+   from t alone (closed-form springs, seeded noise, no clock, no timers).
+   dot falls -> bounces up into the sun -> city springs up -> dive into a
+   lit window -> a person gets a ping -> coral wipe -> four fact panels ->
+   panels collapse into the dot -> the dot lands as the o of "Sonnet".
+   ===================================================================== */
+
+/* ---------- palette (sampled from the original) ---------- */
+const BLUE = '#2A1EF4', BLUE_L = '#4B42F6', BLUE_LL = '#6259F9',
+      CORAL = '#F14B4F', CORAL_D = '#D63A40',
+      MINT = '#3AFEAC', MINT_D = '#26DB93',
+      YEL = '#F9CB32', YEL_D = '#E4B31F',
+      CREAM = '#FDF6E3', CREAM_D = '#ECE4CD',
+      NAVY = '#131231', NAVY_W = '#2B2A63', LAV = '#CFCBFF',
+      PEACH = '#FFC8A6', PEACH_D = '#EFA882';
+const GROUND = 930;
+
+/* ---------- timeline (seconds) ---------- */
+const TL = {
+  HIT: 0.34, SQ: 0.13, UP1: 0.84,         // dot lands, squashes, reaches the sun
+  WIN: 0.78,                              // the tower window lights up
+  D0: 0.98, D1: 1.42,                     // dive into the window
+  TB: 1.50, TG: 1.58,                     // phone buzz, glance and reach
+  W0: 1.76, W1: 1.93, I1: 2.15,           // coral wipe grows, then collapses onto the first panel
+  L: [2.15, 2.28, 2.41, 2.54],            // dot lands on panel 1..4 (clockwise)
+  ROUND0: 2.72, COL0: 2.80, COL1: 2.97,   // panels round into circles, then collapse
+  LEAP0: 2.99, LAND: 3.21                 // dot leaps and lands as the o
+};
+
+/* ---------- helpers ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('s');
+const f = v => Math.round(v * 1000) / 1000;
+const f5 = v => Math.round(v * 100000) / 100000;
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  (parent || svg).appendChild(e);
+  return e;
+}
+const G = (parent, attrs) => el('g', attrs || {}, parent);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, x) => a + (b - a) * x;
+const E = {
+  inQuad: x => x * x,
+  outQuad: x => 1 - (1 - x) * (1 - x),
+  inCubic: x => x * x * x,
+  outCubic: x => 1 - Math.pow(1 - x, 3),
+  inOutCubic: x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+  outQuart: x => 1 - Math.pow(1 - x, 4),
+  inOutQuart: x => x < .5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2,
+  inOutQuint: x => x < .5 ? 16 * x ** 5 : 1 - Math.pow(-2 * x + 2, 5) / 2,
+  inOutSine: x => -(Math.cos(Math.PI * x) - 1) / 2,
+  outBack: (x, s = 1.7) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2),
+};
+// underdamped spring 0 -> 1 with zero start velocity: w = stiffness, z = damping ratio (lower = bouncier)
+function spr(tau, w = 26, z = 0.45) {
+  if (tau <= 0) return 0;
+  if (tau > 1.6) return 1;
+  const wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * tau) * (Math.cos(wd * tau) + (z * w / wd) * Math.sin(wd * tau));
+}
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rnd = mulberry32(5505);
+function show(e, on) { if (e._on !== on) { e._on = on; e.setAttribute('display', on ? 'inline' : 'none'); } }
+function TS(e, cx, cy, sx, sy) {
+  e.setAttribute('transform', `translate(${f(cx)} ${f(cy)}) scale(${f5(Math.max(0.0001, sx))} ${f5(Math.max(0.0001, sy))}) translate(${f(-cx)} ${f(-cy)})`);
+}
+function blobT(e, x, y, ang, v, h) {
+  e.setAttribute('transform', `translate(${f(x)} ${f(y)}) rotate(${f(ang)}) scale(${f5(v)} ${f5(h)})`);
+}
+// keyframes with smoothstep between them
+function kf(u, k) {
+  if (u <= k[0][0]) return k[0][1];
+  for (let i = 1; i < k.length; i++) {
+    if (u <= k[i][0]) { const a = k[i - 1], b = k[i]; const w = (u - a[0]) / (b[0] - a[0]); const s = w * w * (3 - 2 * w); return a[1] + (b[1] - a[1]) * s; }
+  }
+  return k[k.length - 1][1];
+}
+const mctx = document.createElement('canvas').getContext('2d');
+function mw(str, size, weight) { mctx.font = `${weight || 700} ${size}px Fredoka`; return mctx.measureText(str).width; }
+
+/* =====================================================================
+   SCENE GRAPH, bottom to top
+   ===================================================================== */
+el('rect', { x: 0, y: 0, width: 1920, height: 1080, fill: BLUE });
+const gCam = G(svg);
+const city = G(gCam);
+const gS2 = G(svg);
+const gS3 = G(svg);
+const gDot = G(svg);
+const aDot = el('circle', { cx: 0, cy: 0, r: 1, fill: CORAL }, gDot);
+const wipeBell = G(svg);
+
+/* =====================================================================
+   CITY
+   ===================================================================== */
+el('rect', { x: -3000, y: -3000, width: 8000, height: 7000, fill: BLUE }, city);
+
+function makeDeco(parent, fill) {
+  const items = [];
+  const a = el('circle', { r: 62, fill: 'none', stroke: fill, 'stroke-width': 18 }, parent);
+  const b = el('path', { d: 'M-26 -26 L26 26 M26 -26 L-26 26', stroke: fill, 'stroke-width': 16, 'stroke-linecap': 'round', fill: 'none' }, parent);
+  const c = el('rect', { x: -80, y: -22, width: 160, height: 44, rx: 22, fill }, parent);
+  const d = el('path', { d: 'M-52 0 A52 52 0 0 1 52 0 Z', fill }, parent);
+  const e = el('circle', { r: 14, fill }, parent);
+  const g2 = el('path', { d: 'M-20 0 H20 M0 -20 V20', stroke: fill, 'stroke-width': 14, 'stroke-linecap': 'round', fill: 'none' }, parent);
+  items.push({ e: a, x: 210, y: 230, r0: 0, dr: 6 }, { e: b, x: 1580, y: 220, r0: 15, dr: 40 },
+    { e: c, x: 330, y: 760, r0: -32, dr: -8 }, { e: d, x: 1560, y: 760, r0: 28, dr: 20 },
+    { e: e, x: 760, y: 300, r0: 0, dr: 0 }, { e: g2, x: 1180, y: 130, r0: 0, dr: 30 });
+  return items;
+}
+const deco = G(city);
+const decoItems = makeDeco(deco, BLUE_L);
+
+// lighter back skyline
+const skyline = G(city);
+{
+  const blocks = [[0, 250], [110, 330], [210, 280], [300, 380], [420, 300], [520, 420], [640, 350], [760, 470], [880, 320], [990, 400], [1110, 300], [1230, 440], [1350, 360], [1470, 470], [1600, 330], [1720, 410], [1830, 300]];
+  blocks.forEach(([x, h]) => {
+    const w = 130;
+    el('rect', { x: x, y: GROUND - h, width: w, height: h + 10, fill: BLUE_L }, skyline);
+    for (let r = 0; r < Math.floor(h / 70) - 1; r++)
+      for (let c = 0; c < 3; c++)
+        if (rnd() > 0.35) el('rect', { x: x + 22 + c * 34, y: GROUND - h + 34 + r * 60, width: 16, height: 22, rx: 3, fill: BLUE_LL }, skyline);
+  });
+}
+
+// sun (behind the buildings)
+const SUN = [1390, 255], R_DOT = 44, R_SUN = 128;
+const sunG = G(city);
+const rays = [];
+for (let i = 0; i < 12; i++) rays.push(el('line', { stroke: CORAL, 'stroke-width': 13, 'stroke-linecap': 'round' }, sunG));
+const sunDisc = el('circle', { cx: 0, cy: 0, r: 1, fill: CORAL }, sunG);
+
+// clouds
+const cloudG = G(city);
+const clouds = [];
+function cloud(parent, s) {
+  const g = G(parent);
+  el('rect', { x: -95 * s, y: -10 * s, width: 190 * s, height: 58 * s, rx: 29 * s, fill: CREAM }, g);
+  el('circle', { cx: -34 * s, cy: -4 * s, r: 42 * s, fill: CREAM }, g);
+  el('circle', { cx: 26 * s, cy: -22 * s, r: 52 * s, fill: CREAM }, g);
+  return g;
+}
+[[330, 250, 1.0, -1], [880, 150, 0.7, 1], [1760, 500, 0.8, 1], [70, 520, 0.6, -1]].forEach(([x, y, s, dir]) => clouds.push({ g: cloud(cloudG, s), x, y, dir }));
+
+// buildings
+const bldG = G(city);
+const buildings = [];
+const BDEF = [
+  { x: 60, w: 175, h: 280, c: MINT, sh: MINT_D, win: [3, 4, [MINT_D], 12], cap: 'ac' },
+  { x: 262, w: 205, h: 470, c: CREAM, sh: CREAM_D, win: [3, 7, [YEL, BLUE_L, YEL, BLUE_LL], 13], cap: 'block' },
+  { x: 492, w: 150, h: 405, c: CORAL, sh: CORAL_D, win: [2, 5, [CORAL_D, CORAL_D, YEL], 12], cap: 'round' },
+  { x: 668, w: 178, h: 560, c: YEL, sh: YEL_D, win: [3, 8, [YEL_D, YEL_D, CREAM], 13], cap: 'antenna' },
+  { x: 850, w: 236, h: 640, c: NAVY, sh: '#0C0B26', win: [2, 9, [NAVY_W, NAVY_W, NAVY_W, YEL], 13], cap: 'billboard' },
+  { x: 1092, w: 165, h: 410, c: MINT, sh: MINT_D, win: [2, 5, [MINT_D, MINT_D, YEL], 12], cap: 'tri' },
+  { x: 1282, w: 200, h: 300, c: YEL, sh: YEL_D, win: [3, 3, [YEL_D, CREAM, CREAM], 13], cap: 'ac' },
+  { x: 1506, w: 156, h: 500, c: CREAM, sh: CREAM_D, win: [2, 6, [YEL, BLUE_L, BLUE_L], 13], cap: 'dome' },
+  { x: 1690, w: 200, h: 255, c: CORAL, sh: CORAL_D, win: [3, 3, [YEL, CORAL_D, YEL], 12], cap: 'flat' },
+];
+const WINX = 968, WINY = 520, WW = 200, WH = 112.5;   // the lit window we dive into (16:9)
+BDEF.forEach((b, i) => {
+  const g = G(bldG);
+  const top = GROUND - b.h;
+  if (b.cap === 'round') {
+    el('path', { d: `M${b.x} ${GROUND + 10} V${top + b.w / 2} A${b.w / 2} ${b.w / 2} 0 0 1 ${b.x + b.w} ${top + b.w / 2} V${GROUND + 10} Z`, fill: b.c }, g);
+    el('path', { d: `M${b.x + b.w * 0.8} ${GROUND + 10} V${top + b.w / 2 + 6} A${b.w / 2} ${b.w / 2} 0 0 0 ${b.x + b.w * 0.8} ${top + b.w * 0.1} A${b.w / 2} ${b.w / 2} 0 0 1 ${b.x + b.w} ${top + b.w / 2} V${GROUND + 10} Z`, fill: b.sh }, g);
+  } else {
+    el('rect', { x: b.x, y: top, width: b.w, height: b.h + 10, fill: b.c }, g);
+    el('rect', { x: b.x + b.w * 0.82, y: top, width: b.w * 0.18, height: b.h + 10, fill: b.sh }, g);
+  }
+  if (b.cap === 'block') {
+    el('rect', { x: b.x + 26, y: top - 44, width: b.w - 52, height: 46, fill: b.c }, g);
+    el('rect', { x: b.x + b.w - 26 - 20, y: top - 44, width: 20, height: 46, fill: b.sh }, g);
+    el('rect', { x: b.x + b.w / 2 - 22, y: GROUND - 64, width: 44, height: 64, rx: 6, fill: CREAM_D }, g);
+  }
+  if (b.cap === 'antenna') {
+    el('rect', { x: b.x + 44, y: top - 30, width: b.w - 88, height: 32, fill: YEL_D }, g);
+    el('line', { x1: b.x + b.w / 2, y1: top - 30, x2: b.x + b.w / 2, y2: top - 120, stroke: NAVY, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    b.tip = el('circle', { cx: b.x + b.w / 2, cy: top - 124, r: 10, fill: CORAL }, g);
+    el('rect', { x: b.x + b.w / 2 - 22, y: GROUND - 60, width: 44, height: 60, rx: 6, fill: YEL_D }, g);
+  }
+  if (b.cap === 'billboard') {
+    el('line', { x1: b.x + 40, y1: top, x2: b.x + 40, y2: top - 34, stroke: NAVY_W, 'stroke-width': 8 }, g);
+    el('line', { x1: b.x + b.w - 40, y1: top, x2: b.x + b.w - 40, y2: top - 34, stroke: NAVY_W, 'stroke-width': 8 }, g);
+    b.board = G(g);
+    el('rect', { x: b.x - 18, y: top - 110, width: b.w + 36, height: 76, rx: 16, fill: CREAM }, b.board);
+    b.boardLogo = G(b.board);
+    el('rect', { x: b.x + b.w / 2 - 26, y: GROUND - 62, width: 52, height: 62, fill: NAVY_W }, g);
+  }
+  if (b.cap === 'tri') {
+    el('path', { d: `M${b.x - 10} ${top + 2} L${b.x + b.w / 2} ${top - 92} L${b.x + b.w + 10} ${top + 2} Z`, fill: MINT_D, 'stroke-linejoin': 'round', stroke: MINT_D, 'stroke-width': 8 }, g);
+    el('path', { d: `M${b.x - 10} ${top + 2} L${b.x + b.w / 2} ${top - 92} L${b.x + b.w * 0.5} ${top + 2} Z`, fill: MINT, 'stroke-linejoin': 'round', stroke: MINT, 'stroke-width': 8 }, g);
+  }
+  if (b.cap === 'dome') {
+    el('path', { d: `M${b.x + 6} ${top + 2} A${b.w / 2 - 6} ${b.w / 2 - 6} 0 0 1 ${b.x + b.w - 6} ${top + 2} Z`, fill: CREAM_D }, g);
+    el('rect', { x: b.x + b.w / 2 - 20, y: GROUND - 60, width: 40, height: 60, rx: 6, fill: CREAM_D }, g);
+  }
+  if (b.cap === 'flat') {
+    el('rect', { x: b.x - 8, y: top - 14, width: b.w + 16, height: 16, rx: 4, fill: b.sh }, g);
+  }
+  if (b.cap === 'ac') {
+    el('rect', { x: b.x - 8, y: top - 14, width: b.w + 16, height: 16, rx: 4, fill: b.sh }, g);
+    el('rect', { x: b.x + 30, y: top - 52, width: 56, height: 40, rx: 6, fill: b.sh }, g);
+    el('circle', { cx: b.x + 58, cy: top - 32, r: 12, fill: b.c }, g);
+    el('rect', { x: b.x + b.w - 70, y: top - 36, width: 36, height: 24, rx: 5, fill: b.sh }, g);
+    el('rect', { x: b.x + b.w / 2 - 22, y: GROUND - 56, width: 44, height: 56, rx: 6, fill: b.sh }, g);
+  }
+  // windows
+  const [cols, rows, colors, r] = b.win;
+  const dx = (b.w * 0.82 - 50) / Math.max(1, cols - 1);
+  const wy0 = top + (b.cap === 'round' ? b.w * 0.55 : 58);
+  const dy = 58;
+  const nRows = Math.min(rows, Math.floor((GROUND - 90 - wy0) / dy) + 1);
+  const rr = mulberry32(100 + i);
+  b.winEls = [];
+  for (let j = 0; j < nRows; j++) for (let k = 0; k < cols; k++) {
+    const wx = b.x + 25 + k * dx, wy = wy0 + j * dy;
+    const c = colors[Math.floor(rr() * colors.length)];
+    if (b.cap === 'billboard' && Math.abs(wy - WINY) < 92) continue;
+    const e = el('circle', { cx: wx, cy: wy, r: r, fill: c }, g);
+    b.winEls.push({ e, r, c, j, k });
+  }
+  b.g = g; b.cx = b.x + b.w / 2; b.top = top;
+  buildings.push(b);
+});
+
+// trees
+const treeG = G(city);
+const trees = [];
+[[40, 1.0], [250, 0.9], [482, 1.05], [657, 0.85], [1080, 0.95], [1272, 1.0], [1497, 0.9], [1680, 1.05], [1905, 0.9]].forEach(([x, s]) => {
+  const g = G(treeG);
+  el('rect', { x: x - 4, y: GROUND - 44 * s, width: 8, height: 46 * s, rx: 3, fill: NAVY }, g);
+  el('ellipse', { cx: x, cy: GROUND - 70 * s, rx: 34 * s, ry: 46 * s, fill: MINT }, g);
+  el('path', { d: `M${x} ${GROUND - 116 * s} A${34 * s} ${46 * s} 0 0 0 ${x} ${GROUND - 24 * s} Z`, fill: MINT_D }, g);
+  trees.push({ g, x, s });
+});
+
+// road: sidewalk, seams, lane, dashes
+const roadG = G(city);
+el('rect', { x: -1200, y: GROUND, width: 4300, height: 400, fill: CREAM }, roadG);
+el('rect', { x: -1200, y: GROUND, width: 4300, height: 40, fill: CREAM_D }, roadG);
+const seams = G(roadG);
+for (let x = -1200; x < 3100; x += 110) el('rect', { x: x, y: GROUND, width: 5, height: 40, fill: '#DDD3B8' }, seams);
+const dashes = G(roadG);
+for (let x = -1200; x < 3100; x += 130) el('rect', { x: x, y: 1010, width: 70, height: 12, rx: 6, fill: CREAM_D }, dashes);
+
+// vehicles
+const bus = G(city);
+{
+  el('rect', { x: -110, y: -86, width: 220, height: 74, rx: 16, fill: CORAL }, bus);
+  el('rect', { x: 70, y: -86, width: 40, height: 74, rx: 12, fill: CORAL_D }, bus);
+  for (let i = 0; i < 4; i++) el('rect', { x: -94 + i * 40, y: -74, width: 30, height: 26, rx: 5, fill: CREAM }, bus);
+  el('rect', { x: 72, y: -74, width: 28, height: 30, rx: 5, fill: CREAM }, bus);
+  el('rect', { x: -110, y: -38, width: 220, height: 8, fill: CREAM }, bus);
+  for (const wx of [-62, 62]) { el('circle', { cx: wx, cy: -10, r: 17, fill: NAVY }, bus); el('circle', { cx: wx, cy: -10, r: 6, fill: CREAM_D }, bus); }
+}
+const car = G(city);
+{
+  el('rect', { x: -70, y: -50, width: 140, height: 36, rx: 14, fill: YEL }, car);
+  el('path', { d: 'M-38 -50 L-24 -78 H26 L42 -50 Z', fill: YEL }, car);
+  el('path', { d: 'M-30 -52 L-20 -72 H-2 V-52 Z M6 -52 V-72 H22 L34 -52 Z', fill: CREAM }, car);
+  el('rect', { x: 44, y: -42, width: 24, height: 8, rx: 4, fill: CORAL }, car);
+  for (const wx of [-40, 40]) { el('circle', { cx: wx, cy: -12, r: 14, fill: NAVY }, car); el('circle', { cx: wx, cy: -12, r: 5, fill: CREAM_D }, car); }
+}
+
+// impact effects
+const fx = G(city);
+const ring1 = el('ellipse', { fill: 'none', stroke: YEL, 'stroke-width': 8 }, fx);
+const ring2 = el('ellipse', { fill: 'none', stroke: '#E2D8BC', 'stroke-width': 5 }, fx);
+const burst = [];
+for (let i = 0; i < 9; i++) burst.push(el('line', { stroke: i % 2 ? CREAM : YEL, 'stroke-width': 11, 'stroke-linecap': 'round' }, fx));
+const speedLines = G(city);
+const sl = [0, 1, 2].map(() => el('line', { stroke: CREAM, 'stroke-width': 7, 'stroke-linecap': 'round' }, speedLines));
+
+/* ---------- the lit window we dive into (holds the whole room, scaled down) ---------- */
+const K = WW / 1920, S_END = 1920 / WW;
+const roomWrap = G(city);
+el('rect', { x: -WW / 2 - 12, y: -WH / 2 - 12, width: WW + 24, height: WH + 24, rx: 10, fill: CREAM }, roomWrap);
+el('rect', { x: -WW / 2 - 18, y: WH / 2 + 8, width: WW + 36, height: 10, rx: 4, fill: CREAM_D }, roomWrap);
+const winClipP = el('clipPath', { id: 'winClip' }, roomWrap);
+el('rect', { x: -WW / 2, y: -WH / 2, width: WW, height: WH }, winClipP);
+const roomClipG = G(roomWrap, { 'clip-path': 'url(#winClip)' });
+const roomScale = G(roomClipG, { transform: `scale(${K}) translate(-960 -540)` });
+const roomZoom = G(roomScale);
+
+// the dot while it is flying (above the buildings)
+const dotUp = el('circle', { cx: 0, cy: 0, r: 1, fill: CORAL }, city);
+
+/* =====================================================================
+   ROOM (drawn in 1920x1080 room coordinates)
+   ===================================================================== */
+const RM = {};
+const RS = 1.22;   // the desk set (person, laptop, phone, plant) is drawn 22% larger so the person fills the frame
+(function buildRoom() {
+  let R = G(roomZoom);
+  el('rect', { x: -4, y: -4, width: 1928, height: 1088, fill: YEL }, R);
+
+  // window
+  const WGRP = G(R, { transform: 'translate(56 0)' });
+  el('rect', { x: 44, y: 596, width: 482, height: 26, rx: 8, fill: YEL_D }, WGRP);
+  el('rect', { x: 60, y: 170, width: 450, height: 430, rx: 26, fill: CREAM }, WGRP);
+  el('rect', { x: 84, y: 194, width: 402, height: 382, rx: 10, fill: BLUE }, WGRP);
+  const wc = el('clipPath', { id: 'rWinClip' }, WGRP); el('rect', { x: 84, y: 194, width: 402, height: 382 }, wc);
+  const wg = G(WGRP, { 'clip-path': 'url(#rWinClip)' });
+  [[96, 330, 70], [180, 380, 60], [250, 300, 70], [330, 360, 56], [394, 316, 80]].forEach(([x, y, w]) =>
+    el('rect', { x, y: 576 - (576 - y) , width: w, height: 576 - y + 4, fill: BLUE_L }, wg));
+  RM.sun = el('circle', { cx: 410, cy: 280, r: 36, fill: CORAL }, wg);
+  RM.wcloud = G(wg); el('rect', { x: -40, y: -8, width: 80, height: 24, rx: 12, fill: CREAM }, RM.wcloud);
+  el('circle', { cx: -10, cy: -6, r: 16, fill: CREAM }, RM.wcloud); el('circle', { cx: 14, cy: -12, r: 20, fill: CREAM }, RM.wcloud);
+  el('rect', { x: 279, y: 194, width: 14, height: 382, fill: CREAM }, WGRP);
+  el('rect', { x: 84, y: 379, width: 402, height: 14, fill: CREAM }, WGRP);
+
+  // poem in a frame: 14 lines (a sonnet), octave then sestet
+  el('rect', { x: 1572, y: 150, width: 252, height: 372, rx: 16, fill: MINT }, R);
+  el('rect', { x: 1597, y: 175, width: 202, height: 322, rx: 6, fill: CREAM }, R);
+  el('circle', { cx: 1698, cy: 214, r: 13, fill: CORAL }, R);
+  const pr = mulberry32(14);
+  for (let i = 0; i < 14; i++) {
+    const y = i < 8 ? 258 + i * 14 : 258 + 7 * 14 + 22 + (i - 8) * 14;
+    const w = 96 + Math.floor(pr() * 70);
+    el('rect', { x: 1620, y, width: w, height: 6, rx: 3, fill: NAVY }, R);
+  }
+
+  // hanging lamp
+  RM.lamp = G(R);
+  el('line', { x1: 660, y1: -10, x2: 660, y2: 214, stroke: NAVY, 'stroke-width': 5 }, RM.lamp);
+  el('path', { d: 'M598 292 L722 292 L694 214 L626 214 Z', fill: NAVY }, RM.lamp);
+  el('path', { d: 'M634 294 A26 26 0 0 0 686 294 Z', fill: CREAM }, RM.lamp);
+
+  R = G(R, { transform: `translate(960 900) scale(${RS}) translate(-960 -900)` });
+
+  // person: torso, neck, head
+  el('path', { d: 'M735 772 Q745 662 885 662 Q1025 662 1035 772 L1035 912 L735 912 Z', fill: MINT }, R);
+  el('path', { d: 'M960 672 Q1022 686 1035 772 L1035 912 L990 912 Z', fill: MINT_D }, R);
+  el('rect', { x: 858, y: 612, width: 54, height: 76, rx: 22, fill: PEACH_D }, R);
+  el('ellipse', { cx: 885, cy: 674, rx: 40, ry: 22, fill: PEACH_D }, R);
+  RM.head = G(R);
+  const H = RM.head;
+  el('circle', { cx: 886, cy: 546, r: 94, fill: NAVY }, H);               // hair back
+  el('circle', { cx: 806, cy: 568, r: 17, fill: PEACH_D }, H);             // ears
+  el('circle', { cx: 964, cy: 568, r: 17, fill: PEACH_D }, H);
+  el('circle', { cx: 885, cy: 566, r: 82, fill: PEACH }, H);               // face
+  el('path', { d: 'M800 548 Q804 478 886 474 Q968 478 972 548 Q940 520 912 516 Q860 540 800 548 Z', fill: NAVY }, H);   // fringe
+  el('circle', { cx: 906, cy: 456, r: 38, fill: NAVY }, H);                // bun
+  RM.cheeks = [el('circle', { cx: 830, cy: 604, r: 15, fill: '#FF9C92' }, H), el('circle', { cx: 940, cy: 604, r: 15, fill: '#FF9C92' }, H)];
+  RM.brows = G(H);
+  RM.browL = el('path', { d: 'M826 532 Q850 518 872 530', stroke: NAVY, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, RM.brows);
+  RM.browR = el('path', { d: 'M898 530 Q920 518 944 532', stroke: NAVY, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, RM.brows);
+  // glasses
+  el('circle', { cx: 850, cy: 572, r: 31, fill: 'none', stroke: NAVY, 'stroke-width': 7 }, H);
+  el('circle', { cx: 920, cy: 572, r: 31, fill: 'none', stroke: NAVY, 'stroke-width': 7 }, H);
+  el('path', { d: 'M881 568 Q885 562 889 568', stroke: NAVY, 'stroke-width': 6, 'stroke-linecap': 'round', fill: 'none' }, H);
+  RM.eyes = G(H);
+  RM.eyeL = el('circle', { cx: 850, cy: 574, r: 8.5, fill: NAVY }, RM.eyes);
+  RM.eyeR = el('circle', { cx: 920, cy: 574, r: 8.5, fill: NAVY }, RM.eyes);
+  RM.mouth = el('path', { d: 'M866 608 Q885 620 904 608', stroke: NAVY, 'stroke-width': 6.5, 'stroke-linecap': 'round', fill: 'none' }, H);
+  RM.grin = G(H);
+  el('path', { d: 'M856 601 Q885 608 914 601 Q912 638 885 640 Q858 638 856 601 Z', fill: NAVY, stroke: NAVY, 'stroke-width': 4, 'stroke-linejoin': 'round' }, RM.grin);
+  el('path', { d: 'M862 603 Q885 609 908 603 L906 613 Q885 618 864 613 Z', fill: CREAM }, RM.grin);
+  el('path', { d: 'M870 632 Q885 620 900 632 Q885 640 870 632 Z', fill: CORAL }, RM.grin);
+
+  // desk
+  el('rect', { x: -4, y: 900, width: 1928, height: 28, fill: BLUE_L }, R);
+  el('rect', { x: -4, y: 926, width: 1928, height: 160, fill: BLUE }, R);
+  el('rect', { x: 120, y: 980, width: 380, height: 12, rx: 6, fill: BLUE_L }, R);
+  el('rect', { x: 1400, y: 980, width: 380, height: 12, rx: 6, fill: BLUE_L }, R);
+
+  // phone on a stand
+  RM.phone = G(R);
+  el('path', { d: 'M1296 900 L1344 900 L1334 876 L1306 876 Z', fill: NAVY }, RM.phone);
+  RM.phoneBody = G(RM.phone);
+  el('rect', { x: 1252, y: 662, width: 140, height: 232, rx: 22, fill: NAVY }, RM.phoneBody);
+  RM.scrOff = el('rect', { x: 1264, y: 676, width: 116, height: 202, rx: 12, fill: NAVY_W }, RM.phoneBody);
+  RM.scrOn = G(RM.phoneBody);
+  el('rect', { x: 1264, y: 676, width: 116, height: 202, rx: 12, fill: CREAM }, RM.scrOn);
+  el('circle', { cx: 1288, cy: 706, r: 10, fill: CORAL }, RM.scrOn);
+  el('rect', { x: 1306, y: 698, width: 56, height: 8, rx: 4, fill: NAVY }, RM.scrOn);
+  el('rect', { x: 1306, y: 712, width: 36, height: 8, rx: 4, fill: LAV }, RM.scrOn);
+  el('rect', { x: 1280, y: 750, width: 84, height: 12, rx: 6, fill: NAVY }, RM.scrOn);
+  el('rect', { x: 1280, y: 774, width: 64, height: 12, rx: 6, fill: NAVY }, RM.scrOn);
+  el('rect', { x: 1280, y: 798, width: 78, height: 12, rx: 6, fill: NAVY }, RM.scrOn);
+  el('rect', { x: 1280, y: 834, width: 84, height: 26, rx: 13, fill: CORAL }, RM.scrOn);
+
+  // arms
+  RM.armL = el('path', { d: 'M0 0', stroke: MINT, 'stroke-width': 64, 'stroke-linecap': 'round', fill: 'none' }, R);
+  RM.armR = el('path', { d: 'M0 0', stroke: MINT, 'stroke-width': 64, 'stroke-linecap': 'round', fill: 'none' }, R);
+  RM.handL = el('circle', { r: 32, fill: PEACH }, R);
+  RM.handR = el('circle', { r: 32, fill: PEACH }, R);
+  RM.thumbR = el('circle', { r: 13, fill: PEACH }, R);
+
+  // laptop (back of the lid), coral dot logo
+  el('rect', { x: 698, y: 735, width: 364, height: 170, rx: 16, fill: NAVY }, R);
+  el('rect', { x: 698, y: 888, width: 364, height: 18, rx: 6, fill: '#0C0B26' }, R);
+  el('circle', { cx: 880, cy: 818, r: 20, fill: CORAL }, R);
+
+  // mug with steam
+  el('circle', { cx: 648, cy: 862, r: 23, fill: 'none', stroke: CORAL, 'stroke-width': 13 }, R);
+  el('rect', { x: 540, y: 824, width: 100, height: 78, rx: 14, fill: CORAL }, R);
+  el('rect', { x: 540, y: 850, width: 100, height: 16, fill: CREAM }, R);
+  RM.steam = [0, 1, 2].map(i => el('path', { d: 'M0 0 Q10 -14 0 -28 Q-10 -42 0 -56', stroke: CREAM, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, R));
+
+  // plant
+  RM.plant = G(R);
+  el('path', { d: 'M0 0 Q-62 -52 -26 -150 Q22 -86 0 0 Z', fill: MINT }, RM.plant);
+  el('path', { d: 'M0 0 Q56 -48 40 -134 Q-10 -78 0 0 Z', fill: MINT_D }, RM.plant);
+  el('path', { d: 'M0 0 Q-8 -70 14 -176 Q40 -70 0 0 Z', fill: MINT }, RM.plant);
+  RM.plant.setAttribute('transform', 'translate(1600 806)');
+  el('path', { d: 'M1550 800 H1650 L1638 902 H1562 Z', fill: NAVY }, R);
+
+  // notification bell bubble + "!" mark
+  RM.bubble = G(R);
+  el('circle', { cx: 1322, cy: 560, r: 52, fill: CORAL }, RM.bubble);
+  el('path', { d: 'M1302 600 L1342 600 L1322 632 Z', fill: CORAL }, RM.bubble);
+  RM.bell = G(RM.bubble);
+  RM.bellGlyph = G(RM.bell);
+  bellInto(RM.bellGlyph, 1);
+  RM.bell.setAttribute('transform', 'translate(1322 562)');
+  RM.ring = G(RM.bubble);
+  el('path', { d: 'M1384 540 Q1396 560 1384 580', stroke: CORAL, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, RM.ring);
+  el('path', { d: 'M1262 540 Q1250 560 1262 580', stroke: CORAL, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, RM.ring);
+  RM.pings = [0, 1].map(() => el('circle', { cx: 1322, cy: 560, r: 52, fill: 'none', stroke: CORAL, 'stroke-width': 8 }, R));
+  RM.bang = G(R);
+  el('line', { x1: 1040, y1: 396, x2: 1040, y2: 436, stroke: NAVY, 'stroke-width': 11, 'stroke-linecap': 'round' }, RM.bang);
+  el('circle', { cx: 1040, cy: 460, r: 7, fill: NAVY }, RM.bang);
+  el('line', { x1: 1008, y1: 396, x2: 1018, y2: 408, stroke: NAVY, 'stroke-width': 6, 'stroke-linecap': 'round' }, RM.bang);
+  el('line', { x1: 1068, y1: 400, x2: 1082, y2: 394, stroke: NAVY, 'stroke-width': 6, 'stroke-linecap': 'round' }, RM.bang);
+})();
+
+function bellInto(g, s) {
+  // a simple flat bell, drawn around 0,0, about 50 wide
+  const p = { fill: CREAM };
+  el('path', { d: 'M-22 14 L-22 2 Q-22 -22 0 -24 Q22 -22 22 2 L22 14 Z', ...p }, g);
+  el('rect', { x: -27, y: 10, width: 54, height: 9, rx: 4.5, ...p }, g);
+  el('circle', { cx: 0, cy: 25, r: 6.5, ...p }, g);
+  el('circle', { cx: 0, cy: -27, r: 4.5, ...p }, g);
+}
+// the cream bell that rides on top of the coral wipe
+bellInto(wipeBell, 1);
+
+/* =====================================================================
+   GRID of four panels
+   ===================================================================== */
+// panels land clockwise: top left, top right, bottom right, bottom left (the last one is the coral circle that becomes the dot)
+const LPS = [[555, 88], [1643, 203], [1440, 770], [480, 810]];
+const DIAL = [1440, 770];
+const PCOL = [BLUE, MINT, YEL, CORAL];
+const QUAD = [[0, 0], [960, 0], [960, 540], [0, 540]];
+const baseG = G(gS2);
+[[0, 0, CREAM], [960, 0, CREAM_D], [0, 540, CREAM_D], [960, 540, CREAM]].forEach(([x, y, c]) => el('rect', { x, y, width: 960, height: 540, fill: c }, baseG));
+// blue grows out of the centre, so the circles collapse onto the wordmark colour
+const blueDisc = el('circle', { cx: 960, cy: 540, r: 0, fill: BLUE }, gS2);
+
+const panels = [];
+function label(parent, x, y, num, word, color, anchor) {
+  const t = el('text', { x, y, fill: color, 'font-size': 46, 'font-weight': 600, 'text-anchor': anchor || 'start', 'letter-spacing': 1.5 }, parent);
+  const a = el('tspan', { 'font-size': 30, 'font-weight': 700 }, t); a.textContent = num + '  ';
+  const b = el('tspan', {}, t); b.textContent = word;
+  return t;
+}
+function sparkle(parent, R, fill) {
+  return el('path', {
+    d: `M0 ${-R} Q${R * 0.13} ${-R * 0.13} ${R} 0 Q${R * 0.13} ${R * 0.13} 0 ${R} Q${-R * 0.13} ${R * 0.13} ${-R} 0 Q${-R * 0.13} ${-R * 0.13} 0 ${-R} Z`,
+    fill, stroke: fill, 'stroke-width': R * 0.12, 'stroke-linejoin': 'round'
+  }, parent);
+}
+for (let i = 0; i < 4; i++) {
+  const clip = el('clipPath', { id: 'pc' + i }, gS2);
+  const cr = el('rect', { x: QUAD[i][0], y: QUAD[i][1], width: 960, height: 540, rx: 0 }, clip);
+  const pg = G(gS2, { 'clip-path': `url(#pc${i})` });
+  const disc = el('circle', { cx: 0, cy: 0, r: 0, fill: PCOL[i] }, pg);
+  const ct = G(pg);
+  panels.push({ i, cr, pg, disc, ct, cx: QUAD[i][0] + 480, cy: QUAD[i][1] + 270, o: {} });
+}
+// TL: bar chart, Opus 92 vs Sonnet 139, the dot sits on top of the tall bar like the dot of an i
+{
+  const o = panels[0].o, ct = panels[0].ct;
+  o.base = el('rect', { x: 290, y: 410, width: 380, height: 20, rx: 10, fill: CREAM }, ct);
+  o.b1 = el('rect', { x: 350, width: 110, rx: 55, fill: BLUE_LL }, ct);
+  o.b2 = el('rect', { x: 500, width: 110, rx: 55, fill: CREAM }, ct);
+  o.n1 = el('text', { x: 405, 'font-size': 50, 'font-weight': 700, 'text-anchor': 'middle', fill: '#D2CEFF' }, ct);
+  o.n2 = el('text', { x: 555, 'font-size': 50, 'font-weight': 700, 'text-anchor': 'middle', fill: BLUE }, ct);
+  o.dot = el('circle', { cx: LPS[0][0], cy: LPS[0][1], r: 34, fill: CORAL }, ct);
+  o.cap = el('text', { x: 480, y: 486, 'font-size': 30, 'font-weight': 600, 'text-anchor': 'middle', fill: '#B9B4FF', 'letter-spacing': 4 }, ct);
+  o.cap.textContent = 'TOKENS / SEC';
+  o.lab = label(ct, 64, 88, '01', 'SPEED', CREAM);
+}
+// TR: price coins, $4 struck out, $2
+{
+  const o = panels[1].o, ct = panels[1].ct;
+  o.ghost = G(ct);
+  el('circle', { cx: 0, cy: 0, r: 92, fill: MINT_D }, o.ghost);
+  el('text', { x: 0, y: 27, 'font-size': 80, 'font-weight': 700, 'text-anchor': 'middle', fill: NAVY }, o.ghost).textContent = '$4';
+  o.strike = el('line', { x1: -74, y1: 60, x2: 74, y2: -60, stroke: CORAL, 'stroke-width': 16, 'stroke-linecap': 'round' }, o.ghost);
+  o.ghost.setAttribute('data-x', 1262); o.ghost.setAttribute('data-y', 346);
+  o.coin = G(ct);
+  el('circle', { cx: 0, cy: 0, r: 135, fill: CREAM }, o.coin);
+  el('circle', { cx: 0, cy: 0, r: 108, fill: 'none', stroke: CREAM_D, 'stroke-width': 9 }, o.coin);
+  el('text', { x: 0, y: 52, 'font-size': 150, 'font-weight': 700, 'text-anchor': 'middle', fill: NAVY }, o.coin).textContent = '$2';
+  o.coin.setAttribute('data-x', 1540); o.coin.setAttribute('data-y', 290);
+  o.dot = el('circle', { cx: LPS[1][0], cy: LPS[1][1], r: 34, fill: CORAL }, ct);
+  o.lab = label(ct, 1856, 88, '02', 'HALF PRICE', NAVY, 'end');
+}
+// BR: dial at 56, the dot is the hub
+{
+  const o = panels[2].o, ct = panels[2].ct;
+  o.track = el('path', { d: arcD(DIAL[0], DIAL[1], 165, 1), stroke: '#F2B52A', 'stroke-width': 46, 'stroke-linecap': 'round', fill: 'none' }, ct);
+  o.fill = el('path', { d: 'M0 0', stroke: CORAL, 'stroke-width': 46, 'stroke-linecap': 'round', fill: 'none' }, ct);
+  o.needle = el('line', { x1: DIAL[0], y1: DIAL[1], x2: DIAL[0], y2: DIAL[1], stroke: NAVY, 'stroke-width': 18, 'stroke-linecap': 'round' }, ct);
+  o.dot = el('circle', { cx: LPS[2][0], cy: LPS[2][1], r: 34, fill: CORAL }, ct);
+  o.num = el('text', { x: 1440, y: 980, 'font-size': 150, 'font-weight': 700, 'text-anchor': 'middle', fill: NAVY }, ct);
+  o.lab = label(ct, 1856, 1010, '03', 'SMART', NAVY, 'end');
+}
+// BL: a sparkle on the coral circle the dot grows into
+{
+  const o = panels[3].o, ct = panels[3].ct;
+  o.sp1 = G(ct); sparkle(o.sp1, 150, CREAM);
+  o.sp2 = G(ct); sparkle(o.sp2, 44, YEL);
+  o.sp3 = G(ct); sparkle(o.sp3, 30, MINT);
+  o.lab = label(ct, 64, 1010, '04', 'NEW', CREAM);
+}
+function arcD(cx, cy, R, v) {
+  const th = Math.PI * (1 - v);
+  const ex = cx + R * Math.cos(th), ey = cy - R * Math.sin(th);
+  return `M${f(cx - R)} ${f(cy)} A${R} ${R} 0 0 1 ${f(ex)} ${f(ey)}`;
+}
+
+/* =====================================================================
+   WORDMARK (built after the font loads)
+   ===================================================================== */
+const W = { FS: 300, base: 610, letters: [], ox: 0, oy: 0, Ro: 80, tag: [], pill: null, mark: null, boardLogos: [] };
+const s3deco = makeDeco(gS3, BLUE_L);
+const ringA = el('circle', { fill: 'none', stroke: CORAL }, gS3);
+const ringB = el('circle', { fill: 'none', stroke: CORAL }, gS3);
+const wordG = G(gS3), tagG = G(gS3), pillG = G(gS3), markG = G(gS3);
+
+function buildAfterFonts() {
+  const FS = W.FS, base = W.base, SHIFT = -34;
+  const probe = el('text', { x: 0, y: base, 'font-size': FS, 'font-weight': 700, fill: CREAM, 'letter-spacing': -3 }, wordG);
+  probe.textContent = 'Sonnet';
+  const total = probe.getComputedTextLength();
+  const x0 = 960 - total / 2 + SHIFT;
+  const chars = [...'Sonnet'];
+  const pos = chars.map((c, i) => { const ex = probe.getExtentOfChar(i); return { c, x: ex.x, w: ex.width }; });
+  probe.remove();
+  W.letters = [];
+  pos.forEach((p, i) => {
+    if (p.c === 'o') { W.ox = x0 + p.x + p.w / 2; return; }
+    const g = G(wordG);
+    const tx = el('text', { x: x0 + p.x, y: base, 'font-size': FS, 'font-weight': 700, fill: CREAM }, g);
+    tx.textContent = p.c;
+    W.letters.push({ g, cx: x0 + p.x + p.w / 2, i });
+  });
+  // o metrics from the real glyph
+  mctx.font = `700 ${FS}px Fredoka`;
+  const m = mctx.measureText('o');
+  const inkW = m.actualBoundingBoxLeft + m.actualBoundingBoxRight, inkH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+  W.Ro = Math.max(inkW, inkH) / 2 * 0.93;
+  W.oy = base - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  W.xr = x0 + total;
+
+  // version pill with a coral decimal point
+  const pill = G(pillG);
+  el('rect', { x: -118, y: -62, width: 236, height: 124, rx: 62, fill: MINT }, pill);
+  el('text', { x: -50, y: 30, 'font-size': 92, 'font-weight': 700, 'text-anchor': 'middle', fill: NAVY }, pill).textContent = '5';
+  el('text', { x: 52, y: 30, 'font-size': 92, 'font-weight': 700, 'text-anchor': 'middle', fill: NAVY }, pill).textContent = '5';
+  el('circle', { cx: 1, cy: 22, r: 12, fill: CORAL }, pill);
+  W.pill = pill; W.pillX = W.xr + 8; W.pillY = base - FS * 0.8 - 38;
+
+  // tagline
+  const tag = 'THINK FAST. SPEND LESS.';
+  const tp = el('text', { x: 0, y: 0, 'font-size': 52, 'font-weight': 600, 'letter-spacing': 14 }, tagG);
+  tp.textContent = tag;
+  const tw = tp.getComputedTextLength();
+  const tpos = [...tag].map((c, i) => ({ c, x: tp.getStartPositionOfChar(i).x }));
+  tp.remove();
+  W.tag = tpos.map(p => {
+    const e = el('text', { x: 960 + SHIFT * 0.4 - tw / 2 + p.x + 7, y: base + 128, 'font-size': 52, 'font-weight': 600, fill: LAV }, tagG);
+    e.textContent = p.c;
+    return e;
+  });
+
+  // twinkles around the wordmark
+  W.sparks = [];
+  [[x0 - 40, base - 320, 44, CREAM, 0.0, 1], [W.xr + 190, base - 250, 34, YEL, 1.7, -1], [W.xr + 10, base + 196, 28, MINT, 3.1, 1], [x0 + 30, base + 212, 34, CORAL, 4.4, -1]].forEach(([sx, sy, sz, col, ph, dir]) => {
+    const g = G(gS3);
+    sparkle(g, sz, col);
+    W.sparks.push({ g, x: sx, y: sy, ph, dir });
+  });
+  // four-dot mark
+  W.mark = markG;
+  [[0, 0, CREAM], [32, 0, MINT], [0, 32, CORAL], [32, 32, YEL]].forEach(([x, y, c]) => el('circle', { cx: 1808 + x, cy: 978 + y, r: 12, fill: c }, markG));
+
+  // brand sighting on the tower billboard: S + dot + nnet
+  const b = buildings[4], size = 40, base2 = b.top - 58;
+  const wS = mw('S', size), wO = mw('o', size);
+  const totalW = mw('Sonnet', size);
+  const lx = b.cx - totalW / 2;
+  el('text', { x: lx, y: base2, 'font-size': size, 'font-weight': 700, fill: NAVY }, b.boardLogo).textContent = 'S';
+  el('circle', { cx: lx + wS + wO / 2, cy: base2 - size * 0.27, r: size * 0.27, fill: CORAL }, b.boardLogo);
+  el('text', { x: lx + wS + wO, y: base2, 'font-size': size, 'font-weight': 700, fill: NAVY }, b.boardLogo).textContent = 'nnet';
+}
+
+/* =====================================================================
+   RENDER HELPERS
+   ===================================================================== */
+function qpoint(A, B, H, u) {   // hop path: linear in x, parabola in y
+  return [lerp(A[0], B[0], u), lerp(A[1], B[1], u) - H * 4 * u * (1 - u)];
+}
+const HOPT = 0.09;
+const HOPS = [null, { a: LPS[0], b: LPS[1], H: 90 }, { a: LPS[1], b: LPS[2], H: 130 }, { a: LPS[2], b: LPS[3], H: 210 }];
+const BELL = [960 + (1322 - 960) * RS, 900 - (900 - 560) * RS], BELL_R = 52 * RS, CEN = [960, 540];
+let rzNow = 1;
+function roomZoomAt(t) { return 1 + 0.07 * E.outCubic(prog(t, TL.D1 - 0.12, TL.W1)); }
+
+/* ---------- camera ---------- */
+function camAt(t) {
+  const S0 = 1.045;
+  const pre = 1 + (S0 - 1) * E.inOutSine(prog(t, 0.3, TL.D0));
+  let S, px, py, wx, wy;
+  if (t < TL.D0) { S = pre; wx = 960; wy = 540; px = 960; py = 540; }
+  else {
+    const u = prog(t, TL.D0, TL.D1), e = E.inOutCubic(u);
+    S = Math.exp(lerp(Math.log(S0), Math.log(S_END), e));
+    wx = WINX; wy = WINY;
+    const p0x = 960 + (WINX - 960) * S0, p0y = 540 + (WINY - 540) * S0;
+    px = lerp(p0x, 960, e); py = lerp(p0y, 540, e);
+  }
+  if (t > TL.HIT && t < TL.HIT + 0.5) {
+    const a = t - TL.HIT;
+    py += -13 * Math.exp(-a * 17) * Math.cos(a * 62);
+  }
+  return { S, px, py, wx, wy };
+}
+
+/* =====================================================================
+   RENDER: city + dot
+   ===================================================================== */
+function flightPos(t) {
+  const u = prog(t, TL.HIT + TL.SQ, TL.UP1);
+  return [lerp(960, SUN[0], E.outQuad(u)), lerp(GROUND - R_DOT, SUN[1], E.outCubic(u))];
+}
+function dotA(t) {
+  const UP0 = TL.HIT + TL.SQ;
+  let x = 960, y, ang = 90, v = 1;
+  const r = R_DOT + (R_SUN - R_DOT) * spr(t - 0.52, 20, 0.5);
+  if (t < TL.HIT) {
+    const p = t / TL.HIT, e = 0.8 * p * p + 0.2 * p;
+    v = 1 + 0.34 * p;
+    y = lerp(130, GROUND - R_DOT * 1.34, e);
+  } else if (t < UP0) {
+    const u = (t - TL.HIT) / TL.SQ;
+    v = kf(u, [[0, 1.34], [0.3, 0.5], [0.66, 0.95], [1, 1.0]]);
+    y = GROUND - R_DOT * v;
+  } else if (t < TL.UP1) {
+    [x, y] = flightPos(t);
+    const [x2, y2] = flightPos(t + 0.002);
+    const vx = (x2 - x) / 0.002, vy = (y2 - y) / 0.002, sp = Math.hypot(vx, vy);
+    ang = Math.atan2(vy, vx) * 180 / Math.PI;
+    const ramp = E.outQuad(prog(t, UP0, UP0 + 0.05));
+    v = 1 + 0.9 * ramp * Math.pow(clamp(sp / 5200), 0.85) * Math.pow(R_DOT / r, 1.3);
+  } else {
+    x = SUN[0]; y = SUN[1] + 4 * Math.sin((t - TL.UP1) * 3.2);
+  }
+  return { x, y, ang, v, h: Math.pow(v, -0.8), r };
+}
+
+function renderCity(t) {
+  const c = camAt(t);
+  gCam.setAttribute('transform', `translate(${f5(c.px)} ${f5(c.py)}) scale(${f5(c.S)}) translate(${f5(-c.wx)} ${f5(-c.wy)})`);
+  const T0 = TL.HIT, C0 = TL.HIT + 0.09;   // impact, and the moment the city starts to rise
+
+  // faint shapes drift, then sink away as the city springs up
+  decoItems.forEach((d, i) => {
+    const out = E.inCubic(prog(t, C0 + 0.0 + i * 0.03, C0 + 0.28 + i * 0.03));
+    const dy = Math.sin(t * 2.2 + i) * 8;
+    show(d.e, out < 1);
+    d.e.setAttribute('transform', `translate(${d.x} ${f(d.y + dy)}) rotate(${f(d.r0 + d.dr * t)}) scale(${f5(Math.max(0.001, 1 - out))})`);
+  });
+  const sk = spr(t - (C0 + 0.02), 20, 0.5);
+  skyline.setAttribute('transform', `translate(0 ${f(lerp(520, 0, sk))})`);
+
+  // road scrolls
+  dashes.setAttribute('transform', `translate(${f(-((t * 420) % 130))} 0)`);
+  seams.setAttribute('transform', `translate(${f(-((t * 420) % 110))} 0)`);
+
+  // the dot
+  const d = dotA(t);
+  const flying = t < TL.UP1;
+  show(dotUp, flying);
+  show(sunDisc, !flying);
+  show(speedLines, t < TL.HIT);
+  if (flying) {
+    dotUp.setAttribute('r', f(d.r));
+    blobT(dotUp, d.x, d.y, d.ang, d.v, d.h);
+  } else {
+    sunDisc.setAttribute('r', f(d.r));
+    sunDisc.setAttribute('transform', `translate(${f(d.x)} ${f(d.y)})`);
+  }
+  if (t < TL.HIT) {
+    const p = t / TL.HIT, len = 36 + 110 * p;
+    const offs = [-22, 0, 22], k = [0.7, 1, 0.8];
+    sl.forEach((ln, i) => {
+      const yy = d.y - R_DOT * d.v - 26 - i * 6;
+      ln.setAttribute('x1', f(d.x + offs[i])); ln.setAttribute('x2', f(d.x + offs[i]));
+      ln.setAttribute('y1', f(yy - len * k[i])); ln.setAttribute('y2', f(yy));
+    });
+  }
+
+  // sun rays
+  const rot = (t - 0.8) * 12;
+  rays.forEach((ln, i) => {
+    const a0 = (i / 12) * Math.PI * 2 + rot * Math.PI / 180;
+    const k = spr(t - (TL.UP1 + 0.03 + i * 0.012), 30, 0.5);
+    const inner = d.r + 24, outer = inner + 50 * clamp(k, 0, 1.4);
+    const vis = k > 0.01 && t > TL.UP1;
+    show(ln, vis);
+    if (vis) {
+      ln.setAttribute('x1', f(SUN[0] + Math.cos(a0) * inner)); ln.setAttribute('y1', f(SUN[1] + Math.sin(a0) * inner));
+      ln.setAttribute('x2', f(SUN[0] + Math.cos(a0) * outer)); ln.setAttribute('y2', f(SUN[1] + Math.sin(a0) * outer));
+    }
+  });
+
+  // buildings spring up in a wave that runs out from the impact point
+  buildings.forEach((b, i) => {
+    const delay = Math.abs(b.cx - 960) / 4200 + (b.cap === 'billboard' ? 0.12 : 0);   // the tall tower with the window rises last
+    const tau = t - C0 - delay;
+    const sy = spr(tau, 22, 0.42);
+    const sx = 1 - 0.26 * (sy - 1);
+    show(b.g, tau > 0);
+    if (tau > 0) b.g.setAttribute('transform', `translate(${f(b.cx)} ${GROUND}) scale(${f5(Math.max(0.001, sx))} ${f5(Math.max(0.001, sy))}) translate(${f(-b.cx)} ${-GROUND})`);
+    b.winEls.forEach((w, n) => {
+      const wt = t - (C0 + 0.16 + delay) - w.j * 0.018 - w.k * 0.008;
+      const ws = clamp(spr(wt, 34, 0.5), 0, 1.4);
+      w.e.setAttribute('r', f(w.r * ws));
+      if (t > 0.95) {
+        const hh = mulberry32(Math.floor(t * 8) * 131 + i * 17 + n)();
+        w.e.setAttribute('fill', hh > 0.94 ? CREAM : w.c);
+      }
+    });
+    if (b.tip) b.tip.setAttribute('opacity', 0.55 + 0.45 * Math.round((Math.sin(t * 9) + 1) / 2));
+    if (b.board) {
+      const bs = clamp(spr(t - (C0 + 0.3), 28, 0.45), 0, 1.4);
+      TS(b.board, b.cx, b.top - 34, bs, bs);
+    }
+  });
+  trees.forEach((tr, i) => {
+    const delay = Math.abs(tr.x - 960) / 4200;
+    const s = clamp(spr(t - (C0 + 0.12 + delay), 30, 0.45), 0, 1.4);
+    show(tr.g, s > 0.001);
+    TS(tr.g, tr.x, GROUND, s, s);
+  });
+  clouds.forEach((cl, i) => {
+    const p = prog(t, C0 + 0.12 + i * 0.05, C0 + 0.5 + i * 0.05);
+    const k = E.outBack(p, 1.2);
+    const x = lerp(cl.x + cl.dir * 1300, cl.x, k) + (t - 0.8) * 22 * cl.dir;
+    show(cl.g, p > 0);
+    cl.g.setAttribute('transform', `translate(${f(x)} ${cl.y})`);
+  });
+
+  // vehicles
+  const bx = -260 + Math.max(0, t - 0.30) * 1150;
+  show(bus, t > 0.3 && bx < 2300);
+  bus.setAttribute('transform', `translate(${f(bx)} ${f(GROUND + 58 - Math.abs(Math.sin(t * 22)) * 3)})`);
+  const cx2 = 2200 - Math.max(0, t - 0.5) * 1300;
+  show(car, t > 0.5 && cx2 > -200);
+  car.setAttribute('transform', `translate(${f(cx2)} ${f(GROUND + 128 - Math.abs(Math.sin(t * 25)) * 2.5)})`);
+
+  // impact effects
+  const fu = prog(t, T0, T0 + 0.36);
+  const fxOn = t > T0 && t < T0 + 0.36;
+  show(fx, fxOn);
+  if (fxOn) {
+    const e = E.outCubic(fu);
+    ring1.setAttribute('cx', 960); ring1.setAttribute('cy', GROUND + 6);
+    ring1.setAttribute('rx', f(lerp(60, 340, e))); ring1.setAttribute('ry', f(lerp(10, 46, e)));
+    ring1.setAttribute('stroke-width', f(lerp(11, 1.5, e))); ring1.setAttribute('opacity', f(1 - fu));
+    const e2 = E.outCubic(prog(t, T0 + 0.03, T0 + 0.36));
+    ring2.setAttribute('cx', 960); ring2.setAttribute('cy', GROUND + 8);
+    ring2.setAttribute('rx', f(lerp(40, 760, e2))); ring2.setAttribute('ry', f(lerp(6, 70, e2)));
+    ring2.setAttribute('stroke-width', f(lerp(7, 1, e2))); ring2.setAttribute('opacity', f(1 - prog(t, T0 + 0.03, T0 + 0.36)));
+    burst.forEach((b, i) => {
+      const a = (-90 + (i - 4) * 19) * Math.PI / 180;
+      const e3 = E.outQuart(prog(t, T0, T0 + 0.26));
+      const r0 = lerp(54, 110, e3), r1 = lerp(76, 190, e3) - 44 * prog(t, T0 + 0.14, T0 + 0.26);
+      const cy = GROUND - 26;
+      b.setAttribute('x1', f(960 + Math.cos(a) * r0)); b.setAttribute('y1', f(cy + Math.sin(a) * r0));
+      b.setAttribute('x2', f(960 + Math.cos(a) * Math.max(r0, r1))); b.setAttribute('y2', f(cy + Math.sin(a) * Math.max(r0, r1)));
+      b.setAttribute('opacity', f(1 - prog(t, T0 + 0.13, T0 + 0.25)));
+    });
+  }
+
+  // the window lights up (the room is inside it)
+  const wp = clamp(spr(t - TL.WIN, 28, 0.45), 0, 1.4);
+  show(roomWrap, wp > 0.001);
+  TS(roomWrap, WINX, WINY, wp, wp);
+  roomWrap.setAttribute('transform', `translate(${WINX} ${WINY}) scale(${f5(Math.max(0.0001, wp))})`);
+}
+
+/* =====================================================================
+   RENDER: room
+   ===================================================================== */
+function renderRoom(t) {
+  const rz = roomZoomAt(t); rzNow = rz;
+  roomZoom.setAttribute('transform', `translate(960 540) scale(${f5(rz)}) translate(-960 -540)`);
+  const TB = TL.TB, TG = TL.TG;
+  // window life
+  RM.wcloud.setAttribute('transform', `translate(${f(140 + ((t * 26) % 460))} 262)`);
+  RM.sun.setAttribute('cy', f(280 + 4 * Math.sin(t * 2)));
+  // lamp
+  const bump = t > TB ? 4.5 * Math.exp(-(t - TB) * 6) * Math.sin((t - TB) * 20) : 0;
+  RM.lamp.setAttribute('transform', `rotate(${f(1.6 * Math.sin(t * 2.2) + bump)} 660 -10)`);
+  // plant sway
+  RM.plant.setAttribute('transform', `translate(1600 806) rotate(${f(2.2 * Math.sin(t * 2.4))})`);
+  // steam
+  RM.steam.forEach((s, i) => {
+    const ph = ((t * 0.9 + i / 3) % 1);
+    s.setAttribute('transform', `translate(${f(570 + i * 28 + Math.sin(t * 3 + i) * 3)} ${f(820 - ph * 70)}) scale(0.8)`);
+    s.setAttribute('opacity', f(Math.sin(Math.PI * ph)));
+  });
+  // typing hands, then reach
+  const reach = spr(t - TG, 24, 0.55);
+  const typeAmp = 1 - 0.85 * prog(t, TG, TG + 0.2);
+  const bobL = 8 * Math.sin(t * 36) * typeAmp, bobR = 8 * Math.sin(t * 36 + 2.1) * (1 - clamp(reach));
+  const hL = [684, 876 + bobL];
+  const RH0 = [1086, 878 + bobR], RH1 = [1262, 790];
+  const hR = [lerp(RH0[0], RH1[0], reach), lerp(RH0[1], RH1[1], reach) + bobR];
+  RM.handL.setAttribute('cx', f(hL[0])); RM.handL.setAttribute('cy', f(hL[1]));
+  RM.armL.setAttribute('d', `M772 738 Q690 770 ${f(hL[0])} ${f(hL[1])}`);
+  RM.handR.setAttribute('cx', f(hR[0])); RM.handR.setAttribute('cy', f(hR[1]));
+  RM.armR.setAttribute('d', `M1000 738 Q${f(lerp(1080, (1000 + hR[0]) / 2 + 30, reach))} ${f(Math.min(Math.max(hR[1], 760) + 36, 836))} ${f(hR[0])} ${f(hR[1])}`);
+  show(RM.thumbR, reach > 0.05);
+  RM.thumbR.setAttribute('cx', f(hR[0] + 22)); RM.thumbR.setAttribute('cy', f(hR[1] - 22));
+  // head: nod while typing, then turn toward the phone
+  const turn = spr(t - TG, 22, 0.5);
+  const jb = t - TB;
+  const jump = (jb > 0 && jb < 0.3) ? -20 * Math.sin(Math.PI * jb / 0.3) : 0;   // a little startled hop when the phone buzzes
+  const nod = 3.5 * Math.sin(t * 9) * (1 - turn) + 2.5 * Math.sin(t * 36) * typeAmp * 0.4 + jump;
+  RM.head.setAttribute('transform', `translate(${f(10 * turn)} ${f(nod)}) rotate(${f(7.5 * turn)} 885 650)`);
+  // eyes: look down at the laptop, blink, then glance right
+  const gl = spr(t - TG, 26, 0.6);
+  const blink = [1.12, 1.44].reduce((m, b) => Math.min(m, (t > b && t < b + 0.12) ? 0.12 : 1), 1);
+  const wide = 1 + 0.25 * Math.exp(-Math.pow((t - (TB + 0.04)) / 0.1, 2));
+  RM.eyes.setAttribute('transform', `translate(${f(7 * gl)} ${f(5 - 5 * gl)}) translate(885 574) scale(${f(wide)} ${f(blink * wide)}) translate(-885 -574)`);
+  const brow = -12 * Math.exp(-Math.pow((t - (TB + 0.1)) / 0.16, 2)) - 4 * turn;
+  RM.brows.setAttribute('transform', `translate(0 ${f(brow)})`);
+  const smile = spr(t - TG - 0.05, 22, 0.55);
+  show(RM.mouth, smile < 0.15); show(RM.grin, smile >= 0.15);
+  RM.grin.setAttribute('transform', `translate(885 601) scale(${f(0.55 + 0.45 * clamp(smile, 0, 1.2))} ${f(0.3 + 0.7 * clamp(smile, 0, 1.2))}) translate(-885 -601)`);
+  RM.cheeks.forEach(c => c.setAttribute('r', f(15 + 4 * smile)));
+  // phone: buzz and light up
+  const bz = t - TB;
+  const shake = bz > 0 ? Math.exp(-bz * 3.4) * Math.sin(bz * 110) : 0;
+  RM.phoneBody.setAttribute('transform', `translate(${f(1322 + 6 * shake)} 894) rotate(${f(5 * shake)}) translate(-1322 -894)`);
+  show(RM.scrOn, t >= TB); show(RM.scrOff, t < TB);
+  // bubble pops with a bell swing
+  const bp = clamp(spr(t - TB, 28, 0.4), 0, 1.5);
+  show(RM.bubble, bp > 0.001);
+  TS(RM.bubble, 1322, 632, bp, bp);
+  const swing = 18 * Math.exp(-bz * 5) * Math.sin(bz * 40);
+  RM.bell.setAttribute('transform', `translate(1322 562) rotate(${f(bz > 0 ? swing : 0)} 0 -26)`);
+  show(RM.ring, t > TB + 0.05 && (Math.floor((t - TB) * 16) % 2 === 0) && t < TL.W0);
+  // ping rings spread out from the bubble
+  RM.pings.forEach((p, i) => {
+    const u = prog(t, TB + 0.04 + i * 0.07, TB + 0.34 + i * 0.07);
+    show(p, u > 0 && u < 1 && t < TL.W0);
+    p.setAttribute('r', f(lerp(54, 120, E.outCubic(u))));
+    p.setAttribute('stroke-width', f(lerp(9, 1.5, u)));
+    p.setAttribute('opacity', f(1 - u));
+  });
+  // the exclamation mark
+  const gp = clamp(spr(t - (TB + 0.05), 30, 0.45), 0, 1.5);
+  show(RM.bang, gp > 0.001);
+  TS(RM.bang, 1040, 470, gp, gp);
+}
+
+/* =====================================================================
+   RENDER: grid
+   ===================================================================== */
+function countStr(v) { return String(Math.max(0, Math.round(v))); }
+function renderGrid(t) {
+  const on = t >= TL.W1 - 0.04 && t < TL.COL1 + 0.02;
+  show(gS2, on);
+  if (!on) return;
+  blueDisc.setAttribute('r', f(lerp(0, 1300, E.inOutCubic(prog(t, TL.COL0 - 0.06, TL.COL1 - 0.02)))));
+  panels.forEach((p, i) => {
+    const Li = TL.L[i];
+    show(p.pg, t >= Li);
+    if (t < Li) return;
+    const ru = prog(t, Li, Li + 0.2);
+    p.disc.setAttribute('cx', LPS[i][0]); p.disc.setAttribute('cy', LPS[i][1]);
+    p.disc.setAttribute('r', f(lerp(0, 1250, E.outCubic(ru))));
+    // rounding then collapsing
+    const ca = E.outBack(prog(t, TL.ROUND0 + i * 0.02, TL.ROUND0 + 0.12 + i * 0.02), 1.2);
+    const cb = E.inCubic(prog(t, TL.COL0 + i * 0.012, TL.COL1));
+    const D = 470;
+    let w = lerp(960, D, ca), h = lerp(540, D, ca);
+    const rx = lerp(0, D / 2, clamp(ca));
+    let sc = lerp(1, 0.86, ca);
+    let k = 1 - cb;
+    const kk = i === 3 ? Math.max(k, 80 / D) : k;
+    w *= kk; h *= kk; sc *= k;
+    const pcx = lerp(p.cx, 960, cb), pcy = lerp(p.cy, 540, cb);
+    p.cr.setAttribute('x', f(pcx - w / 2)); p.cr.setAttribute('y', f(pcy - h / 2));
+    p.cr.setAttribute('width', f(Math.max(0, w))); p.cr.setAttribute('height', f(Math.max(0, h)));
+    p.cr.setAttribute('rx', f(Math.max(0, rx * kk)));
+    p.ct.setAttribute('transform', `translate(${f(pcx)} ${f(pcy)}) scale(${f5(Math.max(0.0001, sc))}) translate(${f(-p.cx)} ${f(-p.cy)})`);
+    const tt = t - Li;   // time since this panel's landing
+    const o = p.o;
+    const labOut = 1 - prog(t, TL.ROUND0 - 0.02 + i * 0.02, TL.ROUND0 + 0.06 + i * 0.02);   // labels fade before the panel rounds, so they are never sliced by the circle
+    const lab = k0 => { const q = clamp(spr(tt - k0, 30, 0.5), 0, 1.3); o.lab.setAttribute('opacity', f(clamp((tt - k0) / 0.06) * labOut)); o.lab.setAttribute('transform', `translate(0 ${f((1 - q) * 30)})`); };
+    lab(0.05);
+    if (i === 0) {
+      const g1 = clamp(spr(tt - 0.02, 26, 0.5), 0, 1.3), g2 = clamp(spr(tt - 0.07, 26, 0.5), 0, 1.3);
+      const h1 = 190 * g1, h2 = 290 * g2;
+      o.b1.setAttribute('y', f(424 - h1)); o.b1.setAttribute('height', f(Math.max(0, h1)));
+      o.b2.setAttribute('y', f(424 - h2)); o.b2.setAttribute('height', f(Math.max(0, h2)));
+      const c1 = E.outCubic(prog(tt, 0.05, 0.4));
+      o.n1.textContent = countStr(92 * c1); o.n2.textContent = countStr(139 * c1);
+      o.n1.setAttribute('y', f(424 - h1 + 74)); o.n2.setAttribute('y', f(424 - h2 + 74));
+      o.n1.setAttribute('opacity', f(clamp((h1 - 100) / 40))); o.n2.setAttribute('opacity', f(clamp((h2 - 100) / 40)));
+      o.dot.setAttribute('cy', f(LPS[0][1] + (290 - h2)));
+      const sq = tt < 0.1 ? kf(tt / 0.1, [[0, 0.55], [0.4, 1.2], [1, 1]]) : 1;
+      blobT(o.dot, LPS[0][0], LPS[0][1] + (290 - h2) + 34 * (1 - sq), 90, sq, Math.pow(sq, -0.8));
+      o.dot.setAttribute('cx', 0); o.dot.setAttribute('cy', 0);
+      TS(o.base, 480, 420, clamp(spr(tt, 26, 0.55), 0, 1.2), 1);
+      o.cap.setAttribute('opacity', f(clamp((tt - 0.16) / 0.1)));
+      o.cap.setAttribute('transform', `translate(0 ${f((1 - E.outCubic(prog(tt, 0.16, 0.34))) * 18)})`);
+    } else if (i === 1) {
+      const cg = clamp(spr(tt - 0.03, 24, 0.42), 0, 1.4), gg = clamp(spr(tt - 0.1, 24, 0.5), 0, 1.3);
+      const gx = +o.ghost.getAttribute('data-x'), gy = +o.ghost.getAttribute('data-y');
+      const cx = +o.coin.getAttribute('data-x'), cy = +o.coin.getAttribute('data-y');
+      o.coin.setAttribute('transform', `translate(${cx} ${cy}) scale(${f5(Math.max(0.0001, cg))})`);
+      o.ghost.setAttribute('transform', `translate(${gx} ${gy}) scale(${f5(Math.max(0.0001, gg))})`);
+      const sd = E.outCubic(prog(tt, 0.16, 0.3));
+      o.strike.setAttribute('x2', f(lerp(-74, 74, sd))); o.strike.setAttribute('y2', f(lerp(60, -60, sd)));
+      show(o.strike, sd > 0.01);
+      const sq = tt < 0.1 ? kf(tt / 0.1, [[0, 0.55], [0.4, 1.2], [1, 1]]) : 1;
+      blobT(o.dot, LPS[1][0], LPS[1][1] + 34 * (1 - sq), 90, sq, Math.pow(sq, -0.8));
+      o.dot.setAttribute('cx', 0); o.dot.setAttribute('cy', 0);
+    } else if (i === 2) {
+      const vv = 0.56 * E.outCubic(prog(tt, 0.05, 0.45));
+      o.fill.setAttribute('d', vv > 0.004 ? arcD(DIAL[0], DIAL[1], 165, vv) : 'M0 0');
+      const th = Math.PI * (1 - vv);
+      o.needle.setAttribute('x2', f(DIAL[0] + 128 * Math.cos(th))); o.needle.setAttribute('y2', f(DIAL[1] - 128 * Math.sin(th)));
+      const tr = clamp(spr(tt, 26, 0.5), 0, 1.2);
+      o.track.setAttribute('opacity', f(clamp(tt / 0.06)));
+      o.num.textContent = countStr(56 * E.outCubic(prog(tt, 0.05, 0.45)));
+      const ng = clamp(spr(tt - 0.05, 26, 0.5), 0, 1.3);
+      TS(o.num, 1440, 980, ng, ng);
+      const sq = tt < 0.1 ? kf(tt / 0.1, [[0, 0.55], [0.4, 1.2], [1, 1]]) : 1;
+      blobT(o.dot, LPS[2][0], LPS[2][1] + 34 * (1 - sq), 90, sq, Math.pow(sq, -0.8));
+      o.dot.setAttribute('cx', 0); o.dot.setAttribute('cy', 0);
+    } else {
+      const s1 = clamp(spr(tt - 0.04, 22, 0.42), 0, 1.4), s2 = clamp(spr(tt - 0.12, 26, 0.45), 0, 1.4), s3 = clamp(spr(tt - 0.17, 26, 0.45), 0, 1.4);
+      const twist = (1 - clamp(s1, 0, 1)) * -60;
+      o.sp1.setAttribute('transform', `translate(480 810) rotate(${f(twist)}) scale(${f5(Math.max(0.0001, s1))})`);
+      o.sp2.setAttribute('transform', `translate(348 700) rotate(${f(t * 40)}) scale(${f5(Math.max(0.0001, s2 * (0.85 + 0.15 * Math.sin(t * 9))))})`);
+      o.sp3.setAttribute('transform', `translate(640 936) rotate(${f(-t * 40)}) scale(${f5(Math.max(0.0001, s3 * (0.85 + 0.15 * Math.sin(t * 9 + 2))))})`);
+    }
+  });
+}
+
+/* =====================================================================
+   RENDER: the travelling dot, wipe, wordmark
+   ===================================================================== */
+function bellScreen() { return [CEN[0] + (BELL[0] - CEN[0]) * rzNow, CEN[1] + (BELL[1] - CEN[1]) * rzNow]; }
+
+const LOGF = Math.log;
+// the dot that became the o gives two little hops while the page rests (the last frame is settled)
+const HOPS_F = [{ t0: 3.86, d: 0.38, h: 96 }, { t0: 4.42, d: 0.28, h: 42 }];
+function finalDot(t) {
+  const T = TL, tau = t - T.LAND;
+  const r = lerp(40, W.Ro, clamp(spr(tau, 22, 0.42), 0, 1.5));
+  let y = W.oy, v = 1, air = false;
+  if (tau < 0.14) v = kf(tau / 0.14, [[0, 0.62], [0.4, 1.14], [1, 1]]);
+  for (const hp of HOPS_F) {
+    if (t >= hp.t0 - 0.09 && t < hp.t0) v = kf((t - (hp.t0 - 0.09)) / 0.09, [[0, 1], [1, 0.78]]);
+    else if (t >= hp.t0 && t < hp.t0 + hp.d) {
+      const u = (t - hp.t0) / hp.d;
+      y -= 4 * hp.h * u * (1 - u);
+      v = 1 + 0.16 * Math.abs(1 - 2 * u);
+      air = true;
+    } else if (t >= hp.t0 + hp.d && t < hp.t0 + hp.d + 0.14) v = kf((t - hp.t0 - hp.d) / 0.14, [[0, 0.66], [0.4, 1.12], [1, 1]]);
+  }
+  if (!air) y += r * (1 - v);   // squashes keep the bottom of the dot on the baseline
+  return { x: W.ox, y, r, v, ang: 90 };
+}
+
+function renderDot(t) {
+  let vis = false, x = 0, y = 0, r = 34, ang = 0, v = 1, bellK = 0;
+  const bs = bellScreen(), T = TL, r0 = BELL_R * rzNow;
+  if (t >= T.W0 && t < T.W1) {                       // the coral wipe grows out of the bell bubble
+    const u = prog(t, T.W0, T.W1);
+    r = Math.exp(lerp(LOGF(r0), LOGF(2600), E.inQuad(u)));
+    x = bs[0]; y = bs[1]; vis = true;
+    bellK = 1 - prog(r, r0 * 1.15, r0 * 3.0);
+  } else if (t >= T.W1 && t < T.I1) {                // ...then closes down onto the first panel
+    const u = prog(t, T.W1 + 0.01, T.I1), e = lerp(u, u * u * (3 - 2 * u), 0.35);
+    r = Math.exp(lerp(LOGF(2600), LOGF(34), e));
+    x = lerp(bs[0], LPS[0][0], e); y = lerp(bs[1], LPS[0][1], e); vis = true;
+  } else if (t >= T.I1 && t < T.L[3] + 0.05) {       // hops from panel to panel
+    vis = true; r = 34;
+    let seg = 0;
+    for (let j = 1; j <= 3; j++) if (t >= T.L[j] - HOPT) seg = j;
+    let air = false;
+    if (seg === 0) { x = LPS[0][0]; y = LPS[0][1]; }
+    else {
+      const hp = HOPS[seg], u = prog(t, T.L[seg] - HOPT, T.L[seg]);
+      [x, y] = qpoint(hp.a, hp.b, hp.H, u);
+      if (u < 1) {
+        air = true;
+        const [x2, y2] = qpoint(hp.a, hp.b, hp.H, clamp(u + 0.02, 0, 1)), [x1, y1] = qpoint(hp.a, hp.b, hp.H, clamp(u - 0.02, 0, 1));
+        const vx = x2 - x1, vy = y2 - y1, sp = Math.hypot(vx, vy) / (0.04 * HOPT);
+        ang = Math.atan2(vy, vx) * 180 / Math.PI; v = 1 + 0.9 * clamp(sp / 5500, 0, 1);
+      }
+    }
+    if (!air) {                                       // squash after the landing that just happened
+      let j = 0; for (let k = 1; k <= 3; k++) if (t >= T.L[k]) j = k;
+      const tau = t - T.L[j];
+      ang = 90;
+      if (tau < 0.1) { v = kf(tau / 0.1, [[0, 0.55], [0.4, 1.2], [1, 1]]); y += r * (1 - v); }
+    }
+    if (t >= T.L[3]) vis = t < T.L[3] + 0.04;        // the last landing is absorbed by the coral circle
+  } else if (t >= T.COL1 && t < T.LAND) {            // the coral circle is the dot again: it leaps onto the o
+    vis = true; r = 40; ang = 90;
+    if (t < T.LEAP0) { x = 960; y = 540; }
+    else {
+      const u = prog(t, T.LEAP0, T.LAND);
+      const A = [960, 540], B = [W.ox, W.oy];
+      [x, y] = qpoint(A, B, 360, u);
+      const [x2, y2] = qpoint(A, B, 360, clamp(u + 0.02, 0, 1)), [x1, y1] = qpoint(A, B, 360, clamp(u - 0.02, 0, 1));
+      const vx = x2 - x1, vy = y2 - y1, sp = Math.hypot(vx, vy) / (0.04 * (T.LAND - T.LEAP0));
+      ang = Math.atan2(vy, vx) * 180 / Math.PI; v = 1 + 0.8 * clamp(sp / 2600, 0, 1);
+    }
+  } else if (t >= T.LAND) {
+    const s = finalDot(t);
+    vis = true; x = s.x; y = s.y; r = s.r; v = s.v; ang = s.ang;
+  }
+  show(aDot, vis);
+  if (vis) { aDot.setAttribute('r', f(r)); blobT(aDot, x, y, ang, v, Math.pow(v, -0.8)); }
+  // the cream bell that rides on the wipe
+  show(wipeBell, vis && bellK > 0.01 && t < T.W1);
+  if (bellK > 0.01) {
+    wipeBell.setAttribute('transform', `translate(${f(bs[0])} ${f(bs[1] + 2 * RS * r / (BELL_R))}) scale(${f(r / 52)})`);
+    wipeBell.setAttribute('opacity', f(bellK));
+  }
+}
+
+function ringAt(e, t, t0, maxR, r0, sw, dur = 0.6) {
+  const u = prog(t, t0, t0 + dur);
+  show(e, t >= t0 && u < 1);
+  e.setAttribute('cx', f(W.ox)); e.setAttribute('cy', f(W.oy));
+  e.setAttribute('r', f(lerp(r0, maxR, E.outCubic(u))));
+  e.setAttribute('stroke-width', f(lerp(sw, 2, u))); e.setAttribute('opacity', f(1 - E.inQuad(u)));
+}
+
+function renderWord(t) {
+  const on = t >= TL.COL1 - 0.1;
+  show(gS3, on);
+  if (!on || !W.letters.length) return;
+  const T = TL;
+  // faint shapes come back as bookends
+  s3deco.forEach((d, i) => {
+    const k = clamp(spr(t - (T.LAND - 0.1 + i * 0.04), 24, 0.5), 0, 1.3);
+    show(d.e, k > 0.001);
+    const dy = Math.sin(t * 2.2 + i) * 8;
+    d.e.setAttribute('transform', `translate(${d.x} ${f(d.y + dy)}) rotate(${f(d.r0 + d.dr * t)}) scale(${f5(Math.max(0.001, k))})`);
+  });
+  const land1 = HOPS_F[0].t0 + HOPS_F[0].d, land2 = HOPS_F[1].t0 + HOPS_F[1].d;
+  W.letters.forEach(L => {
+    const dist = Math.abs(L.i - 1);
+    const tau = t - (T.COL1 - 0.02 + dist * 0.028);
+    const sy = spr(tau, 24, 0.42);
+    const sx = 1 - 0.3 * (sy - 1);
+    const wv = (t0, a) => -a * Math.sin(Math.PI * prog(t, t0 + dist * 0.03, t0 + 0.2 + dist * 0.03));
+    const idle = 2.5 * Math.sin(t * 3.4 + L.i * 0.85) * prog(t, 3.7, 4.0);
+    const wave = wv(T.LAND, 12) + wv(land1, 7) + wv(land2, 4) + idle;
+    show(L.g, tau > 0);
+    L.g.setAttribute('transform', `translate(${f(L.cx)} ${W.base}) scale(${f5(Math.max(0.001, sx))} ${f5(Math.max(0.001, sy))}) translate(${f(-L.cx)} ${f(-W.base + wave)})`);
+  });
+  ringAt(ringA, t, T.LAND, W.Ro + 150, W.Ro, 14);
+  ringAt(ringB, t, land1, W.Ro + 110, W.Ro, 10, 0.5);
+  // version pill
+  const pp = clamp(spr(t - (T.LAND + 0.06), 24, 0.4), 0, 1.5);
+  show(pillG, pp > 0.001);
+  const pt = Math.max(0, t - T.LAND - 0.06);
+  const wob = 9 + 7 * Math.exp(-pt * 5) * Math.sin(pt * 26) + 3 * Math.sin(t * 3.2) * prog(t, 3.7, 4.0);
+  const bounce = -6 * Math.sin(Math.PI * prog(t, land1, land1 + 0.25)) - 3 * Math.sin(Math.PI * prog(t, land2, land2 + 0.2));
+  pillG.setAttribute('transform', `translate(${f(W.pillX)} ${f(W.pillY + bounce)}) rotate(${f(wob)}) scale(${f5(Math.max(0.0001, pp))})`);
+  // tagline rises letter by letter
+  W.tag.forEach((e, i) => {
+    const u = E.outCubic(prog(t, T.LAND + 0.12 + i * 0.014, T.LAND + 0.4 + i * 0.014));
+    e.setAttribute('opacity', f(u));
+    e.setAttribute('transform', `translate(0 ${f((1 - u) * 28)})`);
+  });
+  const mk = clamp(spr(t - (T.LAND + 0.5), 26, 0.45), 0, 1.4);
+  TS(W.mark, 1824, 994, mk, mk);
+  // twinkles around the wordmark
+  W.sparks.forEach((s, i) => {
+    const q = clamp(spr(t - (T.LAND + 0.3 + i * 0.07), 26, 0.5), 0, 1.3);
+    const tw = Math.pow(0.5 + 0.5 * Math.sin(t * 5.2 + s.ph), 1.6);
+    const sc = Math.max(0.0001, q * (0.35 + 0.65 * tw));
+    show(s.g, q > 0.001);
+    s.g.setAttribute('transform', `translate(${f(s.x)} ${f(s.y)}) rotate(${f(t * 24 * s.dir)}) scale(${f5(sc)})`);
+  });
+}
+
+/* =====================================================================
+   MASTER
+   ===================================================================== */
+function renderAt(t) {
+  t = clamp(t, 0, 4.9999);
+  const T = TL;
+  const cityOn = t < T.W1 + 0.04;
+  show(gCam, cityOn);
+  if (cityOn) {
+    renderCity(t);
+    renderRoom(t);
+  }
+  renderGrid(t);
+  renderWord(t);
+  renderDot(t);
+  // the finished logo drifts in very slowly so the hold never feels frozen
+  const push = t >= T.LAND ? 1 + 0.03 * E.inOutSine(prog(t, T.LAND, 4.95)) : 1;
+  const pt = push === 1 ? '' : `translate(960 540) scale(${f5(push)}) translate(-960 -540)`;
+  gS3.setAttribute('transform', pt); gDot.setAttribute('transform', pt);
+}
+
+// how many sub-frames the recorder averages for motion blur (1 = sharp)
+window.samplesAt = function (t) {
+  const T = TL;
+  if (t < 0.95) return 7;
+  if (t >= T.D0 - 0.02 && t < T.D1 + 0.04) return 14;
+  if (t >= T.TB && t < T.TB + 0.3) return 4;
+  if (t >= T.W0 - 0.02 && t < T.I1 + 0.02) return 20;
+  for (let k = 0; k < 4; k++) if (t >= T.L[k] - 0.05 && t < T.L[k] + 0.17) return 12;
+  if (t >= T.I1 && t < T.L[3] + 0.2) return 8;
+  if (t >= T.ROUND0 - 0.02 && t < T.COL1 + 0.05) return 16;
+  if (t >= T.COL1 + 0.05 && t < T.LAND + 0.06) return 9;
+  if (t >= T.LAND && t < T.LAND + 0.7) return 4;
+  for (const hp of HOPS_F) if (t >= hp.t0 - 0.1 && t < hp.t0 + hp.d + 0.2) return 4;
+  return 1;
+};
+// shutter, as a fraction of one frame: wide for the dive and the dot, narrow where a flat shape's edge sweeps across the frame
+window.shutterAt = function (t) {
+  const T = TL;
+  if (t >= T.HIT + 0.04 && t < 0.95) return 0.3;
+  if (t >= T.W0 - 0.02 && t < T.I1 + 0.02) return 0.3;
+  for (let k = 0; k < 4; k++) if (t >= T.L[k] - 0.05 && t < T.L[k] + 0.17) return 0.2;
+  if (t >= T.ROUND0 - 0.02 && t < T.COL1 + 0.05) return 0.15;
+  if (t >= T.COL1 + 0.05 && t < T.LAND + 0.06) return 0.35;
+  return 0.5;
+};
+
+window.DURATION = 5;
+window.ready = Promise.all([document.fonts.load("700 300px 'Fredoka'"), document.fonts.load("600 46px 'Fredoka'")])
+  .then(() => document.fonts.ready).then(() => { buildAfterFonts(); renderAt(0); });
+window.renderAt = renderAt;
+if (!location.search.includes('capture')) {
+  window.ready.then(() => { const t0 = performance.now(); (function loop() { renderAt(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })(); });
+}
+</script>
+</body>
+</html>

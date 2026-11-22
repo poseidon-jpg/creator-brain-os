@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOCALIS - Voice AI Agents for Your Phone Lines</title>
+<meta name="description" content="VOCALIS builds inbound voice AI agents that answer every call, replace legacy IVR menus, clone your brand voice, and speak 40+ languages. Never miss a call again.">
+<meta property="og:title" content="VOCALIS - Voice AI Agents for Your Phone Lines">
+<meta property="og:description" content="Inbound phone agents, IVR replacement, brand voice cloning and multilingual support lines. Sound made visible.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a1025'/%3E%3Cpath d='M6 16c2-6 3-6 4 0s2 9 3 0 2-11 3 0 2 8 3 0 2-6 3 0 2 4 4 0' stroke='%23ff7a59' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plum:#1a1025;
+  --plum-2:#221533;
+  --plum-3:#2b1c40;
+  --coral:#ff7a59;
+  --coral-soft:#ff9d85;
+  --lav:#cfc2ea;
+  --lav-dim:#9d8fc0;
+  --ink:#f3eefc;
+  --line:rgba(207,194,234,.14);
+  --radius:18px;
+  --font-head:'Space Grotesk',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+body{
+  background:var(--plum);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:17px;
+  line-height:1.6;
+  overflow-x:clip;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--coral);color:var(--plum)}
+h1,h2,h3{font-family:var(--font-head);line-height:1.12;letter-spacing:-.02em}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(26,16,37,.72);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s;
+}
+.nav.scrolled{border-bottom-color:var(--line)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:1.25rem;letter-spacing:.14em;text-decoration:none}
+.logo svg{display:block}
+.nav-links{display:flex;gap:30px;align-items:center;list-style:none}
+.nav-links a{font-size:.92rem;color:var(--lav);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-head);font-weight:600;font-size:.95rem;
+  padding:13px 26px;border-radius:100px;text-decoration:none;cursor:pointer;
+  border:1px solid transparent;transition:transform .2s,box-shadow .2s,background .2s,color .2s,border-color .2s;
+}
+.btn-coral{background:var(--coral);color:var(--plum)}
+.btn-coral:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,122,89,.35);background:var(--coral-soft)}
+.btn-ghost{border-color:rgba(207,194,234,.35);color:var(--ink);background:transparent}
+.btn-ghost:hover{border-color:var(--coral);color:var(--coral)}
+.btn-sm{padding:10px 20px;font-size:.88rem}
+.nav-cta{display:inline-flex}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+#wave{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero-fade{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 110%, rgba(26,16,37,0) 40%, rgba(26,16,37,.55) 100%);pointer-events:none}
+.hero-inner{position:relative;z-index:2;padding:150px 0 110px;max-width:780px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-head);font-size:.78rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--coral);margin-bottom:26px;
+}
+.eyebrow .eq{display:inline-flex;align-items:flex-end;gap:2.5px;height:14px}
+.eq span{width:2.5px;background:var(--coral);border-radius:2px;height:30%;animation:eq 1.1s ease-in-out infinite}
+.eq span:nth-child(2){animation-delay:.15s}
+.eq span:nth-child(3){animation-delay:.3s}
+.eq span:nth-child(4){animation-delay:.45s}
+.eq span:nth-child(5){animation-delay:.6s}
+@keyframes eq{0%,100%{height:25%}50%{height:100%}}
+.hero h1{font-size:clamp(2.5rem,5.6vw,4.4rem);font-weight:700;margin-bottom:24px;text-shadow:0 2px 22px rgba(26,16,37,.9)}
+.hero h1 em{font-style:normal;color:var(--coral)}
+.hero p.lede{font-size:clamp(1.02rem,1.5vw,1.25rem);color:var(--lav);max-width:580px;margin-bottom:38px;text-shadow:0 1px 14px rgba(26,16,37,.95),0 0 30px rgba(26,16,37,.8)}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+#hearBtn .hear-icon{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
+#hearBtn .hear-icon span{width:2.5px;border-radius:2px;background:currentColor;height:40%;transition:height .18s}
+#hearBtn.playing .hear-icon span{animation:eq .55s ease-in-out infinite}
+#hearBtn.playing .hear-icon span:nth-child(2){animation-delay:.1s}
+#hearBtn.playing .hear-icon span:nth-child(3){animation-delay:.2s}
+#hearBtn.playing .hear-icon span:nth-child(4){animation-delay:.3s}
+.hero-note{font-size:.82rem;color:var(--lav-dim);margin-top:18px}
+.scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:2;color:var(--lav-dim);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-head);display:flex;flex-direction:column;align-items:center;gap:8px}
+.scroll-hint::after{content:"";width:1px;height:34px;background:linear-gradient(var(--lav-dim),transparent)}
+
+/* ---------- stats bar ---------- */
+.stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--plum-2)}
+.stats-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.stat{padding:44px 24px;text-align:center;position:relative}
+.stat + .stat::before{content:"";position:absolute;left:0;top:26%;height:48%;width:1px;background:var(--line)}
+.stat b{display:block;font-family:var(--font-head);font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.stat b em{font-style:normal;color:var(--coral);font-size:.72em}
+.stat span{font-size:.86rem;color:var(--lav-dim)}
+
+/* ---------- proof strip ---------- */
+.proof{padding:56px 0 8px;text-align:center}
+.proof p{font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--lav-dim);font-family:var(--font-head);margin-bottom:26px}
+.proof-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 46px;align-items:center}
+.proof-logos span{font-family:var(--font-head);font-weight:600;font-size:1.05rem;color:var(--lav);opacity:.55;transition:opacity .25s,color .25s;letter-spacing:.02em;white-space:nowrap}
+.proof-logos span:hover{opacity:1;color:var(--ink)}
+
+/* ---------- sections ---------- */
+section{padding:110px 0}
+.sec-head{max-width:640px;margin-bottom:64px}
+.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+.kicker{display:inline-flex;align-items:center;gap:12px;font-family:var(--font-head);font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.kicker .eq{height:12px}
+.sec-head h2{font-size:clamp(1.9rem,3.6vw,2.9rem);font-weight:700;margin-bottom:16px}
+.sec-head p{color:var(--lav);font-size:1.06rem}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none}}
+
+/* ---------- services ---------- */
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.svc{
+  background:var(--plum-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:36px 32px;position:relative;overflow:hidden;
+  transition:transform .3s,border-color .3s,background .3s;
+}
+.svc:hover{transform:translateY(-5px);border-color:rgba(255,122,89,.45);background:var(--plum-3)}
+.svc-eq{display:flex;align-items:flex-end;gap:3px;height:22px;margin-bottom:22px}
+.svc-eq span{width:3px;border-radius:2px;background:var(--coral);opacity:.85;transition:height .3s cubic-bezier(.34,1.56,.64,1)}
+.svc h3{font-size:1.28rem;font-weight:600;margin-bottom:12px}
+.svc p{color:var(--lav);font-size:.96rem;margin-bottom:16px}
+.svc .win{color:var(--ink);font-size:.96rem;margin-bottom:18px}
+.svc .win b{color:var(--coral);font-weight:700}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.tools span{font-family:var(--font-head);font-size:.72rem;letter-spacing:.05em;color:var(--lav);border:1px solid var(--line);border-radius:100px;padding:5px 12px;background:rgba(26,16,37,.5)}
+
+/* ---------- process ---------- */
+.process{background:var(--plum-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;counter-reset:step}
+.step{position:relative;padding:30px 26px 32px;border:1px solid var(--line);border-radius:var(--radius);background:var(--plum);transition:border-color .3s,transform .3s}
+.step:hover{border-color:rgba(255,122,89,.45);transform:translateY(-4px)}
+.step::before{
+  counter-increment:step;content:"0" counter(step);
+  font-family:var(--font-head);font-weight:700;font-size:.85rem;color:var(--coral);
+  display:inline-block;margin-bottom:18px;letter-spacing:.1em;
+  border:1px solid rgba(255,122,89,.4);border-radius:100px;padding:5px 14px;
+}
+.step h3{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+.step p{font-size:.92rem;color:var(--lav)}
+.step small{display:block;margin-top:14px;font-family:var(--font-head);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lav-dim)}
+
+/* ---------- case studies ---------- */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.case{
+  background:var(--plum-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:34px 30px;display:flex;flex-direction:column;gap:0;
+  transition:transform .3s,border-color .3s;
+}
+.case:hover{transform:translateY(-5px);border-color:rgba(255,122,89,.45)}
+.case .tag{font-family:var(--font-head);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lav-dim);margin-bottom:16px}
+.case h3{font-size:1.22rem;font-weight:600;margin-bottom:14px}
+.case p{color:var(--lav);font-size:.94rem;margin-bottom:26px;flex-grow:1}
+.case-metrics{display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line);padding-top:22px}
+.metric{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.metric b{font-family:var(--font-head);font-size:1.5rem;font-weight:700;color:var(--coral);white-space:nowrap}
+.metric span{font-size:.82rem;color:var(--lav-dim);text-align:right}
+
+/* ---------- faq ---------- */
+.faq-list{max-width:760px;margin:0 auto}
+.faq-item{border:1px solid var(--line);border-radius:14px;margin-bottom:14px;background:var(--plum-2);overflow:hidden;transition:border-color .3s}
+.faq-item[open]{border-color:rgba(255,122,89,.45)}
+.faq-item summary{
+  list-style:none;cursor:pointer;padding:22px 26px;
+  font-family:var(--font-head);font-weight:600;font-size:1.02rem;
+  display:flex;justify-content:space-between;align-items:center;gap:18px;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{
+  content:"+";font-size:1.4rem;color:var(--coral);font-weight:400;line-height:1;
+  transition:transform .25s;flex-shrink:0;
+}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item .faq-body{padding:0 26px 24px;color:var(--lav);font-size:.95rem}
+
+/* ---------- CTA ---------- */
+.cta{position:relative;overflow:hidden;text-align:center;background:linear-gradient(180deg,var(--plum-2),var(--plum));border-top:1px solid var(--line)}
+#ctaWave{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}
+.cta-inner{position:relative;z-index:2;max-width:680px;margin:0 auto}
+.cta h2{font-size:clamp(2rem,4.4vw,3.3rem);font-weight:700;margin-bottom:20px}
+.cta p{color:var(--lav);font-size:1.1rem;margin-bottom:38px}
+.cta .fine{font-size:.82rem;color:var(--lav-dim);margin-top:20px;margin-bottom:0}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:64px 0 40px;background:var(--plum)}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:54px}
+.foot-grid h4{font-family:var(--font-head);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lav-dim);margin-bottom:18px}
+.foot-grid ul{list-style:none}
+.foot-grid li{margin-bottom:10px}
+.foot-grid a{color:var(--lav);text-decoration:none;font-size:.92rem;transition:color .2s}
+.foot-grid a:hover{color:var(--coral)}
+.foot-brand p{color:var(--lav-dim);font-size:.9rem;max-width:280px;margin-top:14px}
+.foot-bottom{border-top:1px solid var(--line);padding-top:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--lav-dim)}
+.foot-bottom a{color:var(--lav);text-decoration:none}
+.foot-bottom a:hover{color:var(--coral)}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .svc-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .cases{grid-template-columns:1fr;max-width:560px;margin:0 auto}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(3)::before{display:none}
+  .stat{padding:34px 18px}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  section{padding:80px 0}
+  .wrap{padding:0 20px}
+  .nav-links{display:none}
+  .steps{grid-template-columns:1fr}
+  .hero-inner{padding:130px 0 100px}
+  .stats-inner{grid-template-columns:1fr 1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .scroll-hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="#top" aria-label="VOCALIS home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2b1c40"/><path d="M6 16c2-6 3-6 4 0s2 9 3 0 2-11 3 0 2 8 3 0 2-6 3 0 2 4 4 0" stroke="#ff7a59" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+      VOCALIS
+    </a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#book" class="btn btn-coral btn-sm nav-cta">Book a voice audit</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="wave" aria-hidden="true"></canvas>
+  <div class="hero-fade"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <span class="eyebrow"><span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span> Voice AI agency</span>
+      <h1>Every call answered. <em>In your voice.</em> In any language.</h1>
+      <p class="lede">VOCALIS designs and runs voice AI agents for your phone lines: inbound agents that book, route and resolve, IVR menus replaced with natural conversation, and support lines that speak 40+ languages. You stop losing revenue to hold music.</p>
+      <div class="hero-actions">
+        <a href="#book" class="btn btn-coral">Book a voice audit</a>
+        <button id="hearBtn" class="btn btn-ghost" type="button" aria-label="Play a short sample tone sequence">
+          <span class="hear-icon" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          Hear it
+        </button>
+      </div>
+      <p class="hero-note">The waveform above is live. Move your cursor through it, or press Hear it for a taste of our sound design.</p>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">Scroll</div>
+</header>
+
+<div class="stats reveal">
+  <div class="wrap stats-inner">
+    <div class="stat"><b data-count="4200000" data-fmt="m">0</b><span>calls handled to date</span></div>
+    <div class="stat"><b data-count="94" data-fmt="pct">0</b><span>average CSAT across live agents</span></div>
+    <div class="stat"><b data-count="18" data-fmt="s">0</b><span>average answer time, every hour of the day</span></div>
+    <div class="stat"><b data-count="41" data-fmt="lang">0</b><span>languages served in production</span></div>
+  </div>
+</div>
+
+<div class="proof reveal">
+  <div class="wrap">
+    <p>Trusted with the phone lines of</p>
+    <div class="proof-logos">
+      <span>Meridian Dental Group</span>
+      <span>HarborPoint Logistics</span>
+      <span>Fable &amp; Fern Hotels</span>
+      <span>ClearPath Insurance</span>
+      <span>Nordvik Furniture</span>
+      <span>Atlas Home Services</span>
+    </div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker"><span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span> Services</span>
+      <h2>Four ways we put a voice on the line</h2>
+      <p>Every engagement ships as a managed system: the agent, the telephony, the guardrails, and the reporting. You get a phone number that just works.</p>
+    </div>
+    <div class="svc-grid">
+      <div class="svc reveal">
+        <div class="svc-eq" aria-hidden="true"></div>
+        <h3>Inbound Phone Agents</h3>
+        <p>A conversational agent that answers every inbound call in under two rings, qualifies the caller, books appointments, takes payments, and hands complex cases to your team with a full transcript.</p>
+        <p class="win"><b>The win:</b> zero missed calls, 24/7, without adding headcount.</p>
+        <div class="tools"><span>Retell AI</span><span>Twilio</span><span>Claude</span><span>Cal.com</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="svc-eq" aria-hidden="true"></div>
+        <h3>IVR Replacement</h3>
+        <p>We retire "press 1 for sales" and replace the whole tree with one natural question: "How can I help?" The agent routes by intent, not by menu position, and never traps a caller in a loop.</p>
+        <p class="win"><b>The win:</b> callers reach the right place in seconds, and abandonment drops hard.</p>
+        <div class="tools"><span>Deepgram</span><span>Twilio Studio</span><span>SIP trunking</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="svc-eq" aria-hidden="true"></div>
+        <h3>Brand Voice Cloning</h3>
+        <p>With consent and a 30-minute studio session, we clone a founder's or spokesperson's voice so your agent sounds like your brand, not like a generic robot. Includes usage governance and watermarking.</p>
+        <p class="win"><b>The win:</b> the phone experience finally matches the brand you spent years building.</p>
+        <div class="tools"><span>ElevenLabs</span><span>Resemble AI</span><span>Consent vault</span></div>
+      </div>
+      <div class="svc reveal">
+        <div class="svc-eq" aria-hidden="true"></div>
+        <h3>Multilingual Support Lines</h3>
+        <p>One support number, 40+ languages. The agent detects the caller's language mid-sentence and responds natively, with tone and formality tuned per market. Escalations route to human agents by language.</p>
+        <p class="win"><b>The win:</b> serve every customer in their own language for the cost of one line.</p>
+        <div class="tools"><span>Deepgram Nova</span><span>Claude</span><span>Azure Speech</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="process" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker"><span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span> Process</span>
+      <h2>From first call to live line in four weeks</h2>
+      <p>A fixed, boring, reliable path. Voice is too close to your customers for improvisation.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <h3>Voice audit</h3>
+        <p>We listen to 200+ of your real calls, map intents, and quantify what missed and mishandled calls cost you today.</p>
+        <small>Week 1</small>
+      </div>
+      <div class="step reveal">
+        <h3>Agent design</h3>
+        <p>Conversation flows, escalation rules, voice selection or cloning, and the compliance guardrails for your industry.</p>
+        <small>Week 2</small>
+      </div>
+      <div class="step reveal">
+        <h3>Shadow launch</h3>
+        <p>The agent takes overflow and after-hours calls first. We review every transcript daily and tune until CSAT clears 90%.</p>
+        <small>Week 3</small>
+      </div>
+      <div class="step reveal">
+        <h3>Full line + ops</h3>
+        <p>The agent takes the front line. You get a live dashboard, weekly tuning, and a human failover that never sleeps.</p>
+        <small>Week 4 onward</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker"><span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span> Results</span>
+      <h2>What a well-run voice line does to a P&amp;L</h2>
+      <p>Three recent engagements. Numbers are 90-day post-launch measurements against the prior quarter.</p>
+    </div>
+    <div class="cases">
+      <div class="case reveal">
+        <p class="tag">Dental, 12 locations</p>
+        <h3>Meridian Dental Group</h3>
+        <p>38% of inbound calls rang out during lunch and after 5pm. Our inbound agent now answers all of them, books directly into Dentrix, and calls back same-day cancellations to refill chairs.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>$212k</b><span>missed-call revenue recovered per quarter</span></div>
+          <div class="metric"><b>0</b><span>calls ringing out, from 38%</span></div>
+          <div class="metric"><b>96%</b><span>booking-call CSAT</span></div>
+        </div>
+      </div>
+      <div class="case reveal">
+        <p class="tag">Insurance, national</p>
+        <h3>ClearPath Insurance</h3>
+        <p>A 7-layer IVR was driving a 31% abandonment rate. We replaced it with a single natural-language front door that routes by intent and resolves simple policy queries on the spot.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>-74%</b><span>call abandonment, 31% to 8%</span></div>
+          <div class="metric"><b>52%</b><span>of calls fully resolved without a human</span></div>
+          <div class="metric"><b>3,100 hrs</b><span>agent time returned to complex claims per year</span></div>
+        </div>
+      </div>
+      <div class="case reveal">
+        <p class="tag">Hospitality, EU + APAC</p>
+        <h3>Fable &amp; Fern Hotels</h3>
+        <p>Guests across 14 countries were being served in English only. One multilingual line now takes reservations and requests in 22 languages, in a cloned voice matching the brand's concierge.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>+19%</b><span>direct bookings, bypassing OTA commissions</span></div>
+          <div class="metric"><b>22</b><span>languages live on one number</span></div>
+          <div class="metric"><b>$480k</b><span>annual OTA commission avoided</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="kicker"><span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span> FAQ</span>
+      <h2>The questions every ops lead asks us</h2>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary>Will callers know they are talking to an AI?</summary>
+        <div class="faq-body">Yes, by design. The agent discloses it is an automated assistant at the start of the call, as required in most jurisdictions. Disclosure costs nothing: our post-disclosure CSAT averages 94% because the agent answers instantly and actually resolves things.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What happens when the agent gets stuck?</summary>
+        <div class="faq-body">It hands off. Every deployment ships with escalation rules: to your team during hours, to a callback queue or answering partner after hours. The human receives the full transcript and a one-line summary, so the caller never repeats themselves.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is voice cloning legal and safe?</summary>
+        <div class="faq-body">We only clone voices with written, revocable consent from the speaker, stored in a consent vault. Cloned voices are watermarked, locked to your telephony, and never reusable outside your account. If consent is revoked, the model is deleted within 72 hours.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How do you handle our industry's compliance rules?</summary>
+        <div class="faq-body">Guardrails are configured per industry: HIPAA-conscious flows for health, no-advice boundaries for insurance and finance, PCI-compliant payment capture via tokenized IVR handoff. Recordings and transcripts live in your region, with retention you control.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What does an engagement cost?</summary>
+        <div class="faq-body">Setup runs $8k to $25k depending on integrations, then a monthly managed fee tied to call volume. Most clients see the system pay for itself within the first quarter from recovered missed-call revenue alone. The voice audit gives you the exact math before you commit.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="book">
+  <canvas id="ctaWave" aria-hidden="true"></canvas>
+  <div class="wrap cta-inner">
+    <h2>Hear what your phone line could sound like</h2>
+    <p>Book a 30-minute voice audit. We will pull the numbers on your missed calls, play you a working demo agent for your business, and give you the build plan whether you hire us or not.</p>
+    <a href="mailto:hello@vocalis.agency" class="btn btn-coral">Book a voice audit</a>
+    <p class="fine">No retainer required for the audit. Demo agent delivered within 5 business days.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="logo" href="#top">
+          <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2b1c40"/><path d="M6 16c2-6 3-6 4 0s2 9 3 0 2-11 3 0 2 8 3 0 2-6 3 0 2 4 4 0" stroke="#ff7a59" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+          VOCALIS
+        </a>
+        <p>Voice AI agents for phone lines that never miss, never sleep, and always sound like you.</p>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#services">Inbound agents</a></li>
+          <li><a href="#services">IVR replacement</a></li>
+          <li><a href="#services">Voice cloning</a></li>
+          <li><a href="#services">Multilingual lines</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#book">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:hello@vocalis.agency">hello@vocalis.agency</a></li>
+          <li><a href="tel:+18885550142">+1 888 555 0142</a></li>
+          <li><a href="#book">Book an audit</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; 2026 VOCALIS Voice Systems Inc. All calls consensually recorded.</span>
+      <span><a href="../../index.html">Part of the RoboNuggets Design Systems</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- nav scroll state ---------- */
+  var nav = document.getElementById("nav");
+  addEventListener("scroll", function(){
+    nav.classList.toggle("scrolled", scrollY > 10);
+  }, {passive:true});
+
+  /* ---------- hero waveform ---------- */
+  var canvas = document.getElementById("wave");
+  var ctx = canvas.getContext("2d");
+  var W=0, H=0, dpr=1;
+  var mouseX=0.5, mouseY=0.5, mouseEnergy=0;  // 0..1 normalized
+  var audioEnergy=0; // driven by Hear it playback
+  var t=0;
+
+  function resize(){
+    dpr = Math.min(devicePixelRatio||1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  addEventListener("resize", resize);
+
+  document.querySelector(".hero").addEventListener("pointermove", function(e){
+    var r = canvas.getBoundingClientRect();
+    mouseX = (e.clientX - r.left)/r.width;
+    mouseY = (e.clientY - r.top)/r.height;
+    mouseEnergy = Math.min(1, mouseEnergy + 0.08);
+  }, {passive:true});
+
+  // layered waveform: several sine strands with gaussian bump near cursor
+  var strands = [
+    {amp:.34, freq:2.1, speed:.55, color:"rgba(255,122,89,.9)",  lw:2.4, glow:true},
+    {amp:.24, freq:3.2, speed:-.4, color:"rgba(207,194,234,.6)", lw:1.5},
+    {amp:.18, freq:4.6, speed:.8,  color:"rgba(255,157,133,.45)",lw:1.2},
+    {amp:.42, freq:1.4, speed:.3,  color:"rgba(157,143,192,.4)", lw:1.7},
+    {amp:.12, freq:6.4, speed:-.9, color:"rgba(207,194,234,.3)", lw:1}
+  ];
+
+  function strandY(x, st, s, baseAmp, energy){
+    var d = x - mouseX;
+    var bump = Math.exp(-d*d*26) * (mouseEnergy*1.6 + audioEnergy*1.2);
+    var y = Math.sin(x*Math.PI*2*st.freq + t*st.speed + s*1.7)
+          * st.amp * baseAmp * (energy + bump)
+          * Math.sin(x*Math.PI); // taper at edges
+    y += (mouseY-0.5) * 30 * Math.exp(-d*d*18) * mouseEnergy;
+    return y;
+  }
+
+  function traceStrand(cy, st, s, baseAmp, energy, steps, mirror){
+    ctx.beginPath();
+    for(var i=0; i<=steps; i++){
+      var x = i/steps;
+      var y = strandY(x, st, s, baseAmp, energy) * (mirror ? -0.45 : 1);
+      var px = x*W, py = cy + y;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+  }
+
+  // idle frequency bars along the bottom of the hero
+  var NBARS = 64;
+  function drawBars(){
+    var bw = W/NBARS;
+    var base = H - 14;
+    for(var i=0;i<NBARS;i++){
+      var x = (i+0.5)/NBARS;
+      var d = x - mouseX;
+      var kick = Math.exp(-d*d*20) * mouseEnergy * 30;
+      var hgt = 6
+        + (Math.sin(i*0.55 + t*1.3) + 1) * 9
+        + (Math.sin(i*1.7 - t*0.8) + 1) * 5
+        + audioEnergy*34 + kick;
+      ctx.fillStyle = "rgba(255,122,89," + (0.10 + audioEnergy*0.25 + Math.exp(-d*d*20)*mouseEnergy*0.25) + ")";
+      ctx.fillRect(i*bw + bw*0.3, base - hgt, bw*0.4, hgt);
+    }
+  }
+
+  function drawWave(){
+    ctx.clearRect(0,0,W,H);
+    var narrow = W < 700;
+    var cy = narrow ? H*0.64 : H*0.56;
+    var baseAmp = Math.min(H*0.2, narrow ? 110 : 170);
+    var energy = 0.5 + mouseEnergy*0.9 + audioEnergy*1.4;
+    var steps = Math.max(60, Math.floor(W/9));
+
+    drawBars();
+    if(narrow) ctx.globalAlpha = 0.42;
+
+    for(var s=strands.length-1; s>=0; s--){
+      var st = strands[s];
+      if(st.glow){
+        // soft halo pass under the primary strand
+        traceStrand(cy, st, s, baseAmp, energy, steps, false);
+        ctx.strokeStyle = "rgba(255,122,89,.18)";
+        ctx.lineWidth = 9;
+        ctx.stroke();
+        // faint mirrored reflection
+        traceStrand(cy, st, s, baseAmp, energy, steps, true);
+        ctx.strokeStyle = "rgba(255,122,89,.14)";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+      traceStrand(cy, st, s, baseAmp, energy, steps, false);
+      ctx.strokeStyle = st.color;
+      ctx.lineWidth = st.lw;
+      ctx.stroke();
+    }
+
+    // center hairline
+    ctx.beginPath();
+    ctx.moveTo(0,cy); ctx.lineTo(W,cy);
+    ctx.strokeStyle = "rgba(207,194,234,.08)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function frame(){
+    t += 0.016;
+    mouseEnergy *= 0.96;
+    audioEnergy *= 0.94;
+    drawWave();
+    requestAnimationFrame(frame);
+  }
+
+  if(reduced){
+    // one static, calm frame
+    mouseEnergy = 0; audioEnergy = 0; t = 3;
+    drawWave();
+    addEventListener("resize", drawWave);
+  } else {
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- CTA mini waveform ---------- */
+  var cta = document.getElementById("ctaWave");
+  var cctx = cta.getContext("2d");
+  var cW=0,cH=0;
+  function cResize(){
+    cW = cta.clientWidth; cH = cta.clientHeight;
+    cta.width = cW*dpr; cta.height = cH*dpr;
+    cctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  cResize(); addEventListener("resize", cResize);
+  var ctaVisible = false;
+  function drawCta(time){
+    cctx.clearRect(0,0,cW,cH);
+    var cy2 = cH*0.85;
+    cctx.beginPath();
+    var steps2 = Math.max(50, Math.floor(cW/14));
+    for(var i=0;i<=steps2;i++){
+      var x=i/steps2;
+      var y = Math.sin(x*Math.PI*3 + time*0.4)*18*Math.sin(x*Math.PI);
+      if(i===0) cctx.moveTo(x*cW, cy2+y); else cctx.lineTo(x*cW, cy2+y);
+    }
+    cctx.strokeStyle="rgba(255,122,89,.5)";
+    cctx.lineWidth=1.8;
+    cctx.stroke();
+    cctx.beginPath();
+    for(var j=0;j<=steps2;j++){
+      var x2=j/steps2;
+      var y2 = Math.sin(x2*Math.PI*5 - time*0.55 + 1.3)*10*Math.sin(x2*Math.PI);
+      if(j===0) cctx.moveTo(x2*cW, cy2+y2); else cctx.lineTo(x2*cW, cy2+y2);
+    }
+    cctx.strokeStyle="rgba(207,194,234,.3)";
+    cctx.lineWidth=1.1;
+    cctx.stroke();
+  }
+  if(reduced){ drawCta(2); addEventListener("resize", function(){ drawCta(2); }); }
+  else {
+    (function ctaLoop(){
+      if(ctaVisible) drawCta(performance.now()/1000);
+      requestAnimationFrame(ctaLoop);
+    })();
+    new IntersectionObserver(function(en){ ctaVisible = en[0].isIntersecting; }).observe(cta);
+  }
+
+  /* ---------- WebAudio: Hear it (user-triggered only) ---------- */
+  var hearBtn = document.getElementById("hearBtn");
+  var actx = null, playing = false;
+  hearBtn.addEventListener("click", function(){
+    if(playing) return;
+    try{
+      if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state === "suspended") actx.resume();
+      playing = true;
+      hearBtn.classList.add("playing");
+      var master = actx.createGain();
+      master.gain.value = 0.16;
+      master.connect(actx.destination);
+      // gentle pentatonic phrase, two soft voices
+      var notes = [392.00, 493.88, 587.33, 659.25, 587.33, 493.88, 392.00, 329.63];
+      var start = actx.currentTime + 0.05;
+      var step = 0.22;
+      notes.forEach(function(f, i){
+        [1, 2.001].forEach(function(mult, v){
+          var o = actx.createOscillator();
+          var g = actx.createGain();
+          o.type = v===0 ? "sine" : "triangle";
+          o.frequency.value = f*mult;
+          var t0 = start + i*step;
+          g.gain.setValueAtTime(0, t0);
+          g.gain.linearRampToValueAtTime(v===0 ? 1 : 0.12, t0+0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0+step*2.4);
+          o.connect(g); g.connect(master);
+          o.start(t0); o.stop(t0+step*2.6);
+        });
+      });
+      var total = notes.length*step + 0.7;
+      // pulse the hero waveform in time with the notes
+      if(!reduced){
+        var pulses = 0;
+        var pulse = setInterval(function(){
+          audioEnergy = Math.min(1, audioEnergy + 0.55);
+          if(++pulses >= notes.length) clearInterval(pulse);
+        }, step*1000);
+      }
+      setTimeout(function(){
+        playing = false;
+        hearBtn.classList.remove("playing");
+      }, total*1000);
+    } catch(e){
+      playing = false;
+      hearBtn.classList.remove("playing");
+    }
+  });
+
+  /* ---------- scroll reveals ---------- */
+  var reveals = document.querySelectorAll(".reveal");
+  if(reduced){
+    reveals.forEach(function(el){ el.classList.add("in"); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, {threshold:0.12, rootMargin:"0px 0px -40px 0px"});
+    reveals.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---------- stat count-up ---------- */
+  function fmt(n, kind){
+    if(kind==="m") return (n/1000000).toFixed(1).replace(/\.0$/,"") + "M+";
+    if(kind==="pct") return n + "%";
+    if(kind==="s") return n + "s";
+    if(kind==="lang") return n + "+";
+    return String(n);
+  }
+  var stats = document.querySelectorAll(".stat b");
+  function runCount(el){
+    var target = +el.dataset.count, kind = el.dataset.fmt;
+    if(reduced){ el.textContent = fmt(target, kind); return; }
+    var t0 = performance.now(), dur = 1400;
+    (function tick(now){
+      var p = Math.min(1,(now-t0)/dur);
+      p = 1-Math.pow(1-p,3);
+      el.textContent = fmt(Math.round(target*p), kind);
+      if(p<1) requestAnimationFrame(tick);
+    })(t0);
+  }
+  if(reduced){
+    stats.forEach(runCount);
+  } else {
+    var sio = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ runCount(en.target); sio.unobserve(en.target); }
+      });
+    }, {threshold:0.4});
+    stats.forEach(function(el){ sio.observe(el); });
+  }
+
+  /* ---------- service card equalizers ---------- */
+  document.querySelectorAll(".svc-eq").forEach(function(eq){
+    var bars = [];
+    function idleH(i){ return Math.round(24 + Math.abs(Math.sin(i*0.55 + 0.6))*62) + "%"; }
+    for(var i=0;i<14;i++){
+      var b = document.createElement("span");
+      b.style.height = idleH(i);
+      eq.appendChild(b); bars.push(b);
+    }
+    if(reduced) return;
+    var card = eq.closest(".svc"), timer = null;
+    card.addEventListener("pointerenter", function(){
+      if(timer) return;
+      timer = setInterval(function(){
+        bars.forEach(function(b){ b.style.height = (12 + Math.random()*88) + "%"; });
+      }, 140);
+    });
+    card.addEventListener("pointerleave", function(){
+      clearInterval(timer); timer = null;
+      bars.forEach(function(b,i){ b.style.height = idleH(i); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

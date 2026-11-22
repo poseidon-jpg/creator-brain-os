@@ -1,0 +1,954 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sonnet 5.5 - Frame by Frame</title>
+<style>
+  @font-face { font-family: 'Luckiest Guy'; src: url(assets/luckiestguy.woff2) format('woff2'); font-display: block; }
+  @font-face { font-family: 'Caveat'; src: url(assets/caveat-var.woff2) format('woff2'); font-weight: 400 700; font-display: block; }
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #e4dcc3; }
+  canvas { display: block; }
+  svg.defs { position: absolute; width: 0; height: 0; }
+</style>
+</head>
+<body>
+<svg class="defs" id="defs" xmlns="http://www.w3.org/2000/svg"></svg>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(() => {
+  const W = 1920, H = 1080;
+  const INK = '#1e140f', RED = '#d12c2b', YEL = '#f1c02b', PAPER = '#e6decb', SUN = '#f3e1a4',
+        CREAM = '#f8efdc', WHITE = '#fbf5e6', DRED = '#7d1c1a', CHEEK = '#d9362a', DYEL = '#c99a14';
+  const NIGHT = { bg: '#251b1a', disc: '#322923', line: '#c4483c', fill: '#8e332e', dim: '#5b2622', spec: '#2c1a17' };
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const TAU = Math.PI * 2;
+
+  // ---------- seeded randomness keyed by the drawing number ----------
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  let D = 0; // current drawing index
+  const rng = (key) => mulberry32(hashStr(key + '|' + D));
+  const rs = (key) => mulberry32(hashStr(key)); // static, never boils
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const ease = k => { k = clamp(k); return k * k * (3 - 2 * k); };
+  const easeOut = k => { k = clamp(k); return 1 - Math.pow(1 - k, 3); };
+  const easeIn = k => { k = clamp(k); return k * k * k; };
+  const pick = (arr, i) => arr[clamp(i, 0, arr.length - 1) | 0];
+
+  // ---------- timeline: 150 frames, drawings held for 1, 2 or 3 frames ----------
+  const SEG = [[0, 10, 2], [10, 16, 2], [16, 26, 2], [26, 40, 2], [40, 54, 2], [54, 58, 2], [58, 63, 1], [63, 71, 2], [71, 108, 2], [108, 150, 3]];
+  const DF = [], DIDX = [], HOLD = [];
+  (() => { let idx = -1, last = -1; for (const [a, b, h] of SEG) for (let f = a; f < b; f++) { const df = a + Math.floor((f - a) / h) * h; if (df !== last) { idx++; last = df; } DF[f] = df; DIDX[f] = idx; HOLD[f] = h; } })();
+  const BEAT = { strike: 0, flash: 10, ignite: 16, hop: 26, dance: 40, wind: 54, spin: 58, boom: 63, stamp: 71, hold: 108 };
+  const FPS = 30;
+
+  // ---------- curves ----------
+  function spline(ctrl, closed = true, per = 9) {
+    const n = ctrl.length;
+    const P = i => closed ? ctrl[(i + n) % n] : ctrl[clamp(i, 0, n - 1)];
+    const out = [];
+    const segs = closed ? n : n - 1;
+    for (let i = 0; i < segs; i++) {
+      const p1 = P(i), p2 = P(i + 1);
+      const p0 = p1[2] ? p1 : P(i - 1), p3 = p2[2] ? p2 : P(i + 2);
+      for (let k = 0; k < per; k++) {
+        const t = k / per, t2 = t * t, t3 = t2 * t;
+        const f = (a, b, c, d) => 0.5 * ((2 * b) + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+        out.push([f(p0[0], p1[0], p2[0], p3[0]), f(p0[1], p1[1], p2[1], p3[1])]);
+      }
+    }
+    if (!closed) out.push([ctrl[n - 1][0], ctrl[n - 1][1]]);
+    return out;
+  }
+  function densify(pts, closed, step = 14) {
+    const out = []; const n = pts.length; const segs = closed ? n : n - 1;
+    for (let i = 0; i < segs; i++) {
+      const a = pts[i], b = pts[(i + 1) % n];
+      const m = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
+      for (let k = 0; k < m; k++) out.push([lerp(a[0], b[0], k / m), lerp(a[1], b[1], k / m)]);
+    }
+    if (!closed) out.push([pts[n - 1][0], pts[n - 1][1]]);
+    return out;
+  }
+  const ellipse = (cx, cy, rx, ry, n = 14, rot = 0) => { const o = []; for (let i = 0; i < n; i++) { const a = i / n * TAU; const x = Math.cos(a) * rx, y = Math.sin(a) * ry; o.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]); } return o; };
+  function arcLen(p) { const s = [0]; for (let i = 1; i < p.length; i++) s.push(s[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1])); return s; }
+
+  // line boil: a smooth wobble that is re-rolled every drawing
+  function boil(pts, key, amp, closed) {
+    if (amp <= 0) return pts.map(p => [p[0], p[1]]);
+    const r = rng(key);
+    const s = arcLen(pts); const L = s[s.length - 1] + (closed ? Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) : 0);
+    const k1 = closed ? (2 + Math.floor(r() * 2)) * TAU / L : (0.008 + r() * 0.008), k2 = closed ? (5 + Math.floor(r() * 3)) * TAU / L : (0.03 + r() * 0.02);
+    const a1 = r() * TAU, a2 = r() * TAU, a3 = r() * TAU, a4 = r() * TAU;
+    return pts.map((p, i) => [
+      p[0] + amp * (0.65 * Math.sin(s[i] * k1 + a1) + 0.35 * Math.sin(s[i] * k2 + a2)),
+      p[1] + amp * (0.65 * Math.sin(s[i] * k1 + a3) + 0.35 * Math.sin(s[i] * k2 + a4))
+    ]);
+  }
+  // brush ink: a filled outline with pressure variation, tapered ends on open lines
+  function inkLine(g, pts, closed, w, key, color = INK, taper = true) {
+    const n = pts.length; if (n < 2) return;
+    const r = rng(key + 'w');
+    const s = arcLen(pts); const L = s[n - 1];
+    const f1 = 0.02 + r() * 0.02, p1 = r() * TAU, f2 = 0.07 + r() * 0.05, p2 = r() * TAU;
+    const left = [], right = [];
+    for (let i = 0; i < n; i++) {
+      const a = closed ? pts[(i - 1 + n) % n] : pts[Math.max(0, i - 1)], b = closed ? pts[(i + 1) % n] : pts[Math.min(n - 1, i + 1)];
+      let dx = b[0] - a[0], dy = b[1] - a[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+      let ww = w * (0.82 + 0.22 * Math.sin(s[i] * f1 + p1) + 0.1 * Math.sin(s[i] * f2 + p2));
+      if (!closed && taper) ww *= Math.pow(clamp(Math.min(s[i], L - s[i]) / Math.min(22, L / 2 + 0.01)), 0.55) * 0.9 + 0.1;
+      left.push([pts[i][0] - dy * ww / 2, pts[i][1] + dx * ww / 2]);
+      right.push([pts[i][0] + dy * ww / 2, pts[i][1] - dx * ww / 2]);
+    }
+    g.fillStyle = color;
+    g.beginPath();
+    if (closed) {
+      g.moveTo(left[0][0], left[0][1]); for (const p of left) g.lineTo(p[0], p[1]); g.closePath();
+      g.moveTo(right[0][0], right[0][1]); for (const p of right) g.lineTo(p[0], p[1]); g.closePath();
+      g.fill('evenodd');
+    } else {
+      g.moveTo(left[0][0], left[0][1]); for (const p of left) g.lineTo(p[0], p[1]);
+      for (let i = n - 1; i >= 0; i--) g.lineTo(right[i][0], right[i][1]);
+      g.closePath(); g.fill();
+      g.beginPath(); g.arc(pts[0][0], pts[0][1], w * 0.09, 0, TAU); g.arc(pts[n - 1][0], pts[n - 1][1], w * 0.09, 0, TAU); g.fill();
+    }
+  }
+  function polyFill(g, pts, color) { g.fillStyle = color; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (const p of pts) g.lineTo(p[0], p[1]); g.closePath(); g.fill(); }
+  const poly2d = pts => { const p = new Path2D(); p.moveTo(pts[0][0], pts[0][1]); for (const q of pts) p.lineTo(q[0], q[1]); p.closePath(); return p; };
+
+  // one hand-made shape: an off-register flat fill plus a boiling ink outline
+  function shape(g, ctrl, o) {
+    const { closed = true, fill = null, line = INK, w = 6, key, amp = 2.4, off = 4, smooth = true, xf = null, fillAmp } = o;
+    let base = smooth ? spline(ctrl, closed) : densify(ctrl, closed);
+    if (xf) base = base.map(xf);
+    if (fill) {
+      const r = rng(key + 'off');
+      const ox = (r() - 0.5) * 2 * off, oy = (r() - 0.5) * 2 * off;
+      const fp = boil(base, key + 'f', fillAmp ?? amp * 0.7, closed).map(p => [p[0] + ox, p[1] + oy]);
+      polyFill(g, fp, fill);
+    }
+    if (line) inkLine(g, boil(base, key, amp, closed), closed, w, key, line);
+  }
+  const stroke = (g, ctrl, key, w = 5, amp = 2, smooth = true, color = INK) => shape(g, ctrl, { closed: false, line: color, w, key, amp, smooth });
+  function makeXf(tx, ty, s = 1, sx = 1, sy = 1, rot = 0) {
+    const c = Math.cos(rot), si = Math.sin(rot);
+    return p => { const x = p[0] * sx * s, y = p[1] * sy * s; return [tx + x * c - y * si, ty + x * si + y * c]; };
+  }
+  // a polygon drawn as separate edge strokes that overshoot at the corners, like a quick hand-inked box
+  function edges(g, pts, o) {
+    const { w = 6, key, over = 10, amp = 1.4, color = INK, skip = [], closed = true } = o;
+    const n = pts.length; const m = closed ? n : n - 1;
+    for (let i = 0; i < m; i++) {
+      if (skip.includes(i)) continue;
+      const a = pts[i], b = pts[(i + 1) % n]; const r = rng(key + 'e' + i);
+      const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+      const s1 = over * (0.15 + r() * 0.85), s2 = over * (0.15 + r() * 0.85), bow = (r() - 0.5) * L * 0.012;
+      const A = [a[0] - ux * s1, a[1] - uy * s1], B = [b[0] + ux * s2, b[1] + uy * s2];
+      const M = [(A[0] + B[0]) / 2 - uy * bow, (A[1] + B[1]) / 2 + ux * bow];
+      stroke(g, [A, M, B], key + 's' + i, w, amp, true, color);
+    }
+  }
+
+  // ---------- paper, sun, grain (built once) ----------
+  const paperCv = document.createElement('canvas'); paperCv.width = W; paperCv.height = H;
+  const toothCv = document.createElement('canvas'); toothCv.width = W; toothCv.height = H;
+  const sunCv = document.createElement('canvas');
+  function noiseField(w, h, cell, seed) {
+    const r = mulberry32(seed); const gw = Math.ceil(w / cell) + 3, gh = Math.ceil(h / cell) + 3;
+    const g = new Float32Array(gw * gh); for (let i = 0; i < g.length; i++) g[i] = r();
+    const out = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) {
+      const fy = y / cell, iy = Math.floor(fy), ty = fy - iy, sy = ty * ty * (3 - 2 * ty);
+      for (let x = 0; x < w; x++) {
+        const fx = x / cell, ix = Math.floor(fx), tx = fx - ix, sx = tx * tx * (3 - 2 * tx);
+        const a = g[iy * gw + ix], b = g[iy * gw + ix + 1], c = g[(iy + 1) * gw + ix], d = g[(iy + 1) * gw + ix + 1];
+        out[y * w + x] = a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+      }
+    }
+    return out;
+  }
+  function buildPaper() {
+    const p = paperCv.getContext('2d'); const r = rs('paper');
+    const w = W / 2, h = H / 2;
+    const n1 = noiseField(w, h, 190, 11), n2 = noiseField(w, h, 62, 12), n3 = noiseField(w, h, 19, 13), n4 = noiseField(w, h, 5, 14);
+    const half = document.createElement('canvas'); half.width = w; half.height = h;
+    const hx = half.getContext('2d'); const id = hx.createImageData(w, h); const d = id.data;
+    for (let i = 0; i < w * h; i++) {
+      const m = n1[i] * 0.34 + n2[i] * 0.3 + n3[i] * 0.22 + n4[i] * 0.14; // 0..1 mottle
+      const v = (m - 0.5);
+      // base warm grey-cream, lighter and yellower blotches
+      let R = 247 + v * 32, G = 238 + v * 32, B = 211 + v * 38;
+      const y = n2[i] * n1[i]; // warm stain
+      R += (y - 0.25) * 9; G += (y - 0.25) * 7; B -= (y - 0.25) * 22;
+      const k = i * 4; d[k] = R; d[k + 1] = G; d[k + 2] = B; d[k + 3] = 255;
+    }
+    hx.putImageData(id, 0, 0);
+    p.imageSmoothingEnabled = true; p.drawImage(half, 0, 0, W, H);
+    // paper fibres
+    for (let i = 0; i < 1400; i++) {
+      const x = r() * W, y = r() * H, a = r() * TAU, l = 5 + r() * 30;
+      p.strokeStyle = r() < 0.5 ? 'rgba(150,128,92,0.11)' : 'rgba(255,253,240,0.30)'; p.lineWidth = 0.5 + r() * 1.1;
+      p.beginPath(); p.moveTo(x, y); p.quadraticCurveTo(x + Math.cos(a + 0.6) * l * 0.5, y + Math.sin(a + 0.6) * l * 0.5, x + Math.cos(a) * l, y + Math.sin(a) * l); p.stroke();
+    }
+    // tiny dark flecks like specks in recycled paper
+    for (let i = 0; i < 160; i++) {
+      p.fillStyle = `rgba(90,70,45,${0.10 + r() * 0.2})`; const x = r() * W, y = r() * H, s = 0.6 + r() * 1.6;
+      p.beginPath(); p.ellipse(x, y, s, s * (0.5 + r() * 0.6), r() * TAU, 0, TAU); p.fill();
+    }
+    // tooth: a multiply layer, half-res random scaled up so the grain reads soft
+    const th = document.createElement('canvas'); th.width = w; th.height = h;
+    const tx = th.getContext('2d'); const tid = tx.createImageData(w, h); const td = tid.data;
+    for (let i = 0; i < w * h; i++) { const v = 255 - Math.pow(r(), 2.4) * 19 - n4[i] * 5; const k = i * 4; td[k] = v; td[k + 1] = v; td[k + 2] = v - 3; td[k + 3] = 255; }
+    tx.putImageData(tid, 0, 0);
+    const t = toothCv.getContext('2d'); t.imageSmoothingEnabled = true; t.drawImage(th, 0, 0, W, H);
+  }
+  // the soft yellow watercolour disc behind everything (drawn once, 2x for sharpness when the camera pushes in)
+  const SUNR = 440, SUNPAD = 90, SUNSZ = (SUNR + SUNPAD) * 2;
+  function buildSun() {
+    const S = 2; sunCv.width = SUNSZ * S; sunCv.height = SUNSZ * S;
+    const g = sunCv.getContext('2d'); g.scale(S, S);
+    const r = rs('sunshape'); const c = SUNSZ / 2;
+    const ctrl = []; for (let i = 0; i < 22; i++) { const a = i / 22 * TAU; const rr = SUNR * (1 + (r() - 0.5) * 0.085 + 0.025 * Math.sin(a * 3 + 1)); ctrl.push([c + Math.cos(a) * rr, c + Math.sin(a) * rr * 0.97]); }
+    const pts = spline(ctrl, true, 10);
+    const path = poly2d(pts);
+    g.fillStyle = SUN; g.fill(path);
+    g.save(); g.clip(path);
+    // wet blotches of lighter and deeper yellow
+    for (let i = 0; i < 26; i++) {
+      const x = c + (r() - 0.5) * SUNR * 1.7, y = c + (r() - 0.5) * SUNR * 1.7, rad = 60 + r() * 190; const light = r() < 0.5;
+      const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+      gr.addColorStop(0, light ? 'rgba(250,240,186,0.55)' : 'rgba(226,196,104,0.2)'); gr.addColorStop(1, light ? 'rgba(250,240,186,0)' : 'rgba(226,196,104,0)');
+      g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    // pooled edge where the paint dried darker
+    g.lineJoin = 'round';
+    g.strokeStyle = 'rgba(214,180,84,0.38)'; g.lineWidth = 24; g.filter = 'blur(7px)'; g.stroke(path);
+    g.strokeStyle = 'rgba(196,158,58,0.28)'; g.lineWidth = 5; g.filter = 'blur(1.5px)'; g.stroke(path);
+    g.filter = 'none';
+    g.restore();
+  }
+  const drawSun = (g, cx, cy, sc = 1) => g.drawImage(sunCv, cx - SUNSZ / 2 * sc, cy - SUNSZ / 2 * sc, SUNSZ * sc, SUNSZ * sc);
+
+  // ---------- scene geometry (scene space = screen space at zoom 1, centred 960,540) ----------
+  const BOX = { fl: [470, 772], fr: [1425, 772], br: [1497, 646], bl: [542, 646], bot: 944 };
+  const SUNC = [1120, 520];
+  const MATCH = { x: 1328, y: 742, len: 215 };
+  const FS = 1.5; // the flame hero's size
+
+  // plane transform: lay things flat on the lid (u across, v from back edge toward you)
+  function onLid(g, fn) {
+    g.save(); g.transform(1, 0, -0.29, 0.5, BOX.bl[0], BOX.bl[1]); fn(); g.restore();
+  }
+  function logoFlame(g, x, y, s, fill, line, inner = null) {
+    const xf = makeXf(x, y, s);
+    shape(g, flameCtrls('logo', 0, 0.9), { fill, line, w: 5.5 / Math.max(s, 0.3) * 0.62, key: 'logo', xf, off: 2, amp: 0.9 });
+    if (inner) shape(g, [[0, -4], [34, -10], [48, -44], [30, -92], [6, -128, 1], [-26, -92], [-46, -44], [-32, -10]], { fill: inner, line: null, key: 'logoin', xf, off: 2, amp: 0.8 });
+  }
+  function drawBox(g, night) {
+    const { fl, fr, br, bl, bot } = BOX;
+    const L = night ? NIGHT.line : INK;
+    const side = [[fr[0], fr[1]], [br[0], br[1]], [br[0], br[1] + (bot - fr[1])], [fr[0], bot]];
+    const top = [fl, fr, br, bl];
+    const front = [fl, fr, [fr[0], bot], [fl[0], bot]];
+    // right side face with hatching
+    shape(g, side, { fill: night ? null : '#b8261f', line: null, key: 'boxside', smooth: false });
+    for (let i = 0; i < 10; i++) {
+      const x = fr[0] + 7 + i * 6.8;
+      stroke(g, [[x, fr[1] - 8 - i * 12.4 + 34], [x, bot - 10 - i * 12.4 + 6]], 'hatch' + i, 2.4, 1.1, false, night ? NIGHT.line : INK);
+    }
+    edges(g, side, { w: 5.5, key: 'sideE', color: L, over: 8 });
+    // top face
+    shape(g, top, { fill: night ? null : RED, line: null, key: 'boxtop', smooth: false });
+    // front face: yellow panel with a red rim and the black striker strip with white specks
+    shape(g, front, { fill: night ? null : YEL, line: null, key: 'boxfront', smooth: false });
+    if (!night) shape(g, [[fl[0] + 3, fl[1] + 1], [fr[0] - 3, fr[1] + 1], [fr[0] - 3, fl[1] + 15], [fl[0] + 3, fl[1] + 15]], { fill: RED, line: null, key: 'rim', smooth: false });
+    const sx0 = fl[0] + 36, sx1 = fr[0] - 36, sy0 = 826, sy1 = 900;
+    shape(g, [[sx0, sy0], [sx1, sy0], [sx1, sy1], [sx0, sy1]], { fill: night ? NIGHT.fill : '#1c1411', line: night ? null : INK, w: 4.5, key: 'striker', smooth: false, off: 3 });
+    const r = rs('specks'), rr = rng('speckjit');
+    g.fillStyle = night ? NIGHT.spec : WHITE;
+    for (let i = 0; i < 150; i++) {
+      const x = sx0 + 12 + r() * (sx1 - sx0 - 24) + (rr() - 0.5) * 1.6, y = sy0 + 8 + r() * (sy1 - sy0 - 16) + (rr() - 0.5) * 1.6;
+      g.beginPath(); g.arc(x, y, 1 + r() * 2.1, 0, TAU); g.fill();
+    }
+    if (!night) stroke(g, [[sx0 + 22, 862], [(sx0 + sx1) / 2, 860], [sx1 - 40, 863]], 'sheen', 3, 1, true, WHITE);
+    edges(g, front, { w: 6, key: 'frontE', color: L, over: 14, skip: [0] });
+    edges(g, top, { w: 6, key: 'topE', color: L, over: 14, skip: [] });
+    // lid label, sheared onto the top face
+    onLid(g, () => {
+      const lab = [[170, 70], [790, 70], [790, 205], [170, 205]];
+      const jr = rng('labelj');
+      shape(g, lab, { fill: night ? null : CREAM, line: night ? L : INK, w: 7, key: 'label', smooth: false, off: 4 });
+      g.save(); g.translate((jr() - 0.5) * 2, (jr() - 0.5) * 2);
+      logoFlame(g, 238, 196, 0.7, night ? NIGHT.fill : RED, night ? L : INK, night ? '#b8483c' : YEL);
+      g.fillStyle = night ? NIGHT.line : INK; g.font = '104px "Luckiest Guy"'; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+      g.fillText('SONNET', 292, 178);
+      // round "5.5" badge on the label
+      shape(g, ellipse(730, 140, 46, 46, 14), { fill: night ? null : YEL, line: night ? L : INK, w: 6, key: 'badge', off: 3, amp: 1.3 });
+      g.font = '40px "Luckiest Guy"'; g.textAlign = 'center'; g.fillStyle = night ? NIGHT.line : INK; g.fillText('5.5', 731, 156);
+      stroke(g, [[296, 192], [480, 195], [660, 191]], 'labul', 5, 1.2, true, night ? L : INK);
+      g.restore();
+    });
+    // ground hatching shadow
+    for (let i = 0; i < 17; i++) {
+      const x = 1000 + i * 34;
+      stroke(g, [[x, 1006], [x + 34, 972]], 'gh' + i, 2.8, 1.2, false, night ? NIGHT.line : INK);
+    }
+    for (let i = 0; i < 12; i++) stroke(g, [[500 + i * 36, 996], [534 + i * 36, 966]], 'gl' + i, 2.4, 1.2, false, night ? NIGHT.line : INK);
+    stroke(g, [[470, 988], [1500, 988]], 'ground', 3, 1.6, false, night ? NIGHT.line : INK);
+  }
+
+  // ---------- the match ----------
+  // base (bx,by) to tip along angle; head 'none' | 'unlit' | 'burnt' | 'ember'
+  function drawMatch(g, bx, by, len, ang, head, key, night) {
+    const ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux, hw = 13;
+    const tip = [bx + ux * len, by + uy * len];
+    const quad = [[bx + nx * hw, by + ny * hw], [tip[0] + nx * hw, tip[1] + ny * hw], [tip[0] - nx * hw, tip[1] - ny * hw], [bx - nx * hw, by - ny * hw]];
+    const lc = night ? NIGHT.line : INK;
+    shape(g, quad, { fill: night ? NIGHT.dim : CREAM, line: null, key: key + 'stick', smooth: false, off: 3 });
+    edges(g, quad, { w: 5, key: key + 'sE', color: lc, over: 7, skip: [1] });
+    stroke(g, [[bx + nx * 4 + ux * 24, by + ny * 4 + uy * 24], [tip[0] + nx * 4 - ux * 44, tip[1] + ny * 4 - uy * 44]], key + 'grain', 2, 1.0, false, night ? NIGHT.line : '#9d8a72');
+    let hc = [tip[0] + ux * 15, tip[1] + uy * 15];
+    if (head === 'unlit' || head === 'burnt' || head === 'ember') {
+      shape(g, ellipse(hc[0], hc[1], 25, 31, 14, ang - Math.PI / 2 + Math.PI / 2), { fill: head === 'unlit' ? (night ? '#7a2a24' : '#7e2a22') : '#16110e', line: lc, key: key + 'head', w: 5.5 });
+      if (head === 'burnt') { g.fillStyle = RED; g.beginPath(); g.arc(hc[0] + 8, hc[1] - 10, 4.8, 0, TAU); g.fill(); }
+      else if (head === 'unlit') { g.fillStyle = night ? 'rgba(235,150,120,0.5)' : 'rgba(255,230,210,0.5)'; g.beginPath(); g.arc(hc[0] - 7, hc[1] - 9, 4, 0, TAU); g.fill(); }
+    }
+    return { tip, hc };
+  }
+  function smokeCurl(g, x, y, grow, key, sway = 0) {
+    if (grow <= 0) return;
+    const pts = []; const n = 44;
+    for (let i = 0; i <= n * grow; i++) {
+      const u = i / n;
+      pts.push([x + Math.sin(u * 6.4 + sway) * 15 * u + u * 44, y - u * 250]);
+    }
+    if (grow > 0.85) {
+      const last = pts[pts.length - 1];
+      for (let k = 1; k <= 14; k++) { const a = Math.PI + k / 14 * 1.7 * Math.PI; pts.push([last[0] + 17 + Math.cos(a) * 17 * (1 - k / 34), last[1] + Math.sin(a) * 17 * (1 - k / 34)]); }
+    }
+    if (pts.length > 2) inkLine(g, boil(pts, key, 1.6, false), false, 3.6, key);
+  }
+
+  // ---------- the flame character ----------
+  function flameCtrls(key, lean = 0, tall = 1) {
+    const r = rng('flick' + key); const j = a => (r() - 0.5) * a;
+    const Lf = y => lean * Math.pow(clamp(-y / 230), 1.5);
+    const P = (x, y, s) => s ? [x + Lf(y), y * tall, 1] : [x + Lf(y), y * tall];
+    return [
+      P(0, 6), P(54, -2), P(88, -36), P(94, -86), P(86, -118),
+      P(106 + j(9), -162 + j(11), 1), P(60, -124), P(36, -150),
+      P(14 + j(11), -240 + j(15), 1),
+      P(-28, -148), P(-58, -126),
+      P(-108 + j(9), -168 + j(11), 1), P(-90, -114), P(-94, -82), P(-86, -34), P(-54, -2)
+    ];
+  }
+  function drawFlame(g, o) {
+    const { x, y, s = 1, sx = 1, sy = 1, rot = 0, face = 'open', mouth = 'smile', look = 0, key = 'fl', lean = 0, arms = null, cheeks = true, shadow = false, hl = true, tall = 1 } = o;
+    const xf = makeXf(x, y, s, sx, sy, rot);
+    if (shadow) {
+      const sh = ellipse(0, 8, 92 * sx, 16, 12); shape(g, sh, { fill: '#a9201e', line: null, key: key + 'shd', xf: makeXf(x, y, s, 1, 1, 0), off: 2, amp: 1 });
+    }
+    const outer = flameCtrls(key, lean, tall);
+    shape(g, outer, { fill: RED, key: key + 'outer', xf, w: 6.8, off: 4.5, amp: 2.4 });
+    const bodyR = rng(key + 'bj');
+    const body = [[0, -2], [52, -9], [72, -46], [68, -92], [42, -132], [10 + lean * 0.5 + (bodyR() - 0.5) * 6, -182 * tall, 1], [-36, -132], [-68, -92], [-72, -46], [-52, -9]];
+    shape(g, body, { fill: YEL, line: null, key: key + 'body', xf, off: 3.4, amp: 1.8 });
+    // glossy highlight streak
+    if (hl) { stroke(g, [[-40, -98], [-45, -72], [-42, -46]].map(xf), key + 'hl', 7.5 * s, 1, true, WHITE); }
+    // cheeks
+    if (cheeks) for (const sg of [-1, 1]) {
+      const c = xf([sg * 51, -56]);
+      g.fillStyle = CHEEK; g.beginPath(); g.ellipse(c[0], c[1], 13.5 * s * sx, 8 * s * sy, rot, 0, TAU); g.fill();
+    }
+    // eyes
+    const E = 30, EY = -84;
+    for (const sg of [-1, 1]) {
+      const ex = sg * E + look * 6, ey = EY;
+      if (face === 'open' || face === 'determined' || face === 'surprised' || face === 'sly') {
+        const big = face === 'surprised' ? 1.22 : 1;
+        shape(g, ellipse(ex, ey, 8.8 * big, 12.5 * big, 12), { fill: INK, line: null, key: key + 'eye' + sg, xf, off: 0.5, fillAmp: 0.6 });
+        const hp = xf([ex - 2.5 + look * 2, ey - 4.5]); g.fillStyle = WHITE; g.beginPath(); g.arc(hp[0], hp[1], 3.1 * s, 0, TAU); g.fill();
+        if (face === 'determined') stroke(g, [[ex - sg * 14, ey - 25], [ex + sg * 12, ey - 16]].map(xf), key + 'brow' + sg, 5.5, 1, false);
+        if (face === 'sly') stroke(g, [[ex - 13, ey - 11], [ex + 13, ey - 8]].map(xf), key + 'lid' + sg, 7, 1, false);
+      } else if (face === 'blink') {
+        stroke(g, [[ex - 10, ey + 1], [ex, ey + 6], [ex + 10, ey + 1]].map(xf), key + 'blink' + sg, 4.8, 1);
+      } else if (face === 'happy') {
+        stroke(g, [[ex - 11, ey + 5], [ex, ey - 8], [ex + 11, ey + 5]].map(xf), key + 'happy' + sg, 5.2, 1);
+      } else if (face === 'squeeze') {
+        stroke(g, [[ex - sg * 11, ey - 7], [ex + sg * 7, ey], [ex - sg * 11, ey + 7]].map(xf), key + 'sq' + sg, 5.4, 1, false);
+      }
+    }
+    // mouth
+    const MY = -52;
+    if (mouth === 'smile') stroke(g, [[-11, MY - 3], [0, MY + 5], [11, MY - 3]].map(xf), key + 'm', 4.4, 0.8);
+    else if (mouth === 'open') {
+      shape(g, [[-17, MY - 8], [17, MY - 8], [12, MY + 8], [0, MY + 15], [-12, MY + 8]], { fill: INK, line: null, key: key + 'mo', xf, off: 0.5, fillAmp: 0.5 });
+      shape(g, [[-8, MY + 8], [8, MY + 8], [0, MY + 14]], { fill: '#d9362a', line: null, key: key + 'tg', xf, off: 0.3, fillAmp: 0.3 });
+    } else if (mouth === 'grin') {
+      shape(g, [[-24, MY - 10], [24, MY - 10], [16, MY + 12], [0, MY + 20], [-16, MY + 12]], { fill: INK, line: null, key: key + 'mg', xf, off: 0.5, fillAmp: 0.5 });
+      shape(g, [[-11, MY + 10], [11, MY + 10], [0, MY + 19]], { fill: '#d9362a', line: null, key: key + 'tg', xf, off: 0.3, fillAmp: 0.3 });
+    } else if (mouth === 'yell') {
+      shape(g, ellipse(0, MY + 4, 14, 19, 12), { fill: INK, line: null, key: key + 'my', xf, off: 0.5, fillAmp: 0.5 });
+      shape(g, ellipse(0, MY + 14, 8, 6, 8), { fill: '#d9362a', line: null, key: key + 'ty', xf, off: 0.3, fillAmp: 0.3 });
+    } else if (mouth === 'o') shape(g, ellipse(0, MY + 3, 6.5, 8.5, 9), { fill: INK, line: null, key: key + 'mo2', xf, off: 0.3, fillAmp: 0.4 });
+    else if (mouth === 'flat') stroke(g, [[-9, MY], [9, MY - 1]].map(xf), key + 'mf', 4.4, 0.8, false);
+    else if (mouth === 'smirk') stroke(g, [[-10, MY + 1], [4, MY + 4], [14, MY - 5]].map(xf), key + 'msm', 4.6, 0.8);
+    // arms with round mitten hands: arms = [[handX, handY, hx], [..]] in flame-local space (left, right)
+    if (arms) {
+      for (const sgn of [-1, 1]) {
+        const a = arms[sgn < 0 ? 0 : 1]; if (!a) continue;
+        const sh = [sgn * 80, -66], hand = [sgn * a[0], a[1]];
+        const mid = [(sh[0] + hand[0]) / 2 + sgn * 4, (sh[1] + hand[1]) / 2 + 14];
+        stroke(g, [sh, mid, hand].map(xf), key + 'arm' + sgn, 5.2, 1.2);
+        shape(g, ellipse(hand[0], hand[1], 19, 19, 11), { fill: WHITE, key: key + 'hand' + sgn, xf, w: 5, off: 2, amp: 1.2 });
+        stroke(g, [[hand[0] - sgn * 4, hand[1] - 11], [hand[0] + sgn * 5, hand[1] - 3]].map(xf), key + 'thumb' + sgn, 3, 0.6, false);
+      }
+    }
+  }
+
+  function star4(g, cx, cy, r, key, fill = YEL, w = 3.5) {
+    const k = 0.26;
+    shape(g, [[cx, cy - r, 1], [cx + r * k, cy - r * k], [cx + r, cy, 1], [cx + r * k, cy + r * k], [cx, cy + r, 1], [cx - r * k, cy + r * k], [cx - r, cy, 1], [cx - r * k, cy - r * k]],
+      { fill, key, w, off: 2, amp: 0.9 });
+  }
+  function starburst(g, cx, cy, R1, R2, n, key, fill, line = null, rot = 0, squash = 0.9, jag = 0.3) {
+    const r = rng(key + 'sb');
+    const pts = [];
+    for (let i = 0; i < n * 2; i++) {
+      const a = rot + i / (n * 2) * TAU + (r() - 0.5) * 0.12;
+      const rad = (i % 2 ? R2 : R1) * (1 - jag / 2 + r() * jag);
+      pts.push([cx + Math.cos(a) * rad, cy + Math.sin(a) * rad * squash, 1]);
+    }
+    shape(g, pts, { fill, line, key, w: 6.5, smooth: false, off: 5, amp: 3.4 });
+  }
+  function speedLines(g, cx, cy, n, r0, r1, key, w = 7, sq = 0.75) {
+    const r = rng(key);
+    for (let i = 0; i < n; i++) {
+      const a = i / n * TAU + (r() - 0.5) * 0.18, a0 = lerp(r0, r0 * 1.15, r()), a1 = a0 + (r1 - r0) * (0.4 + r() * 0.6);
+      stroke(g, [[cx + Math.cos(a) * a0, cy + Math.sin(a) * a0 * sq], [cx + Math.cos(a) * a1, cy + Math.sin(a) * a1 * sq]], key + i, w, 1, false);
+    }
+  }
+  // puffy cloud: a union of circles, outlined only on the outside
+  function cloud(g, circles, key, fill = WHITE, lw = 11) {
+    const pc = circles.map((c, i) => ({ c, pts: boil(spline(ellipse(c[0], c[1], c[2], c[2] * 0.92, 12), true, 6), key + 'c' + i, 3, true) }));
+    for (const { pts } of pc) inkLine(g, pts, true, lw, key + 'ol');
+    for (const { pts } of pc) polyFill(g, pts, fill);
+    // a soft flat shade on the lower right of the mass
+    const r = rng(key + 'curl');
+    for (let i = 0; i < Math.min(4, circles.length); i++) {
+      const c = circles[i];
+      const a0 = 0.5 + r() * 0.9;
+      const arc = []; for (let k = 0; k <= 7; k++) { const a = a0 + k / 7 * 1.5; arc.push([c[0] + Math.cos(a) * c[2] * 0.62, c[1] + Math.sin(a) * c[2] * 0.62]); }
+      inkLine(g, arc, false, 3.4, key + 'cu' + i);
+    }
+  }
+  function puff(g, x, y, s, key) { cloud(g, [[x, y, 24 * s], [x + 24 * s, y - 9 * s, 18 * s], [x - 22 * s, y - 5 * s, 16 * s]], key, WHITE, 6.5); }
+  function sparkLeaf(g, x, y, ang, len, w, key, color = WHITE) {
+    // leaf-shaped spark with ink hairline
+    const ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux;
+    const pts = [[x, y, 1], [x + ux * len * 0.5 + nx * w, y + uy * len * 0.5 + ny * w], [x + ux * len, y + uy * len, 1], [x + ux * len * 0.5 - nx * w, y + uy * len * 0.5 - ny * w]];
+    shape(g, pts, { fill: color, line: null, key, off: 1, amp: 0.4 });
+  }
+  function tear(g, x, y, s, key, fill = RED) {
+    shape(g, [[x, y - 24 * s, 1], [x + 11 * s, y - 2 * s], [x + 6 * s, y + 9 * s], [x - 6 * s, y + 9 * s], [x - 11 * s, y - 2 * s]], { fill, key, w: 3 * s, amp: 0.7, off: 1.5 });
+  }
+
+  // ---------- corner tags (always on screen, never zoomed) ----------
+  function tags(g, dark, counter) {
+    const r = rng('tags');
+    g.save();
+    g.fillStyle = dark ? 'rgba(46,34,32,0.0)' : 'rgba(250,244,228,0.72)';
+    if (!dark) g.fillRect(56 + (r() - 0.5) * 2, 50, 156, 56);
+    g.fillStyle = dark ? '#b8483c' : '#cc3a2e'; g.font = '600 40px Caveat'; g.textBaseline = 'middle';
+    g.fillText('SC. 5.5', 70 + (r() - 0.5) * 2, 80 + (r() - 0.5) * 2);
+    if (!dark) { g.fillStyle = 'rgba(250,244,228,0.72)'; g.fillRect(1646, 946, 216, 92); }
+    g.fillStyle = dark ? '#b8483c' : '#cc3a2e'; g.textAlign = 'right';
+    g.font = '600 27px Caveat'; g.fillText('on ' + counter.on + 's', 1838 + (r() - 0.5) * 2, 972);
+    g.font = '700 46px Caveat'; g.fillText('No. ' + String(counter.no).padStart(3, '0'), 1840 + (r() - 0.5) * 2, 1010 + (r() - 0.5) * 2);
+    g.restore();
+  }
+
+  // ---------- stamp and drawn letters ----------
+  const STAMP = { cx: 960, cy: 462, rx: 700, ry: 340 };
+  function stampCtrl(scale = 1) {
+    // a puffy scalloped badge: round lobes with small cusps between them
+    const { cx, cy, rx, ry } = STAMP; const lobes = 21, steps = lobes * 9; const out = [];
+    for (let i = 0; i < steps; i++) {
+      const a = i / steps * TAU; const lobe = Math.abs(Math.sin(a * lobes / 2));
+      const rr = (0.925 + 0.095 * Math.pow(lobe, 0.55)) * (1 + 0.018 * Math.sin(a * 3 + 1.3));
+      out.push([cx + Math.cos(a) * rx * scale * rr, cy + Math.sin(a) * ry * scale * rr]);
+    }
+    return out;
+  }
+  function drawStamp(g, scale) {
+    shape(g, stampCtrl(scale), { fill: RED, key: 'stamp', w: 7.5, off: 5.5, amp: 2.2, smooth: false });
+    const r = rs('blots');
+    g.save();
+    for (let i = 0; i < 9; i++) {
+      const x = STAMP.cx + (r() - 0.5) * STAMP.rx * 1.5 * scale, y = STAMP.cy + (r() - 0.5) * STAMP.ry * 1.3 * scale, rad = (30 + r() * 60) * scale;
+      const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+      gr.addColorStop(0, 'rgba(150,20,18,0.26)'); gr.addColorStop(1, 'rgba(150,20,18,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, TAU); g.fill();
+    }
+    g.restore();
+    // worn rubber-stamp speckle: tiny flecks and scratches where the ink did not take
+    const w = rs('worn');
+    g.save(); g.clip(poly2d(stampCtrl(scale)));
+    for (let i = 0; i < 300; i++) {
+      const a = w() * TAU, rr = Math.sqrt(w()), x = STAMP.cx + Math.cos(a) * STAMP.rx * 1.02 * scale * rr, y = STAMP.cy + Math.sin(a) * STAMP.ry * 1.02 * scale * rr;
+      g.fillStyle = `rgba(246,232,205,${0.22 + w() * 0.4})`; g.beginPath(); g.ellipse(x, y, 0.8 + w() * 2.6, 0.7 + w() * 2, w() * TAU, 0, TAU); g.fill();
+    }
+    g.lineCap = 'round';
+    for (let i = 0; i < 16; i++) {
+      const a = w() * TAU, rr = Math.sqrt(w()), x = STAMP.cx + Math.cos(a) * STAMP.rx * scale * rr, y = STAMP.cy + Math.sin(a) * STAMP.ry * scale * rr, an = w() * TAU, l = 30 + w() * 90;
+      g.strokeStyle = `rgba(246,232,205,${0.12 + w() * 0.2})`; g.lineWidth = 1 + w() * 1.6;
+      g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(an + 0.4) * l * 0.5, y + Math.sin(an + 0.4) * l * 0.5, x + Math.cos(an) * l, y + Math.sin(an) * l); g.stroke();
+    }
+    g.restore();
+  }
+  // skeletons of S o n n e t in a glyph box (baseline y=0, x-height 160, cap 250)
+  const GLYPHS = (() => {
+    const circle = (cx, cy, rx, ry, a0, a1, n = 26) => { const o = []; for (let i = 0; i <= n; i++) { const a = lerp(a0, a1, i / n); o.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); } return o; };
+    return [
+      { adv: 152, strokes: [spline([[128, -196], [108, -234], [68, -252], [28, -240], [6, -206], [16, -168], [58, -138], [104, -112], [130, -72], [114, -24], [70, -4], [26, -12], [4, -46]], false, 10)] },
+      { adv: 148, strokes: [circle(70, -80, 64, 80, -Math.PI / 2 - 0.15, -Math.PI / 2 - TAU - 0.35)] },
+      { adv: 146, strokes: [[[12, -160], [12, 0]], spline([[12, -104], [34, -142], [76, -160], [112, -138], [126, -94], [126, 0]], false, 10)] },
+      { adv: 146, strokes: [[[12, -160], [12, 0]], spline([[12, -104], [34, -142], [76, -160], [112, -138], [126, -94], [126, 0]], false, 10)] },
+      { adv: 152, strokes: [spline([[8, -84], [70, -86], [136, -86], [130, -128], [100, -154], [62, -160], [24, -140], [6, -100], [8, -58], [28, -22], [66, -4], [108, -12], [136, -42]], false, 10)] },
+      { adv: 128, strokes: [spline([[52, -240], [52, -64], [58, -24], [82, -5], [114, -8], [132, -28]], false, 10), [[2, -156], [112, -156]]] }
+    ];
+  })();
+  const GSCALE = 1.06, GSP = 34, WSTROKE = 50;
+  // lay the six glyphs out centred on the stamp; returns per-stroke point lists in screen space with lengths
+  const LETTERS = (() => {
+    const total = GLYPHS.reduce((a, g) => a + g.adv, 0) * GSCALE + GSP * (GLYPHS.length - 1);
+    let x = STAMP.cx - total / 2 + 4; const base = 604; const out = [];
+    GLYPHS.forEach((gl, gi) => {
+      gl.strokes.forEach(st => {
+        const dens = densify(st, false, 7).map(p => [x + p[0] * GSCALE, base + p[1] * GSCALE]);
+        out.push({ gi, pts: dens, len: arcLen(dens).slice(-1)[0] });
+      });
+      x += gl.adv * GSCALE + GSP;
+    });
+    return out;
+  })();
+  const LETTER_TOTAL = LETTERS.reduce((a, s) => a + s.len, 0);
+  function partial(pts, len) {
+    const s = arcLen(pts); const out = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      if (s[i] <= len) out.push(pts[i]);
+      else { const k = (len - s[i - 1]) / (s[i] - s[i - 1]); out.push([lerp(pts[i - 1][0], pts[i][0], k), lerp(pts[i - 1][1], pts[i][1], k)]); break; }
+    }
+    return out;
+  }
+  // draw the lettering with `drawn` = total length written so far; returns the tip of the pen
+  function drawLetters(g, drawn) {
+    let tip = null, left = drawn;
+    const parts = [];
+    for (const st of LETTERS) {
+      if (left <= 0) break;
+      const l = Math.min(left, st.len);
+      const pts = boil(partial(st.pts, l), 'let' + parts.length, 2.0, false);
+      if (pts.length >= 2) parts.push(pts);
+      tip = pts[pts.length - 1]; left -= l;
+    }
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+    const path = pts => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (const p of pts) g.lineTo(p[0], p[1]); };
+    // dark drop shadow, then ink outline, then the yellow body, then a glossy highlight
+    g.strokeStyle = DRED; g.lineWidth = WSTROKE + 20; for (const p of parts) { g.save(); g.translate(10, 11); path(p); g.stroke(); g.restore(); }
+    g.strokeStyle = INK; g.lineWidth = WSTROKE + 17; for (const p of parts) { path(p); g.stroke(); }
+    const rr = rng('letoff'); g.strokeStyle = YEL; g.lineWidth = WSTROKE;
+    for (const p of parts) { g.save(); g.translate((rr() - 0.5) * 3, (rr() - 0.5) * 3); path(p); g.stroke(); g.restore(); }
+    // glossy highlight just inside the upper left edge, and a warmer shade on the lower right
+    g.strokeStyle = 'rgba(205,150,20,0.3)'; g.lineWidth = 8;
+    for (const p of parts) { if (p.length > 8) { const q = p.slice(3, p.length - 2).map(([x, y]) => [x + 12, y + 13]); path(q); g.stroke(); } }
+    g.strokeStyle = 'rgba(255,247,206,0.95)'; g.lineWidth = 7;
+    for (const p of parts) { if (p.length > 8) { const q = p.slice(3, p.length - 2).map(([x, y]) => [x - 11, y - 12]); path(q); g.stroke(); } }
+    g.restore();
+    return tip;
+  }
+  // white chalky caps with an ink outline: "5.5"
+  function outlineText(g, txt, x, y, size, key, scale = 1, rot = 0) {
+    const r = rng(key);
+    g.save(); g.translate(x + (r() - 0.5) * 3, y + (r() - 0.5) * 3); g.rotate(rot + (r() - 0.5) * 0.012); g.scale(scale, scale);
+    g.font = size + 'px "Luckiest Guy"'; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
+    g.fillStyle = DRED; g.fillText(txt, 8, 9);
+    g.strokeStyle = INK; g.lineWidth = size * 0.16; g.strokeText(txt, 0, 0);
+    g.fillStyle = WHITE; g.fillText(txt, 0, 0);
+    g.restore();
+  }
+  function penCircle(g, cx, cy, rx, ry, prog, key) {
+    if (prog <= 0) return;
+    const pts = []; const n = 60; const a0 = -2.2;
+    for (let i = 0; i <= n * prog; i++) { const k = i / n; const a = a0 + k * TAU * 1.12; const grow = 1 + k * 0.06; pts.push([cx + Math.cos(a) * rx * grow, cy + Math.sin(a) * ry * grow]); }
+    if (pts.length > 2) inkLine(g, boil(pts, key, 2, false), false, 6, key, '#cc3a2e');
+  }
+
+  // ---------- camera ----------
+  function cam(g, z, x, y) { g.translate(960, 540); g.scale(z, z); g.translate(-x, -y); }
+  const toScreen = (p, c) => [(p[0] - c[1]) * c[0] + 960, (p[1] - c[2]) * c[0] + 540];
+
+  // ---------- poses ----------
+  // flame sitting on the match head
+  const HEADC = [MATCH.x, MATCH.y - MATCH.len - 4];
+  const LAND = [868, 758];
+  function litBase(g, burnt, smokeGrow, smokeSway, wob = 0) {
+    drawSun(g, SUNC[0], SUNC[1]);
+    drawBox(g, false);
+    // the stick wobbles for a moment after the flame leaps off it
+    g.save(); g.translate(MATCH.x, MATCH.y); g.rotate(wob); g.translate(-MATCH.x, -MATCH.y);
+    drawMatch(g, MATCH.x, MATCH.y, MATCH.len, -Math.PI / 2, burnt ? 'burnt' : 'none', 'standing', false);
+    if (burnt) smokeCurl(g, MATCH.x + 4, MATCH.y - MATCH.len - 46, smokeGrow, 'smoke', smokeSway);
+    g.restore();
+  }
+
+  // ---------- compose one drawing ----------
+  function compose(g, f) {
+    const df = DF[f], H2 = HOLD[f];
+    const loc = (b) => Math.round((df - b) / H2);
+    let dark = false;
+
+    // ------------- 1. dark strike -------------
+    if (df < BEAT.flash) {
+      const i = loc(BEAT.strike); dark = true;
+      g.fillStyle = NIGHT.bg; g.fillRect(0, 0, W, H);
+      g.save();
+      const k = i / 4;
+      const z = 1.5 + i * 0.03;
+      const HX = [500, 660, 850, 1070, 1280][i], hy = 862 + [0, -3, 2, -2, 0][i];
+      cam(g, z, lerp(790, 1010, k), 800);
+      // the pool of light the lamp throws, drawn flat like Vincent's night frames
+      const dr = rs('nightdisc'); const dp = []; for (let a = 0; a < 22; a++) { const an = a / 22 * TAU; const rr = 1 + (dr() - 0.5) * 0.07; dp.push([1020 + Math.cos(an) * 720 * rr, 800 + Math.sin(an) * 330 * rr]); }
+      polyFill(g, boil(spline(dp, true, 8), 'ndisc', 4, true), NIGHT.disc);
+      drawBox(g, true);
+      const ang = 0.74 - k * 0.12; // the stick leans back up and to the left, the head leads
+      const len = 560;
+      const ux = Math.cos(ang), uy = Math.sin(ang);
+      const m = drawMatch(g, HX - ux * (len + 15), hy - uy * (len + 15), len, ang, 'unlit', 'strike', true);
+      // sparks fly back off the striker
+      const r = rng('sparks'); const nsp = 7 + i * 4;
+      for (let q = 0; q < nsp; q++) {
+        const a = Math.PI + (r() - 0.5) * 2.2 - 0.45, d0 = 26 + r() * 130, l = 28 + r() * 80;
+        const x1 = HX - 6 + Math.cos(a) * d0, y1 = hy + Math.sin(a) * d0 * 0.8;
+        sparkLeaf(g, x1, y1, a, l * 0.9, 5 + r() * 4.5, 'sp' + q, r() < 0.72 ? '#f6ecd8' : '#f4b53c');
+      }
+      // a streak of scraped-off light behind the head
+      if (i >= 1) stroke(g, [[HX - 30 - i * 40, hy + 6], [HX - 10, hy - 1]], 'scr', 9, 1, false, '#f4b53c');
+      if (i >= 3) starburst(g, m.hc[0], m.hc[1], i === 3 ? 62 : 104, i === 3 ? 30 : 48, 9, 'pre' + i, '#f4b53c', null, i, 0.95, 0.4);
+      if (i >= 4) starburst(g, m.hc[0], m.hc[1], 46, 22, 8, 'pre2' + i, '#fbf1d0', null, 1, 0.95, 0.4);
+      g.restore();
+      return { dark, no: 1 + DIDX[f] };
+    }
+    // ------------- 2. flash -------------
+    if (df < BEAT.ignite) {
+      const i = loc(BEAT.flash);
+      if (i === 0) {
+        dark = true; g.fillStyle = '#1d1514'; g.fillRect(0, 0, W, H);
+        starburst(g, 960, 540, 760, 400, 11, 'fb1', WHITE, null, 0.2, 0.86, 0.5);
+        starburst(g, 960, 540, 470, 250, 10, 'fb2', YEL, null, -0.1, 0.86, 0.45);
+        speedLines(g, 960, 540, 18, 800, 1300, 'sl0', 7);
+      } else {
+        const R = i === 1 ? 560 : 1000;
+        starburst(g, 960, 540, R, R * 0.55, 13, 'fl1', YEL, null, i * 0.22, 0.86, 0.5);
+        starburst(g, 960, 540, R * 0.5, R * 0.3, 11, 'fl2', WHITE, null, -i * 0.3, 0.86, 0.45);
+        speedLines(g, 960, 540, 24, i === 1 ? 640 : 900, i === 1 ? 1100 : 1500, 'sl' + i, 7.5);
+      }
+      return { dark, no: 1 + DIDX[f] };
+    }
+    // ------------- 3. lit scene beats (camera moves) -------------
+    if (df < BEAT.boom) {
+      const shakeAmp = (df >= BEAT.ignite && df < BEAT.ignite + 4) ? 7 : (df >= BEAT.hop + 10 && df < BEAT.hop + 14) ? 8 : 0;
+      g.save();
+      if (shakeAmp) { const sr = rng('shake'); g.translate((sr() - 0.5) * 2 * shakeAmp, (sr() - 0.5) * 2 * shakeAmp); }
+      let c; // camera [z, x, y]
+      if (df < BEAT.hop) {
+        const i = loc(BEAT.ignite); c = [1.2 + i * 0.012, 1190 - i * 4, 566 + i * 3];
+      } else if (df < BEAT.dance) {
+        const i = loc(BEAT.hop); const k = ease(i / 6); c = [lerp(1.26, 1.3, k), lerp(1180, 930, k), lerp(584, 590, k)];
+      } else if (df < BEAT.wind) {
+        const i = loc(BEAT.dance); const k = ease(i / 6); c = [lerp(1.3, 1.62, k), lerp(930, 868, k), lerp(600, 596, k)];
+      } else if (df < BEAT.spin) {
+        const i = loc(BEAT.wind); c = [1.66 + i * 0.04, 868, 600];
+      } else {
+        const i = loc(BEAT.spin); c = [1.58 + i * 0.02, 868, 540];
+      }
+      cam(g, c[0], c[1], c[2]);
+      const burnt = df >= BEAT.hop;
+      const smokeGrow = burnt ? clamp((df - BEAT.hop) / 14 * 0.9) : 0;
+      const wi = df - BEAT.hop;
+      litBase(g, burnt, smokeGrow, df * 0.18, burnt && wi < 14 ? Math.sin(wi * 1.7) * 0.1 * Math.exp(-wi * 0.2) : 0);
+
+      if (df < BEAT.hop) {
+        // flame born on the match head
+        const i = loc(BEAT.ignite);
+        const P = [
+          { sx: 0.6, sy: 1.08, face: 'squeeze', mouth: 'flat', look: 0, cheeks: false },
+          { sx: 1.16, sy: 0.9, face: 'surprised', mouth: 'o', look: 0, cheeks: false },
+          { sx: 0.96, sy: 1.06, face: 'open', mouth: 'smile', look: -1, cheeks: true },
+          { sx: 1.0, sy: 1.0, face: 'blink', mouth: 'smile', look: 1, cheeks: true },
+          { sx: 1.04, sy: 0.96, face: 'determined', mouth: 'flat', look: 0, cheeks: true }
+        ][clamp(i, 0, 4)];
+        drawFlame(g, { x: HEADC[0], y: HEADC[1] + 10, s: FS, sx: P.sx, sy: P.sy, face: P.face, mouth: P.mouth, look: P.look, cheeks: P.cheeks, key: 'ig' + (D % 3) });
+        if (i > 0) tear(g, HEADC[0] + 8, HEADC[1] - 336 - i * 4, 1.1, 'ember');
+        if (i === 1 || i === 2) { star4(g, HEADC[0] - 210, HEADC[1] - 230, 36, 'is1'); star4(g, HEADC[0] + 190, HEADC[1] - 300, 28, 'is2'); }
+        if (i === 3) star4(g, HEADC[0] + 190, HEADC[1] - 150, 24, 'is3');
+        if (i === 0) speedLines(g, HEADC[0], HEADC[1] - 150, 10, 230, 360, 'igl', 6, 1);
+      } else if (df < BEAT.dance) {
+        // the hop: squash, launch, tumble, land, rebound
+        const i = loc(BEAT.hop);
+        const A = [HEADC[0], HEADC[1] + 10], B = [LAND[0], LAND[1]];
+        const Q = [
+          { x: A[0], y: A[1] + 8, sx: 1.3, sy: 0.72, rot: 0, face: 'determined', mouth: 'flat' },
+          { x: A[0] - 36, y: A[1] - 110, sx: 0.72, sy: 1.3, rot: -0.2, face: 'squeeze', mouth: 'open' },
+          { x: 1170, y: 360, sx: 0.9, sy: 1.12, rot: -1.7, face: 'happy', mouth: 'yell' },
+          { x: 1030, y: 330, sx: 0.88, sy: 1.15, rot: -3.5, face: 'happy', mouth: 'yell' },
+          { x: 940, y: 520, sx: 0.78, sy: 1.32, rot: -5.3, face: 'squeeze', mouth: 'open' },
+          { x: B[0], y: B[1] + 4, sx: 1.55, sy: 0.55, rot: 0, face: 'squeeze', mouth: 'open' },
+          { x: B[0] + 4, y: B[1] - 44, sx: 0.86, sy: 1.2, rot: 0.05, face: 'happy', mouth: 'grin' }
+        ][clamp(i, 0, 6)];
+        if (i >= 1 && i <= 4) {
+          // dotted arc the flame just travelled
+          const pts = [[A[0] + 30, A[1] - 90], [1190, 380], [1060, 340], [960, 500], [B[0] + 40, B[1] - 150]];
+          for (let q = 0; q < 12; q += 2) {
+            const u = q / 11; const seg = u * 4; const s0 = Math.min(3, Math.floor(seg)); const t0 = seg - s0;
+            const a = lerp(pts[s0][0], pts[s0 + 1][0], t0), b = lerp(pts[s0][1], pts[s0 + 1][1], t0);
+            if (u < (i + 0.2) / 5) { g.fillStyle = INK; g.beginPath(); g.arc(a + 90, b + 20, 4.6, 0, TAU); g.fill(); }
+          }
+        }
+        if (i === 5) {
+          drawFlame(g, { x: Q.x, y: Q.y, s: FS, sx: Q.sx, sy: Q.sy, rot: Q.rot, face: Q.face, mouth: Q.mouth, key: 'hop' + i, shadow: true });
+          puff(g, B[0] - 200, B[1] - 20, 1.5, 'pl'); puff(g, B[0] + 215, B[1] - 24, 1.4, 'pr');
+          speedLines(g, B[0], B[1] - 50, 9, 270, 380, 'imp', 5.5, 0.35);
+          star4(g, B[0] - 250, B[1] - 220, 30, 'ls1'); star4(g, B[0] + 260, B[1] - 250, 38, 'ls2');
+        } else {
+          drawFlame(g, { x: Q.x, y: Q.y, s: FS, sx: Q.sx, sy: Q.sy, rot: Q.rot, face: Q.face, mouth: Q.mouth, key: 'hop' + i, lean: i === 1 ? 24 : 0, shadow: i === 6,
+            arms: i === 6 ? [[130, -160], [130, -160]] : null });
+          if (i === 6) { puff(g, B[0] - 240, B[1] - 14, 1.0, 'pl2'); puff(g, B[0] + 250, B[1] - 16, 0.85, 'pr2'); }
+          if (i >= 2 && i <= 4) for (let q = 0; q < 3; q++) stroke(g, [[Q.x + 120 + q * 22, Q.y - 190 + q * 44], [Q.x + 210 + q * 26, Q.y - 215 + q * 44]], 'smr' + q, 5, 1, false);
+        }
+      } else if (df < BEAT.wind) {
+        // dance
+        const i = loc(BEAT.dance);
+        const up = i % 2 === 1;
+        const base = { x: LAND[0], y: LAND[1], s: FS };
+        const D7 = [
+          { sx: 1.18, sy: 0.84, rot: 0, dy: 0, face: 'happy', mouth: 'grin', arms: [[132, -52], [132, -52]] },
+          { sx: 0.92, sy: 1.12, rot: -0.07, dy: -50, face: 'happy', mouth: 'grin', arms: [[146, -200], [146, -200]] },
+          { sx: 1.1, sy: 0.9, rot: 0.0, dy: 0, face: 'happy', mouth: 'grin', arms: [[156, -112], [156, -112]] },
+          { sx: 0.94, sy: 1.1, rot: 0.08, dy: -50, face: 'happy', mouth: 'grin', arms: [[150, -72], [142, -208]] },
+          { sx: 1.12, sy: 0.88, rot: 0, dy: 0, face: 'happy', mouth: 'grin', arms: [[146, -70], [146, -70]] },
+          { sx: 1.2, sy: 0.82, rot: 0, dy: 0, face: 'sly', mouth: 'smirk', arms: [[152, -36], [152, -36]] },
+          { sx: 1.22, sy: 0.8, rot: 0, dy: 0, face: 'sly', mouth: 'smirk', arms: [[158, -30], [158, -30]] }
+        ][clamp(i, 0, 6)];
+        drawFlame(g, { x: base.x, y: base.y + D7.dy, s: base.s, sx: D7.sx, sy: D7.sy, rot: D7.rot, face: D7.face, mouth: D7.mouth, key: 'dn' + (D % 3), arms: D7.arms, shadow: true });
+        const spk = [[-330, -380], [360, -420], [-380, -140], [350, -90], [0, -500]];
+        spk.forEach((p, k) => { if (i < 5 && (k + i) % 2 === 0) star4(g, base.x + p[0], base.y + p[1], ((k + i) % 3 ? 38 : 26), 'dst' + k); });
+        if (up) tear(g, base.x + 18, base.y - 520, 1.2, 'dember');
+      } else if (df < BEAT.spin) {
+        const i = loc(BEAT.wind);
+        drawFlame(g, { x: LAND[0], y: LAND[1] + (i ? 2 : 0), s: FS, sx: i ? 1.42 : 1.3, sy: i ? 0.6 : 0.72, face: 'determined', mouth: 'flat', key: 'wd' + i, arms: [[i ? 146 : 150, -28], [i ? 146 : 150, -28]], shadow: true });
+        for (let q = 0; q < 5; q++) stroke(g, [[LAND[0] - 210 - q * 18, LAND[1] - 6 + q * 3], [LAND[0] - 290 - q * 20, LAND[1] - 12 + q * 4]], 'wdl' + q, 4.5, 1, false);
+        for (let q = 0; q < 5; q++) stroke(g, [[LAND[0] + 210 + q * 18, LAND[1] - 6 + q * 3], [LAND[0] + 290 + q * 20, LAND[1] - 12 + q * 4]], 'wdr' + q, 4.5, 1, false);
+      } else {
+        const i = loc(BEAT.spin);
+        const SX = [0.7, 0.4, 0.24, 0.42, 0.18][clamp(i, 0, 4)], lift = [-10, -30, -52, -64, -76][clamp(i, 0, 4)];
+        drawFlame(g, { x: LAND[0], y: LAND[1] + lift, s: FS, sx: SX, sy: 1.0 + i * 0.03, face: i % 2 ? 'blink' : 'determined', mouth: 'flat', key: 'sp' + i, cheeks: i < 2 });
+        const rings = 3 + Math.min(i, 2);
+        for (let k = 0; k < rings; k++) {
+          const yy = LAND[1] + lift - 60 - k * 70; const arc = []; const rx = 220 - k * 8 + i * 16;
+          for (let q = 0; q <= 14; q++) { const a = 0.05 * Math.PI + q / 14 * Math.PI * 0.9; arc.push([LAND[0] + Math.cos(a + i * 0.6) * rx, yy + Math.sin(a + i * 0.6) * 30]); }
+          inkLine(g, boil(arc, 'ring' + k, 1.8, false), false, 5, 'ring' + k);
+        }
+      }
+      g.restore();
+      return { dark, no: 1 + DIDX[f] };
+    }
+    // ------------- 4. boom: burst, clouds, stamp rises -------------
+    if (df < BEAT.stamp) {
+      const i = loc(BEAT.boom);
+      const CX = 868, CY = 560; // screen position of the pop (flame is near here)
+      const ctr = [960, 520];
+      if (i === 0) {
+        dark = true; g.fillStyle = '#1d1514'; g.fillRect(0, 0, W, H);
+        starburst(g, ctr[0], 540, 560, 290, 12, 'bm1', WHITE, null, 0.3, 0.9, 0.55);
+        starburst(g, ctr[0], 540, 360, 190, 10, 'bm2', YEL, null, -0.2, 0.9, 0.5);
+        starburst(g, ctr[0], 540, 170, 90, 9, 'bm3', WHITE, null, 0.6, 0.9, 0.5);
+      } else {
+        const sp = [0, 0.7, 1.0, 1.3][i];
+        if (i >= 3) drawStamp(g, i === 3 ? 0.62 : 1);
+        if (i === 2) drawStamp(g, 0.3);
+        const R = [0, 760, 1180, 0][i];
+        if (R) {
+          starburst(g, ctr[0], ctr[1], R, R * 0.58, 12, 'bo' + i, RED, INK, i * 0.3, 0.88, 0.5);
+          starburst(g, ctr[0], ctr[1], R * 0.68, R * 0.38, 11, 'bi' + i, YEL, null, -i * 0.2, 0.88, 0.5);
+          starburst(g, ctr[0], ctr[1], R * 0.36, R * 0.2, 9, 'bc' + i, WHITE, null, i, 0.88, 0.5);
+          speedLines(g, ctr[0], ctr[1], 22, R * 0.78, R * 1.35, 'bsl' + i, 6.5);
+        }
+        const CL = [[-600, -330], [20, -400], [620, -310], [-760, 40], [760, 80], [-470, 380], [90, 420], [560, 380]];
+        CL.forEach((c, k) => {
+          const x = ctr[0] + c[0] * sp, y = ctr[1] + c[1] * sp, s = [0, 0.8, 1.3, 1.45][i];
+          cloud(g, [[x, y, 130 * s], [x + 110 * s, y + 40 * s, 100 * s], [x - 120 * s, y + 30 * s, 95 * s], [x + 20 * s, y + 90 * s, 90 * s]], 'cl' + k);
+        });
+        // yellow teardrops and ink drips thrown out
+        const dr = rng('drips' + i);
+        for (let q = 0; q < 14; q++) {
+          const a = dr() * TAU, rad = (260 + dr() * 520) * [0, 0.9, 1.2, 1.4][i];
+          const x = ctr[0] + Math.cos(a) * rad * 1.2, y = ctr[1] + Math.sin(a) * rad * 0.7;
+          sparkLeaf(g, x, y, a, 40 + dr() * 40, 7 + dr() * 5, 'dd' + q, q % 3 ? YEL : INK);
+        }
+        star4(g, ctr[0] - 520, ctr[1] - 200, 30, 'bs1'); star4(g, ctr[0] + 540, ctr[1] + 180, 26, 'bs2');
+      }
+      return { dark, no: 1 + DIDX[f] };
+    }
+    // ------------- 5. stamp: drops in, letters are written by a spark, then the hold -------------
+    {
+      const dd = (df - BEAT.stamp) / 2; // time since the stamp appeared, in units of two frames
+      const LET0 = 2; // drawings before the pen starts
+      const speed = 400; // px of lettering written per drawing
+      const wrote = clamp((dd - LET0) * speed, 0, LETTER_TOTAL);
+      const doneAt = LET0 + LETTER_TOTAL / speed; // when the last stroke finishes
+      const stampScale = dd < 1 ? 1.07 : dd < 2 ? 0.97 : 1;
+      // slow push-in over the hold, stepped with the drawings
+      const push = 1 + 0.028 * clamp((dd - doneAt) / 22);
+      g.save(); g.translate(960, 500); g.scale(push, push); g.translate(-960, -500);
+      // wisps of cloud still leaving the corners
+      if (dd <= 3) {
+        const s = [1.0, 0.8, 0.5, 0.25][dd | 0];
+        cloud(g, [[130 - dd * 40, 170, 120 * s], [250 - dd * 40, 130, 90 * s], [70 - dd * 40, 290, 80 * s]], 'lo1');
+        cloud(g, [[1800 + dd * 40, 890, 120 * s], [1680 + dd * 40, 940, 90 * s], [1860 + dd * 40, 770, 80 * s]], 'lo2');
+        cloud(g, [[1780 + dd * 40, 150, 100 * s], [1650 + dd * 40, 110, 70 * s]], 'lo3');
+      }
+      // the little flame pops up from behind the stamp's rim and waves, then does a hop of joy
+      const peekAt = doneAt + 0.5;
+      if (dd >= peekAt) {
+        const age = dd - peekAt;
+        const rise = [60, 8, -6, 0][Math.min(age | 0, 3)];
+        const hopT = dd - (doneAt + 12);
+        const HOPY = [0, -16, -30, -20, 0, 6, 0];
+        const hy = (hopT >= 0 && hopT < 7) ? HOPY[hopT | 0] : 0;
+        const hsq = (hopT >= 0 && hopT < 7) ? [[1, 1], [0.9, 1.14], [0.88, 1.18], [0.94, 1.08], [1.1, 0.88], [1.18, 0.82], [1, 1]][hopT | 0] : [1, 1];
+        const wave = Math.floor(D / 2) % 2 === 0;
+        const blink = (Math.floor(D) % 9) === 4;
+        drawFlame(g, { x: 1498, y: 268 + rise + hy, s: 0.9, sx: (age < 1 ? 0.84 : 1) * hsq[0], sy: (age < 1 ? 1.18 : 1) * hsq[1], rot: 0.1, face: blink ? 'blink' : 'happy', mouth: 'grin', key: 'pk' + (D % 3),
+          arms: [[wave ? 148 : 132, wave ? -214 : -172], [118, -44]], shadow: false });
+      }
+      drawStamp(g, stampScale);
+      const tip = drawLetters(g, wrote);
+      // the pen spark, bright at the stroke tip
+      if (dd >= LET0 - 1 && wrote < LETTER_TOTAL) {
+        const t0 = tip || [LETTERS[0].pts[0][0], LETTERS[0].pts[0][1]];
+        star4(g, t0[0] + 4, t0[1] - 4, 52 + ((D % 2) * 10), 'pen', '#fffbe0', 5.5);
+        const pr = rng('pensp');
+        for (let q = 0; q < 4; q++) sparkLeaf(g, t0[0] + (pr() - 0.5) * 130, t0[1] + (pr() - 0.5) * 130, pr() * TAU, 24, 4.5, 'pq' + q, YEL);
+      }
+      // glints that run across the lettering after it lands
+      const gl = dd - (doneAt + 3);
+      if (gl >= 0 && gl < 8) {
+        const targets = [[438, 352], [872, 408], [1020, 415], [1240, 372], [1440, 336]];
+        targets.forEach((p, k) => { const a = gl - k * 1.2; if (a >= 0 && a < 2.4) star4(g, p[0], p[1], [20, 34, 18][Math.min(2, a | 0)], 'gl' + k, '#fff6c9', 3.2); });
+      }
+      // white chalky "5.5" tag
+      const capAt = doneAt + 0.5;
+      if (dd >= capAt) {
+        const a = dd - capAt; const sc = [0.35, 1.2, 0.94, 1.04][Math.min(a | 0, 3)];
+        outlineText(g, '5.5', STAMP.cx, 764, 156, 'cap', a < 4 ? sc : 1, -0.015);
+      }
+      // handwritten line under the stamp
+      const subAt = capAt + 2;
+      if (dd >= subAt) {
+        const r = rng('sub'); const a = dd - subAt; const sc = [0.7, 1.08, 1][Math.min(a | 0, 2)];
+        g.save(); g.fillStyle = INK; g.font = '700 74px Caveat'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.translate(940 + (r() - 0.5) * 3, 912 + (r() - 0.5) * 3); g.rotate((r() - 0.5) * 0.01); g.scale(sc, sc);
+        g.fillText('meet the new one', 0, 0);
+        g.restore();
+        star4(g, 940 + 290, 904, 26, 'subst', YEL);
+        stroke(g, [[640, 962], [940, 968], [1240, 960]], 'subline', 4.6, 2);
+      }
+      // sparkles around the stamp, twinkling
+      const sps = [[330, 230], [1620, 210], [1660, 770], [300, 790], [1010, 110], [190, 520], [1760, 470]];
+      sps.forEach((p, k) => { if (dd >= doneAt - 5 + k * 0.7) star4(g, p[0], p[1], ((D + k) % 3 === 0) ? 14 : ((D + k) % 3 === 1 ? 26 : 34), 'ss' + k); });
+      g.restore();
+      // red pen circles the drawing counter
+      const circAt = subAt + 2.5;
+      let circ = null;
+      if (dd >= circAt) circ = clamp((dd - circAt) / 5);
+      return { dark, no: 1 + DIDX[f], circle: circ, on: HOLD[f] };
+    }
+  }
+
+  // ---------- present: paper + wobbled drawing layer + grain ----------
+  const lay = document.createElement('canvas'); lay.width = W; lay.height = H;
+  const lg = lay.getContext('2d');
+  const buf = document.createElement('canvas'); buf.width = W; buf.height = H;
+  const bx = buf.getContext('2d');
+  const NF = 12;
+  function buildFilters() {
+    const defs = document.getElementById('defs'); let html = '';
+    for (let i = 0; i < NF; i++) {
+      html += `<filter id="rough${i}" x="-2%" y="-2%" width="104%" height="104%" color-interpolation-filters="sRGB">` +
+        `<feTurbulence type="fractalNoise" baseFrequency="0.0085 0.011" numOctaves="2" seed="${3 + i * 5}" result="n1"/>` +
+        `<feDisplacementMap in="SourceGraphic" in2="n1" scale="6" xChannelSelector="R" yChannelSelector="G" result="d1"/>` +
+        `<feTurbulence type="fractalNoise" baseFrequency="0.075" numOctaves="2" seed="${40 + i * 7}" result="n2"/>` +
+        `<feDisplacementMap in="d1" in2="n2" scale="2.4" xChannelSelector="G" yChannelSelector="R"/>` +
+        `</filter>`;
+    }
+    defs.innerHTML = html;
+  }
+  let lastF = -1, lastDF = -1;
+  function render(t) {
+    const f = Math.min(149, Math.max(0, Math.floor(t * FPS + 1e-6)));
+    const df = DF[f];
+    if (df !== lastDF) {
+      D = DIDX[f];
+      lg.setTransform(1, 0, 0, 1, 0, 0); lg.clearRect(0, 0, W, H);
+      lg.lineJoin = 'round'; lg.lineCap = 'round';
+      const info = compose(lg, f);
+      // tags sit on top of everything, screen space
+      lg.setTransform(1, 0, 0, 1, 0, 0);
+      tags(lg, info.dark, { on: info.on || HOLD[f], no: info.no });
+      if (info.circle) {
+        penCircle(lg, 1744, 996, 150, 58, Math.min(1, info.circle * 1.6), 'circ');
+        if (info.circle > 0.55) {
+          const pr = clamp((info.circle - 0.55) / 0.45);
+          // curved arrow from the circle back toward the "meet the new one" line, with a hand-drawn head
+          const arrow = spline([[1612, 954], [1500, 936], [1330, 912]], false, 10);
+          const cut = arrow.slice(0, Math.max(2, Math.floor(arrow.length * pr)));
+          inkLine(lg, boil(cut, 'arr', 1.4, false), false, 5.4, 'arr', '#cc3a2e');
+          if (pr >= 1) {
+            stroke(lg, [[1322, 910], [1362, 902]], 'ah1', 5.2, 0.8, false, '#cc3a2e');
+            stroke(lg, [[1322, 910], [1352, 940]], 'ah2', 5.2, 0.8, false, '#cc3a2e');
+          }
+        }
+      }
+      // composite
+      bx.setTransform(1, 0, 0, 1, 0, 0);
+      if (info.dark) { bx.fillStyle = NIGHT.bg; bx.fillRect(0, 0, W, H); } else bx.drawImage(paperCv, 0, 0);
+      const jr = rng('gate'); const jx = (jr() - 0.5) * 3, jy = (jr() - 0.5) * 3;
+      bx.filter = `url(#rough${D % NF})`;
+      bx.drawImage(lay, jx, jy);
+      bx.filter = 'none';
+      bx.save(); bx.globalCompositeOperation = 'multiply'; bx.drawImage(toothCv, 0, 0); bx.restore();
+      const vg = bx.createRadialGradient(W / 2, H / 2, 520, W / 2, H / 2, 1250);
+      vg.addColorStop(0, 'rgba(100,70,30,0)'); vg.addColorStop(1, info.dark ? 'rgba(0,0,0,0.26)' : 'rgba(110,76,34,0.11)');
+      bx.fillStyle = vg; bx.fillRect(0, 0, W, H);
+      lastDF = df;
+    }
+    ctx.drawImage(buf, 0, 0);
+  }
+
+  window.DURATION = 5;
+  window.ready = (async () => {
+    await Promise.all([document.fonts.load('104px "Luckiest Guy"'), document.fonts.load('700 40px Caveat'), document.fonts.load('600 28px Caveat')]);
+    await document.fonts.ready;
+    buildFilters(); buildPaper(); buildSun();
+  })();
+  window.renderAt = async (t) => { await window.ready; render(t); };
+  if (!location.search.includes('capture')) {
+    window.ready.then(() => { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })(); });
+  }
+})();
+</script>
+</body>
+</html>

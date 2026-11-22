@@ -1,0 +1,27 @@
+.DS_Store
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+!env.example
+!.env.example
+# raw footage and renders never go to git (too big, and private)
+studio/inbox/*
+!studio/inbox/.gitkeep
+studio/projects/*
+!studio/projects/.gitkeep
+studio/ready/*
+!studio/ready/.gitkeep
+# personal data
+analytics/exports/*
+!analytics/exports/.gitkeep
+tools/rubric-second-brain/data/
+tools/rubric-second-brain/.cache/
+tools/micro-apps/*/data/state.json
+
+studio/corpus/inbox/*
+!studio/corpus/inbox/.gitkeep
+# pipeline: transcription model files are large
+tools/pipeline/models/

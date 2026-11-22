@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUBRIC Generations</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --accent: #ff6b1a; --bg: #000; --surface: #111; --border: #333; --text: #e0e0e0; --text-muted: #888; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+    .gen-layout { display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
+
+    /* Brand block */
+    .gen-rubric-brand { padding: 20px 20px 0; }
+    .gen-rubric-name { font-size: 27px; font-weight: 700; letter-spacing: 4px; color: #e0e0e0; display: flex; align-items: center; }
+    .gen-rubric-tagline { font-size: 16px; color: #555; margin-top: 2px; }
+    .gen-rubric-attribution { font-size: 10px; color: #444; margin-top: 4px; }
+    .gen-rubric-link { color: #555; text-decoration: none; }
+    .gen-rubric-link:hover { color: var(--accent); }
+
+    /* Masonry grid */
+    .gen-masonry { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .gen-masonry .gen-item { cursor: pointer; border-radius: 8px; overflow: hidden; background: #111; transition: transform 0.15s, box-shadow 0.15s; position: relative; }
+    .gen-masonry .gen-item:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(255,107,26,0.15); }
+    .gen-masonry .gen-item img, .gen-masonry .gen-item video { display: block; width: 100%; height: auto; }
+    .gen-badge { position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0.7; }
+    .gen-badge.ref { background: rgba(99,102,241,0.85); }
+    .gen-badge.gen { background: rgba(234,179,8,0.85); }
+    .gen-badge svg { width: 14px; height: 14px; }
+    .gen-dl { position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 6px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
+    .gen-item:hover .gen-dl { opacity: 1; }
+    .gen-dl:hover { background: rgba(255,107,26,0.9); }
+    .gen-dl svg { width: 14px; height: 14px; }
+    .gen-trash { position: absolute; bottom: 8px; right: 42px; width: 28px; height: 28px; border-radius: 6px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
+    .gen-item:hover .gen-trash { opacity: 1; }
+    .gen-trash:hover { background: rgba(239,68,68,0.9); }
+    .gen-trash svg { width: 14px; height: 14px; }
+    .gen-star { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 6px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; font-size: 14px; color: #888; }
+    .gen-item:hover .gen-star { opacity: 1; }
+    .gen-star.active { opacity: 1; color: #f5a623; }
+    .gen-star:hover { background: rgba(245,166,35,0.2); }
+    .gen-copied { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+    .gen-copied.show { opacity: 1; }
+    @media (max-width: 900px) { .gen-masonry { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .gen-masonry { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="gen-layout">
+    <!-- Brand Block -->
+    <div class="gen-rubric-brand">
+      <div class="gen-rubric-name">
+        <svg viewBox="0 0 48 48" width="36" height="36" fill="none" stroke="#ff6b1a" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="vertical-align:bottom;margin-right:8px;">
+          <path d="M24 6l18 10v16L24 42 6 32V16Z"/>
+          <path d="M24 6v16l18 10" opacity="0.5"/>
+          <path d="M24 22L6 32" opacity="0.5"/>
+          <path d="M6 16l18 10 18-10"/>
+        </svg>RUBRIC <span style="font-weight:400;color:#555;font-size:22px;letter-spacing:1px;">Generations</span>
+      </div>
+      <div class="gen-rubric-tagline">The command center for AI agents</div>
+      <div class="gen-rubric-attribution">
+        &copy; Created by <a href="https://robolabs.so/" target="_blank" class="gen-rubric-link">RoboLabs</a>.
+        Learn more at <a href="https://robonuggets.com" target="_blank" class="gen-rubric-link">RoboNuggets</a>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div style="position:sticky;top:0;z-index:10;background:#000;padding:20px 20px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h2 style="margin:0;font-size:18px;font-weight:600;">Generations</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span id="gen-count" style="font-size:12px;color:var(--text-muted);"></span>
+          <button id="gen-styles-toggle" style="background:#111;border:1px solid #333;color:#888;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="11" height="11"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+            Styles
+            <span id="gen-styles-caret" style="font-size:9px;">&#9662;</span>
+          </button>
+          <button id="gen-models-toggle" style="background:#111;border:1px solid #333;color:#888;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="11" height="11"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+            Models
+            <span id="gen-models-caret" style="font-size:9px;">&#9662;</span>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input id="gen-search" type="text" placeholder="Search..." style="background:#111;color:#ccc;border:1px solid #333;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:400;font-family:inherit;width:140px;outline:none;" />
+          <div id="gen-filters" style="display:flex;gap:0;border:1px solid #333;border-radius:6px;overflow:hidden;">
+            <button class="gen-filter-btn active" data-filter="all" style="background:#222;color:var(--accent);border:none;padding:5px 14px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">All</button>
+            <button class="gen-filter-btn" data-filter="image" style="background:#111;color:#888;border:none;padding:5px 14px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">Images</button>
+            <button class="gen-filter-btn" data-filter="video" style="background:#111;color:#888;border:none;padding:5px 14px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">Videos</button>
+            <button class="gen-filter-btn" data-filter="ref" style="background:#111;color:#888;border:none;padding:5px 14px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">References</button>
+          </div>
+          <button id="gen-starred-toggle" style="background:#111;border:1px solid #333;color:#888;border-radius:6px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit;line-height:1;" title="Show starred only">&#9734;</button>
+          <button id="gen-sort-toggle" style="background:#111;border:1px solid #333;color:#888;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;" title="Sort order">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="11" height="11"><polyline points="4 6 8 2 12 6"/><polyline points="4 10 8 14 12 10"/></svg>
+            Newest
+          </button>
+        </div>
+        <div id="gen-cols" style="display:flex;gap:0;border:1px solid #333;border-radius:6px;overflow:hidden;">
+          <button class="gen-col-btn" data-cols="2" style="background:#111;color:#888;border:none;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">2</button>
+          <button class="gen-col-btn active" data-cols="3" style="background:#222;color:var(--accent);border:none;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">3</button>
+          <button class="gen-col-btn" data-cols="4" style="background:#111;color:#888;border:none;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">4</button>
+          <button class="gen-col-btn" data-cols="5" style="background:#111;color:#888;border:none;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">5</button>
+          <button class="gen-col-btn" data-cols="6" style="background:#111;color:#888;border:none;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;">6</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Styles Panel -->
+    <div id="gen-styles-panel" style="display:none;margin:0 20px 20px;border:1px solid #1e1e1e;border-radius:10px;overflow:hidden;background:#080808;">
+      <div style="padding:14px 16px 10px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+          <svg viewBox="0 0 16 16" fill="none" stroke="#555" stroke-width="1.5" width="12" height="12"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span style="font-size:10px;font-weight:700;color:#444;letter-spacing:0.1em;text-transform:uppercase;">Visual Styles - click to copy path</span>
+        </div>
+        <p style="font-size:10px;color:#333;margin:0 0 12px;">Reference these in chat: "use the liquid glass style" or paste the path.</p>
+        <div id="gen-styles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Models Panel -->
+    <div id="gen-models-panel" style="display:none;margin:0 20px 20px;border:1px solid #1e1e1e;border-radius:10px;overflow:hidden;background:#080808;">
+      <div id="gen-models-content"></div>
+    </div>
+
+    <!-- Gallery -->
+    <div style="padding:0 20px 20px;">
+      <div id="gen-empty" style="display:none;text-align:center;padding:80px 20px;color:var(--text-muted);">
+        <p style="font-size:14px;">No generations yet.</p>
+        <p style="font-size:12px;">Generated images and videos will appear here from <code>generations/</code></p>
+        <p style="font-size:11px;margin-top:8px;color:#555;">Ask your AI agent to generate an image or video - it will save to the generations folder and appear here automatically.</p>
+      </div>
+      <div id="gen-grid" class="gen-masonry"></div>
+      <div id="gen-load-more" style="display:none;text-align:center;padding:20px;">
+        <button onclick="window._genLoadMore()" style="background:#1a1a1a;color:#aaa;border:1px solid #333;border-radius:6px;padding:10px 32px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;">Load More</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Optional API auth: set window.RUBRIC_TOKEN to the server's RUBRIC_TOKEN to authorize /api calls
+  (function () {
+    const _fetch = window.fetch;
+    window.fetch = function (url, opts) {
+      opts = opts || {};
+      try {
+        const u = typeof url === 'string' ? url : (url && url.url) || '';
+        if (window.RUBRIC_TOKEN && u.indexOf('/api/') !== -1) {
+          opts.headers = Object.assign({}, opts.headers, { 'x-rubric-token': window.RUBRIC_TOKEN });
+        }
+      } catch (e) {}
+      return _fetch.call(this, url, opts);
+    };
+  })();
+  (function() {
+    const REF_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1.2"/><path d="M2 11l3.5-3.5 2 2 3-3L14 10"/></svg>';
+    const GEN_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1.2"/><path d="M2 11l3-3 2 2 3-3 4 4"/></svg>';
+    const VID_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.5"><polygon points="6,3 13,8 6,13"/></svg>';
+    const DL_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.5"><path d="M8 2v9M4.5 8L8 11.5 11.5 8M3 13h10"/></svg>';
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Models panel toggle
+    const modelsToggle = document.getElementById('gen-models-toggle');
+    const modelsPanel = document.getElementById('gen-models-panel');
+    const modelsCaret = document.getElementById('gen-models-caret');
+    if (modelsToggle && modelsPanel) {
+      modelsToggle.addEventListener('click', () => {
+        const open = modelsPanel.style.display !== 'none';
+        modelsPanel.style.display = open ? 'none' : 'block';
+        modelsCaret.innerHTML = open ? '&#9662;' : '&#9652;';
+        modelsToggle.style.color = open ? '#888' : 'var(--accent)';
+        modelsToggle.style.borderColor = open ? '#333' : 'var(--accent)';
+      });
+    }
+
+    const stylesToggle = document.getElementById('gen-styles-toggle');
+    const stylesPanel = document.getElementById('gen-styles-panel');
+    const stylesCaret = document.getElementById('gen-styles-caret');
+    if (stylesToggle && stylesPanel) {
+      stylesToggle.addEventListener('click', () => {
+        const open = stylesPanel.style.display !== 'none';
+        stylesPanel.style.display = open ? 'none' : 'block';
+        stylesCaret.innerHTML = open ? '&#9662;' : '&#9652;';
+        stylesToggle.style.color = open ? '#888' : 'var(--accent)';
+        stylesToggle.style.borderColor = open ? '#333' : 'var(--accent)';
+      });
+    }
+
+    // Load styles
+    async function loadStyles() {
+      try {
+        const res = await fetch('/api/generation-styles');
+        const styles = await res.json();
+        const grid = document.getElementById('gen-styles-grid');
+        if (!grid || !styles.length) return;
+        grid.innerHTML = '';
+        for (const s of styles) {
+          const card = document.createElement('div');
+          card.dataset.path = 'styles/' + s.image;
+          card.style.cssText = 'background:#0f0f0f;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;';
+          card.innerHTML = '<img src="/generations/styles/' + esc(s.image) + '" style="width:100%;height:140px;object-fit:cover;display:block;"><div style="padding:10px;"><div style="font-size:12px;font-weight:600;color:#e0e0e0;">' + esc(s.name) + '</div><div style="font-size:10px;color:#555;margin-top:3px;">' + esc(s.description) + '</div></div><div class="copy-flash" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;pointer-events:none;"><span style="color:#fff;font-size:11px;font-weight:600;">Copied!</span></div>';
+          card.addEventListener('click', () => {
+            navigator.clipboard.writeText(card.dataset.path);
+            const flash = card.querySelector('.copy-flash');
+            flash.style.opacity = 1;
+            setTimeout(() => flash.style.opacity = 0, 800);
+          });
+          grid.appendChild(card);
+        }
+      } catch (e) { console.error('Failed to load styles:', e); }
+    }
+
+    // Load models
+    async function loadModels() {
+      try {
+        const res = await fetch('/api/generation-models');
+        const models = await res.json();
+        const container = document.getElementById('gen-models-content');
+        if (!container || !models.length) return;
+
+        const videoModels = models.filter(m => m.type === 'video');
+        const imageModels = models.filter(m => m.type === 'image');
+        const linkSvg = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><path d="M6 2H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V8"/><polyline points="9 1 13 1 13 5"/><line x1="13" y1="1" x2="6" y2="8"/></svg>';
+
+        function paramVal(val) {
+          if (!val || val === 'n/a') return '<span style="font-size:11px;color:#383838;font-style:italic;">n/a</span>';
+          return '<span style="font-size:11px;color:#aaa;">' + esc(val).replace(/\s*\|\s*/g, ' <span style="color:#2a2a2a;">|</span> ') + '</span>';
+        }
+
+        function renderCard(m) {
+          const features = (m.features || []).map(f =>
+            '<div style="display:flex;gap:8px;"><span style="font-size:10px;color:#888;min-width:90px;">' + esc(f.label) + '</span><span style="font-size:10px;color:#555;">' + esc(f.detail) + '</span></div>'
+          ).join('');
+          return '<div style="background:#0f0f0f;border:1px solid #1e1e1e;border-radius:8px;padding:12px;">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+              '<span style="font-size:13px;font-weight:600;color:#e0e0e0;">' + esc(m.name) + '</span>' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                '<a href="' + esc(m.docs) + '" target="_blank" title="Docs" style="color:#444;display:flex;align-items:center;text-decoration:none;" onmouseover="this.style.color=\'#888\'" onmouseout="this.style.color=\'#444\'">' + linkSvg + '</a>' +
+                '<span style="background:#1a1a1a;color:#666;border:1px solid #2a2a2a;font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;">' + esc(m.provider) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #1a1a1a;">' +
+              '<div style="display:flex;gap:6px;align-items:baseline;"><span style="font-size:10px;color:#444;min-width:72px;">aspect</span>' + paramVal(m.aspect) + '</div>' +
+              '<div style="display:flex;gap:6px;align-items:baseline;"><span style="font-size:10px;color:#444;min-width:72px;">resolution</span>' + paramVal(m.resolution) + '</div>' +
+              '<div style="display:flex;gap:6px;align-items:baseline;"><span style="font-size:10px;color:#444;min-width:72px;">mode</span>' + paramVal(m.mode) + '</div>' +
+              '<div style="display:flex;gap:6px;align-items:baseline;"><span style="font-size:10px;color:#444;min-width:72px;">duration</span>' + paramVal(m.duration) + '</div>' +
+            '</div>' +
+            '<div><span style="font-size:9px;font-weight:700;color:#444;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Features</span>' +
+              '<div style="display:flex;flex-direction:column;gap:3px;">' + features + '</div>' +
+            '</div>' +
+          '</div>';
+        }
+
+        function renderSection(icon, label, items, minWidth) {
+          if (!items.length) return '';
+          return '<div style="padding:14px 16px 10px;border-bottom:1px solid #1a1a1a;">' +
+            '<div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">' + icon +
+              '<span style="font-size:10px;font-weight:700;color:#444;letter-spacing:0.1em;text-transform:uppercase;">' + label + '</span>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(' + minWidth + 'px,1fr));gap:10px;">' +
+              items.map(renderCard).join('') +
+            '</div>' +
+          '</div>';
+        }
+
+        const videoIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="#555" stroke-width="1.5" width="12" height="12"><polygon points="3 2 13 8 3 14 3 2"/></svg>';
+        const imageIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="#555" stroke-width="1.5" width="12" height="12"><rect x="1" y="1" width="14" height="14" rx="2"/><circle cx="5.5" cy="5.5" r="1.2"/><polyline points="1 11 5 7 8 10 11 7 15 11"/></svg>';
+
+        container.innerHTML = renderSection(videoIcon, 'Video', videoModels, 240) + renderSection(imageIcon, 'Image', imageModels, 220);
+      } catch (e) { console.error('Failed to load models:', e); }
+    }
+
+    let allFiles = [];
+    let currentFilter = 'all';
+    let currentCols = 3;
+    let genPage = 1;
+    let genHasMore = false;
+    let genTotal = 0;
+    let currentSearch = '';
+    let currentSort = 'newest';
+    let showStarredOnly = false;
+
+    function renderGrid() {
+      const grid = document.getElementById('gen-grid');
+      const empty = document.getElementById('gen-empty');
+      const count = document.getElementById('gen-count');
+      if (!grid) return;
+
+      if (!allFiles.length) {
+        empty.style.display = 'block';
+        grid.style.display = 'none';
+        count.textContent = currentFilter === 'all' ? '' : '0 items';
+        return;
+      }
+
+      empty.style.display = 'none';
+      grid.style.display = '';
+      grid.style.gridTemplateColumns = 'repeat(' + currentCols + ', 1fr)';
+      count.textContent = allFiles.length + ' of ' + genTotal + ' item' + (genTotal !== 1 ? 's' : '');
+
+      grid.innerHTML = '';
+      for (const file of allFiles) {
+        const isRef = file.type === 'ref';
+        const isVideo = file.media === 'video';
+        const item = document.createElement('div');
+        item.className = 'gen-item';
+        item.title = 'Click to copy path';
+
+        const mediaSrc = isRef ? '/generations/refs/' + encodeURIComponent(file.name) : '/generations/' + encodeURIComponent(file.name);
+        let mediaEl;
+        if (isVideo) {
+          mediaEl = document.createElement('video');
+          mediaEl.src = mediaSrc;
+          mediaEl.muted = true;
+          mediaEl.loop = true;
+          mediaEl.playsInline = true;
+          mediaEl.preload = 'metadata';
+          mediaEl.style.cssText = 'display:block;width:100%;height:auto;';
+          item.addEventListener('mouseenter', () => mediaEl.play().catch(() => {}));
+          item.addEventListener('mouseleave', () => { mediaEl.pause(); mediaEl.currentTime = 0; });
+        } else {
+          mediaEl = document.createElement('img');
+          mediaEl.src = mediaSrc;
+          mediaEl.alt = file.name;
+          mediaEl.loading = 'lazy';
+        }
+
+        const badge = document.createElement('div');
+        badge.className = 'gen-badge ' + (isRef ? 'ref' : 'gen');
+        badge.innerHTML = isVideo ? VID_ICON : (isRef ? REF_ICON : GEN_ICON);
+
+        const dlBtn = document.createElement('div');
+        dlBtn.className = 'gen-dl';
+        dlBtn.innerHTML = DL_ICON;
+        dlBtn.title = 'Download';
+
+        const trashBtn = document.createElement('div');
+        trashBtn.className = 'gen-trash';
+        trashBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+        trashBtn.title = 'Delete';
+
+        const starBtn = document.createElement('div');
+        starBtn.className = 'gen-star' + (file.starred ? ' active' : '');
+        starBtn.innerHTML = file.starred ? '&#9733;' : '&#9734;';
+        starBtn.title = file.starred ? 'Unstar' : 'Star';
+
+        const copied = document.createElement('div');
+        copied.className = 'gen-copied';
+        copied.textContent = 'Path copied!';
+
+        item.appendChild(mediaEl);
+        item.appendChild(badge);
+        item.appendChild(starBtn);
+        item.appendChild(trashBtn);
+        item.appendChild(dlBtn);
+        item.appendChild(copied);
+
+        item.addEventListener('click', (e) => {
+          if (dlBtn.contains(e.target) || trashBtn.contains(e.target) || starBtn.contains(e.target)) return;
+          const text = file.path;
+          navigator.clipboard.writeText(text).then(() => {
+            copied.classList.add('show');
+            setTimeout(() => copied.classList.remove('show'), 1200);
+          }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            copied.classList.add('show');
+            setTimeout(() => copied.classList.remove('show'), 1200);
+          });
+        });
+
+        dlBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const a = document.createElement('a'); a.href = mediaSrc; a.download = file.name;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+
+        trashBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Delete ' + file.name + '?')) return;
+          try {
+            const res = await fetch('/api/generations/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filePath: file.path }) });
+            const data = await res.json();
+            if (data.ok) loadGenerations(true);
+          } catch (err) { console.error('Delete failed:', err); }
+        });
+
+        starBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const newState = !file.starred;
+          try {
+            await fetch('/api/generations/star', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: file.name, starred: newState }) });
+            file.starred = newState;
+            starBtn.className = 'gen-star' + (newState ? ' active' : '');
+            starBtn.innerHTML = newState ? '&#9733;' : '&#9734;';
+          } catch (err) { console.error('Star failed:', err); }
+        });
+
+        grid.appendChild(item);
+      }
+    }
+
+    function buildApiUrl() {
+      let url = '/api/generations?page=' + genPage + '&limit=30';
+      if (currentFilter === 'image' || currentFilter === 'video') url += '&media=' + currentFilter;
+      else if (currentFilter === 'ref' || currentFilter === 'gen') url += '&type=' + currentFilter;
+      if (currentSearch) url += '&q=' + encodeURIComponent(currentSearch);
+      if (currentSort === 'oldest') url += '&sort=oldest';
+      if (showStarredOnly) url += '&starred=1';
+      return url;
+    }
+
+    async function loadGenerations(reset) {
+      try {
+        if (reset) { genPage = 1; allFiles = []; }
+        const res = await fetch(buildApiUrl());
+        const data = await res.json();
+        if (reset) allFiles = data.items;
+        else allFiles = allFiles.concat(data.items);
+        genHasMore = data.hasMore;
+        genTotal = data.total;
+        renderGrid();
+        const loadMoreDiv = document.getElementById('gen-load-more');
+        if (loadMoreDiv) loadMoreDiv.style.display = genHasMore ? 'block' : 'none';
+      } catch (e) { console.error('Failed to load generations:', e); }
+    }
+    window._genLoadMore = function() { genPage++; loadGenerations(false); };
+
+    // Filter buttons
+    document.querySelectorAll('.gen-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.gen-filter-btn').forEach(b => { b.style.background = '#111'; b.style.color = '#888'; b.classList.remove('active'); });
+        btn.style.background = '#222'; btn.style.color = 'var(--accent)'; btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        loadGenerations(true);
+      });
+    });
+
+    // Column buttons
+    document.querySelectorAll('.gen-col-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.gen-col-btn').forEach(b => { b.style.background = '#111'; b.style.color = '#888'; b.classList.remove('active'); });
+        btn.style.background = '#222'; btn.style.color = 'var(--accent)'; btn.classList.add('active');
+        currentCols = parseInt(btn.dataset.cols);
+        const grid = document.getElementById('gen-grid');
+        if (grid) grid.style.gridTemplateColumns = 'repeat(' + currentCols + ', 1fr)';
+      });
+    });
+
+    // Search
+    const searchInput = document.getElementById('gen-search');
+    let searchTimeout;
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => { currentSearch = searchInput.value.trim(); loadGenerations(true); }, 300);
+      });
+    }
+
+    // Sort toggle
+    const sortToggle = document.getElementById('gen-sort-toggle');
+    if (sortToggle) {
+      sortToggle.addEventListener('click', () => {
+        currentSort = currentSort === 'newest' ? 'oldest' : 'newest';
+        sortToggle.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="11" height="11"><polyline points="4 6 8 2 12 6"/><polyline points="4 10 8 14 12 10"/></svg> ' + (currentSort === 'newest' ? 'Newest' : 'Oldest');
+        loadGenerations(true);
+      });
+    }
+
+    // Starred filter
+    const starredToggle = document.getElementById('gen-starred-toggle');
+    if (starredToggle) {
+      starredToggle.addEventListener('click', () => {
+        showStarredOnly = !showStarredOnly;
+        starredToggle.style.color = showStarredOnly ? '#f5a623' : '#888';
+        starredToggle.style.borderColor = showStarredOnly ? '#f5a623' : '#333';
+        starredToggle.innerHTML = showStarredOnly ? '&#9733;' : '&#9734;';
+        loadGenerations(true);
+      });
+    }
+
+    // Drag-and-drop upload for References
+    const genPanel = document.querySelector('.gen-layout');
+    if (genPanel) {
+      const dropOverlay = document.createElement('div');
+      dropOverlay.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:100;pointer-events:none;';
+      dropOverlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:2px dashed rgba(200,200,200,0.3);border-radius:16px;padding:40px 60px;text-align:center;"><div style="font-size:16px;font-weight:600;color:#ccc;margin-bottom:6px;">Drop to add reference</div><div style="font-size:12px;color:#888;">Image will be saved to refs/</div></div>';
+      document.body.appendChild(dropOverlay);
+
+      let dragCounter = 0;
+      genPanel.addEventListener('dragenter', (e) => { e.preventDefault(); dragCounter++; dropOverlay.style.display = 'block'; });
+      genPanel.addEventListener('dragleave', (e) => { e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; dropOverlay.style.display = 'none'; } });
+      genPanel.addEventListener('dragover', (e) => e.preventDefault());
+      genPanel.addEventListener('drop', async (e) => {
+        e.preventDefault(); dragCounter = 0; dropOverlay.style.display = 'none';
+        const files = e.dataTransfer.files;
+        if (!files.length) return;
+        const formData = new FormData();
+        for (const f of files) { if (/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(f.name)) formData.append('file', f, f.name); }
+        try {
+          const res = await fetch('/api/generations/refs', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (data.ok) {
+            currentFilter = 'ref';
+            document.querySelectorAll('.gen-filter-btn').forEach(b => { b.style.background = '#111'; b.style.color = '#888'; b.classList.remove('active'); if (b.dataset.filter === 'ref') { b.style.background = '#222'; b.style.color = 'var(--accent)'; b.classList.add('active'); } });
+            loadGenerations(true);
+          }
+        } catch (err) { console.error('Upload failed:', err); }
+      });
+    }
+
+    // Initial load
+    loadStyles();
+    loadModels();
+    loadGenerations(true);
+  })();
+  </script>
+</body>
+</html>

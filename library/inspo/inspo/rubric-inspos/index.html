@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RUBRIC Inspos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --border: #1a1a1a;
+      --border-hover: #333;
+      --text: #fff;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --accent: #ff6b1a;
+    }
+    html, body { width: 100%; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Brand block (removed automatically when shown as a console tab) */
+    .gen-rubric-brand { padding: 20px 24px 0; }
+    .gen-rubric-name { font-size: 27px; font-weight: 700; letter-spacing: 4px; color: #e0e0e0; display: flex; align-items: center; -webkit-font-smoothing: antialiased; }
+    .gen-rubric-tagline { font-size: 16px; color: var(--text-muted); margin-top: 2px; }
+    .gen-rubric-attribution { font-size: 10px; color: #444; margin-top: 4px; }
+    .gen-rubric-link { color: var(--text-muted); text-decoration: none; }
+    .gen-rubric-link:hover { color: #ff6b1a; }
+
+    /* ==================== INSPOS ==================== */
+    .insp-root { width: 100%; padding: 28px 24px 64px; }
+    .insp-wrap { max-width: 1400px; margin: 0 auto; }
+    .insp-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; margin-bottom: 24px; gap: 16px; }
+    .insp-title { font-size: 22px; font-weight: 600; margin: 0; color: var(--text); }
+    .insp-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .insp-btn {
+      font: inherit; font-size: 13px; color: var(--text-secondary);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; cursor: pointer;
+    }
+    .insp-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .insp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+      gap: 24px 18px;
+    }
+    .insp-card { display: block; text-decoration: none; color: inherit; }
+    .insp-thumb {
+      position: relative; width: 100%; aspect-ratio: 16 / 9;
+      border-radius: 12px; overflow: hidden; background: var(--border);
+    }
+    .insp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+    .insp-card:hover .insp-thumb img { transform: scale(1.03); }
+    .insp-dur {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,.85); color: #fff;
+      font-size: 12px; font-weight: 500; line-height: 1;
+      padding: 3px 5px; border-radius: 5px;
+    }
+    .insp-tag {
+      position: absolute; top: 8px; left: 8px;
+      background: var(--accent); color: #000;
+      font-size: 11px; font-weight: 600; line-height: 1;
+      padding: 4px 6px; border-radius: 5px;
+    }
+    .insp-meta { padding: 10px 2px 0; }
+    .insp-vtitle {
+      font-size: 15px; font-weight: 600; color: var(--text);
+      line-height: 1.35; margin: 0 0 6px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .insp-chan { font-size: 13px; color: var(--text-secondary); margin: 0 0 4px; }
+    .insp-stats { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+    .insp-stats .insp-dot, .insp-chan .insp-dot { color: var(--text-muted); }
+    .insp-why {
+      font-size: 13px; color: var(--text-secondary); font-style: italic; line-height: 1.4; margin-top: 6px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .insp-empty { color: var(--text-secondary); font-size: 14px; padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+    @media (max-width: 600px) { .insp-root { padding: 20px 16px 48px; } }
+  </style>
+</head>
+<body>
+  <!-- Brand Block -->
+  <div class="gen-rubric-brand">
+    <div class="gen-rubric-name">
+      <svg viewBox="0 0 48 48" width="36" height="36" fill="none" stroke="#ff6b1a" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" style="vertical-align:bottom;margin-right:8px;">
+        <path d="M24 6l18 10v16L24 42 6 32V16Z"/>
+        <path d="M24 6v16l18 10" opacity="0.5"/>
+        <path d="M24 22L6 32" opacity="0.5"/>
+        <path d="M6 16l18 10 18-10"/>
+      </svg>RUBRIC <span style="font-weight:400;color:var(--text-muted);font-size:22px;letter-spacing:1px;margin-left:8px;">Inspos</span>
+    </div>
+    <div class="gen-rubric-tagline">The command center for AI agents</div>
+    <div class="gen-rubric-attribution">
+      &copy; Created by <a href="https://robolabs.so/" target="_blank" rel="noopener" class="gen-rubric-link">RoboLabs</a>.
+      Learn more at <a href="https://robonuggets.com" target="_blank" rel="noopener" class="gen-rubric-link">RoboNuggets</a>
+    </div>
+  </div>
+
+  <div class="insp-root">
+    <div class="insp-wrap">
+      <div class="insp-head">
+        <div>
+          <h2 class="insp-title">Inspos</h2>
+          <div class="insp-sub" id="insp-sub">Loading...</div>
+        </div>
+        <button class="insp-btn" id="insp-refresh" type="button">Refresh</button>
+      </div>
+      <div class="insp-grid" id="insp-grid"></div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // 2210000 -> "2.2M" (numbers only, so the result is always safe to put in the page)
+    const short = n => { n = Number(n) || 0; const t = x => x.replace(/\.0$/, ''); return n < 1e3 ? String(n) : n < 1e6 ? (n < 1e4 ? t((n / 1e3).toFixed(1)) : Math.round(n / 1e3)) + 'K' : n < 1e9 ? t((n / 1e6).toFixed(1)) + 'M' : t((n / 1e9).toFixed(1)) + 'B'; };
+
+    async function loadInspos() {
+      const grid = document.getElementById('insp-grid');
+      if (!grid) return;
+      const sub = document.getElementById('insp-sub');
+      try {
+        const headers = window.RUBRIC_TOKEN ? { 'x-rubric-token': window.RUBRIC_TOKEN } : {};
+        const r = await fetch('/api/inspos', { headers, cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        const rows = (data.inspos || []).filter(v => v && /^[A-Za-z0-9_-]{11}$/.test(v.id || '')).slice();
+        rows.sort((a, b) => (Date.parse(b.capturedAt) || 0) - (Date.parse(a.capturedAt) || 0));
+        if (!rows.length) {
+          grid.innerHTML = '<div class="insp-empty">No inspos yet. Ask your agent for <b>/inspo &lt;youtube link&gt;</b>, or right-click a YouTube video.</div>';
+          if (sub) sub.textContent = 'No videos yet';
+          return;
+        }
+        grid.innerHTML = rows.map(v => {
+          const id = v.id; // already checked: 11 safe characters
+          const thumb = 'https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg';
+          // Older videos have no max-res thumbnail. YouTube then sends a tiny 120px grey placeholder
+          // instead of an error, so fall back to the always-present hqdefault on an error OR a tiny image.
+          const fb = "if(!this.dataset.fb){this.dataset.fb=1;this.src='https://i.ytimg.com/vi/" + id + "/hqdefault.jpg'}";
+          const views = esc(v.viewsText || (v.views != null ? v.views : ''));
+          const ago = esc(v.ago || '');
+          const stats = (views ? '&#9655; ' + views : '') + (views && ago ? '<span class="insp-dot">&middot;</span>' : '') + ago;
+          return '<a class="insp-card" href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener">' +
+            '<div class="insp-thumb">' +
+              '<img src="' + thumb + '" loading="lazy" onerror="' + fb + '" onload="if(this.naturalWidth<=120){' + fb + '}" alt="">' +
+              (v.example ? '<span class="insp-tag">example</span>' : '') +
+              (v.duration ? '<span class="insp-dur">' + esc(v.duration) + '</span>' : '') +
+            '</div>' +
+            '<div class="insp-meta">' +
+              '<p class="insp-vtitle">' + esc(v.title) + '</p>' +
+              (v.channel ? '<p class="insp-chan">' + esc(v.channel) + (v.subscribers ? ' <span class="insp-dot">&middot;</span> ' + short(v.subscribers) + ' subs' : '') + '</p>' : '') +
+              '<div class="insp-stats">' + stats + '</div>' +
+              (v.note ? '<p class="insp-why">' + esc(v.note) + '</p>' : '') +
+            '</div>' +
+          '</a>';
+        }).join('');
+        if (sub) sub.textContent = data.examplesOnly
+          ? 'Showing examples until you save your first video'
+          : rows.length + (rows.length === 1 ? ' video' : ' videos') + ' · views and age frozen at the moment you saved each one';
+      } catch (e) {
+        grid.innerHTML = '<div class="insp-empty">Could not load inspos: ' + esc(e.message) + '</div>';
+      }
+    }
+
+    window.loadInspos = loadInspos;
+    // Re-fetch whenever the Inspos tab is opened or the window gets focus again,
+    // so videos saved from the extension show up without a page refresh.
+    document.addEventListener('click', e => {
+      if (e.target.closest && (e.target.closest('.nav-tab[data-tab="inspos"]') || e.target.closest('#insp-refresh'))) loadInspos();
+    });
+    window.addEventListener('focus', () => {
+      const grid = document.getElementById('insp-grid');
+      if (grid && grid.offsetParent !== null) loadInspos();
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadInspos);
+    else loadInspos();
+  })();
+  </script>
+</body>
+</html>

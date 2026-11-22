@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DATAPOEM — Generative Art Studio</title>
+<meta name="description" content="DATAPOEM is a generative art studio. Every image on this site is computed live in your browser - thousands of particles, flow fields, circle packings and random walks. No files. Only code.">
+<meta name="theme-color" content="#100e0c">
+<meta property="og:title" content="DATAPOEM — Generative Art Studio">
+<meta property="og:description" content="Every visual computed live in your browser. No image files. Only code.">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23100e0c"/><circle cx="9" cy="10" r="2.4" fill="%23f5efe2"/><circle cx="17" cy="14" r="2.4" fill="%23ff4d00"/><circle cx="23" cy="21" r="2.4" fill="%23f5efe2"/><circle cx="11" cy="23" r="1.6" fill="%23f5efe2"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#100e0c;
+  --ink-soft:#1c1915;
+  --paper:#f5efe2;
+  --paper-dim:#e9e1cf;
+  --orange:#ff4d00;
+  --grey:#8a8375;
+  --mono:'IBM Plex Mono',monospace;
+  --serif:'Instrument Serif',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--orange);color:var(--ink)}
+a{color:inherit}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 32px;
+  mix-blend-mode:difference;
+  color:#f5efe2;
+}
+nav .logo{font-family:var(--serif);font-size:22px;letter-spacing:.04em;text-decoration:none}
+nav .logo em{font-style:italic} /* stays monochrome: orange inverts to cyan under difference blend */
+nav ul{display:flex;gap:26px;list-style:none}
+nav ul a{
+  text-decoration:none;font-size:12px;text-transform:uppercase;letter-spacing:.14em;opacity:.75;
+  transition:opacity .25s;position:relative;
+}
+nav ul a::after{
+  content:"";position:absolute;left:0;bottom:-4px;height:1px;width:100%;
+  background:#ff4d00;transform:scaleX(0);transform-origin:right;
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+}
+nav ul a:hover{opacity:1}
+nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
+@media(max-width:640px){nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;height:100vh;min-height:560px;
+  display:flex;align-items:flex-end;
+}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.hero-meta{
+  position:relative;z-index:2;width:100%;
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding:0 32px 36px;
+  pointer-events:none;
+  gap:20px;flex-wrap:wrap;
+}
+.hero-meta p{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--grey);max-width:340px}
+.hero-meta p b{color:var(--paper);font-weight:500}
+.hero-meta .seed{color:var(--orange)}
+.scrollhint{
+  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);
+  animation:hint 2.4s ease-in-out infinite;z-index:2;pointer-events:none;
+}
+@keyframes hint{0%,100%{opacity:.3}50%{opacity:1}}
+@media(max-width:768px){.scrollhint{display:none}}
+.scrollhint .cursor{color:var(--orange);animation:blink 1s steps(1) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.poemcount{
+  position:absolute;top:86px;left:32px;z-index:2;pointer-events:none;
+  font-size:11px;letter-spacing:.2em;color:var(--grey);
+}
+.poemcount b{color:var(--orange);font-weight:500}
+@media(max-width:640px){.poemcount{left:20px;top:76px}}
+@media (prefers-reduced-motion:reduce){.scrollhint .cursor{animation:none}}
+
+/* ---------- shared section styles ---------- */
+section{position:relative;padding:110px 32px}
+@media(max-width:640px){
+  section{padding:72px 20px}
+  .hero-meta{padding:0 20px 28px}
+  nav{padding:18px 20px}
+  footer{padding:60px 20px 32px}
+}
+.wrap{max-width:1180px;margin:0 auto}
+.kicker{
+  font-size:12px;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);
+  display:flex;align-items:center;gap:14px;margin-bottom:28px;
+}
+.kicker::before{content:"";width:34px;height:1px;background:var(--orange)}
+h2{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(34px,5vw,60px);line-height:1.08;letter-spacing:.005em;
+  margin-bottom:26px;
+}
+h2 em{color:var(--orange);font-style:italic}
+.divider{width:100%;height:90px;display:block;opacity:.9}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+/* staggered children */
+.grid .rv:nth-child(2),.tiers .rv:nth-child(2){transition-delay:.12s}
+.grid .rv:nth-child(3),.tiers .rv:nth-child(3){transition-delay:.24s}
+.grid .rv:nth-child(4){transition-delay:.06s}
+.grid .rv:nth-child(5){transition-delay:.18s}
+.grid .rv:nth-child(6){transition-delay:.3s}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- statement ---------- */
+.statement .cols{display:grid;grid-template-columns:1.2fr .8fr;gap:60px;align-items:start}
+.statement .lede{font-family:var(--serif);font-size:clamp(22px,2.6vw,30px);line-height:1.42;color:var(--paper)}
+.statement .lede em{color:var(--orange)}
+.statement aside p{color:var(--grey);font-size:14px;margin-bottom:18px}
+.statement aside .fact{
+  border-top:1px solid #2c2820;padding:14px 0;display:flex;justify-content:space-between;gap:12px;font-size:13px;
+}
+.statement aside .fact span:last-child{color:var(--orange)}
+@media(max-width:860px){.statement .cols{grid-template-columns:1fr;gap:36px}}
+
+/* ---------- works ---------- */
+.works{background:var(--paper);color:var(--ink)}
+.works .kicker{color:var(--orange)}
+.works .grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:50px;
+}
+.work{
+  background:var(--ink);color:var(--paper);
+  border:1px solid #2c2820;
+  cursor:pointer;
+  transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s;
+  position:relative;overflow:hidden;
+}
+.work:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(16,14,12,.35)}
+.work canvas{width:100%;aspect-ratio:1/1;display:block;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.work:hover canvas{transform:scale(1.035)}
+@media (prefers-reduced-motion:reduce){.work:hover canvas{transform:none}}
+.work .info{padding:16px 18px 18px;border-top:1px solid #2c2820}
+.work .info h3{font-family:var(--serif);font-weight:400;font-size:21px;margin-bottom:4px}
+.work .info .algo{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--orange)}
+.work .info .meta{font-size:11px;color:var(--grey);margin-top:8px;display:flex;justify-content:space-between}
+.work .regen{
+  position:absolute;top:12px;right:12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  background:var(--orange);color:var(--ink);padding:4px 8px;
+  opacity:0;transform:translateY(-6px);transition:.3s;pointer-events:none;
+}
+.work:hover .regen{opacity:1;transform:none}
+.works .note{margin-top:34px;font-size:12px;color:#6f6a5e;text-transform:uppercase;letter-spacing:.14em}
+@media(max-width:960px){.works .grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.works .grid{grid-template-columns:1fr}}
+
+/* ---------- manifesto ---------- */
+.manifesto .big{
+  font-family:var(--serif);font-size:clamp(30px,4.4vw,54px);line-height:1.2;max-width:900px;
+}
+.manifesto .big em{color:var(--orange)}
+.manifesto .rules{
+  margin-top:60px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#2c2820;border:1px solid #2c2820;
+}
+.manifesto .rule{background:var(--ink);padding:28px 24px}
+.manifesto .rule .n{color:var(--orange);font-size:12px;letter-spacing:.14em;margin-bottom:14px;display:block}
+.manifesto .rule h3{font-family:var(--serif);font-weight:400;font-size:22px;margin-bottom:10px}
+.manifesto .rule p{color:var(--grey);font-size:13.5px}
+@media(max-width:860px){.manifesto .rules{grid-template-columns:1fr}}
+
+/* ---------- commissions ---------- */
+.commissions .tiers{margin-top:40px;border-top:1px solid #2c2820}
+.tier{
+  display:grid;grid-template-columns:120px 1.1fr 1.4fr 130px;gap:26px;align-items:baseline;
+  padding:30px 0;border-bottom:1px solid #2c2820;transition:padding-left .35s cubic-bezier(.16,1,.3,1);
+}
+.tier:hover{padding-left:14px}
+.tier .id{color:var(--orange);font-size:12px;letter-spacing:.14em}
+.tier h3{font-family:var(--serif);font-weight:400;font-size:26px}
+.tier p{color:var(--grey);font-size:13.5px}
+.tier .price{text-align:right;font-size:15px}
+.tier .price small{display:block;color:var(--grey);font-size:11px;margin-top:3px}
+@media(max-width:860px){.tier{grid-template-columns:1fr;gap:8px}.tier .price{text-align:left}}
+
+/* ---------- exhibitions ---------- */
+.exhibitions{background:var(--paper);color:var(--ink)}
+.exhibitions table{width:100%;border-collapse:collapse;margin-top:36px}
+.exhibitions th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#6f6a5e;
+  font-weight:500;padding:0 12px 14px 0;border-bottom:1px solid #cfc5ac;
+}
+.exhibitions td{padding:18px 12px 18px 0;border-bottom:1px solid #cfc5ac;font-size:14px;vertical-align:top}
+.exhibitions td.year{color:var(--orange);width:70px}
+.exhibitions td .venue{font-family:var(--serif);font-size:19px}
+.exhibitions td .city{color:#6f6a5e;font-size:12.5px}
+.exhibitions .badge{
+  display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.14em;
+  border:1px solid var(--orange);color:var(--orange);padding:3px 8px;
+}
+@media(max-width:640px){
+  .exhibitions .hidecol{display:none}
+}
+
+/* ---------- footer ---------- */
+footer{padding:80px 32px 40px;position:relative}
+footer .top{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;margin-bottom:70px}
+footer .brand{font-family:var(--serif);font-size:clamp(48px,9vw,120px);line-height:.95}
+footer .brand em{color:var(--orange)}
+footer .links{display:flex;gap:50px;font-size:13px}
+footer .links ul{list-style:none}
+footer .links li{margin-bottom:8px}
+footer .links a{text-decoration:none;color:var(--grey);transition:color .25s}
+footer .links a:hover{color:var(--orange)}
+footer .links .h{color:var(--paper);text-transform:uppercase;font-size:11px;letter-spacing:.16em;margin-bottom:14px}
+footer .base{
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  border-top:1px solid #2c2820;padding-top:22px;
+  font-size:11.5px;color:var(--grey);
+}
+footer .base a{color:var(--grey)}
+footer .base a:hover{color:var(--orange)}
+#seedReadout{color:var(--orange)}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#top">DATA<em>POEM</em></a>
+  <ul>
+    <li><a href="#statement">Studio</a></li>
+    <li><a href="#works">Works</a></li>
+    <li><a href="#commissions">Commissions</a></li>
+    <li><a href="#exhibitions">Exhibitions</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <canvas id="heroCanvas" aria-label="Interactive particle typography: thousands of particles form words and scatter around your cursor"></canvas>
+  <div class="hero-meta">
+    <p><b>DATAPOEM</b> — a generative art studio. Everything you see on this page is being computed right now, in your browser.</p>
+    <p>No image files. No renders. <span class="seed">100% code.</span> Move your cursor through the letters.</p>
+  </div>
+  <div class="scrollhint">Scroll — the machine keeps drawing<span class="cursor">_</span></div>
+  <div class="poemcount" id="poemCount">POEM 01 / 05</div>
+</header>
+
+<canvas class="divider" data-divider="1" aria-hidden="true"></canvas>
+
+<!-- STATEMENT -->
+<section class="statement" id="statement">
+  <div class="wrap">
+    <div class="kicker rv">Studio statement</div>
+    <div class="cols">
+      <p class="lede rv">We don't draw pictures. We write <em>systems that draw</em>. Each work is an algorithm — a few hundred lines of deliberate code — seeded with a number and released onto the canvas. The same system never breathes the same way twice. That's the poem part.</p>
+      <aside class="rv">
+        <p>Founded in 2019 by Mara Okonjo and Deniz Aral, DATAPOEM operates from a former letterpress workshop in Rotterdam. We make long-form generative series, live algorithmic installations, and commissioned systems for institutions that want art with a pulse.</p>
+        <div class="fact"><span>Founded</span><span>2019, Rotterdam</span></div>
+        <div class="fact"><span>Systems written</span><span>147</span></div>
+        <div class="fact"><span>Outputs rendered</span><span>∞ (by design)</span></div>
+        <div class="fact"><span>Image files on this site</span><span>0</span></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<canvas class="divider" data-divider="2" aria-hidden="true"></canvas>
+
+<!-- WORKS -->
+<section class="works" id="works">
+  <div class="wrap">
+    <div class="kicker rv">Selected works — rendered live</div>
+    <h2 class="rv">Six systems, running <em>right now</em></h2>
+    <p class="rv" style="max-width:560px;color:#6f6a5e;font-size:14px">These are not thumbnails. Each frame below is its algorithm executing in your browser this very second. Click any piece to reseed it — you will be the first person to ever see that output.</p>
+    <div class="grid" id="worksGrid">
+      <!-- work cards injected-adjacent canvases -->
+      <figure class="work rv" data-algo="flow">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Perlin flow field</div>
+          <h3>Windreader No. 7</h3>
+          <div class="meta"><span>2,400 particles / curl noise</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+      <figure class="work rv" data-algo="circles">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Circle packing</div>
+          <h3>Held Breath</h3>
+          <div class="meta"><span>Greedy growth / collision</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+      <figure class="work rv" data-algo="walk">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Random walk</div>
+          <h3>Drunk Cartographer</h3>
+          <div class="meta"><span>4 walkers / 9,000 steps</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+      <figure class="work rv" data-algo="lissajous">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Harmonograph</div>
+          <h3>Two Pendulums in Love</h3>
+          <div class="meta"><span>Damped sine pairs</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+      <figure class="work rv" data-algo="grid">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Recursive subdivision</div>
+          <h3>Zoning Dispute</h3>
+          <div class="meta"><span>Mondrian-ish partition</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+      <figure class="work rv" data-algo="dunes">
+        <span class="regen">Click to reseed</span>
+        <canvas></canvas>
+        <figcaption class="info">
+          <div class="algo">Noise topography</div>
+          <h3>Dune Sequence IV</h3>
+          <div class="meta"><span>Layered 1D noise ridges</span><span class="wseed"></span></div>
+        </figcaption>
+      </figure>
+    </div>
+    <p class="note rv">Tip: press <b>R</b> anywhere on this page to reseed every system at once.</p>
+  </div>
+</section>
+
+<canvas class="divider" data-divider="3" aria-hidden="true"></canvas>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="wrap">
+    <div class="kicker rv">Why code</div>
+    <p class="big rv">A photograph is a moment kept. A painting is a moment made. A <em>system</em> is every possible moment, waiting for a seed.</p>
+    <div class="rules rv">
+      <div class="rule">
+        <span class="n">01 / CONSTRAINT</span>
+        <h3>One palette, forever</h3>
+        <p>Ink black, paper white, signal orange. Three colours since 2019. Constraint is the studio's oldest algorithm.</p>
+      </div>
+      <div class="rule">
+        <span class="n">02 / HONESTY</span>
+        <h3>Ship the source</h3>
+        <p>Every collector receives the full annotated source code of their piece, printed and bound. The art is the instructions.</p>
+      </div>
+      <div class="rule">
+        <span class="n">03 / CHANCE</span>
+        <h3>Respect the seed</h3>
+        <p>We never cherry-pick outputs. The seed chooses. If the system produces something ugly, the system needed to be better.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<canvas class="divider" data-divider="4" aria-hidden="true"></canvas>
+
+<!-- COMMISSIONS -->
+<section class="commissions" id="commissions">
+  <div class="wrap">
+    <div class="kicker rv">Commissions</div>
+    <h2 class="rv">Systems for hire</h2>
+    <div class="tiers">
+      <div class="tier rv">
+        <span class="id">CMS-01</span>
+        <h3>Edition seed</h3>
+        <p>One output from an existing system, seeded with a number of your choosing — a date, a coordinate, a heartbeat. Archival print 70×70 cm plus the source, bound.</p>
+        <div class="price">€1,400<small>edition of 1, 3 weeks</small></div>
+      </div>
+      <div class="tier rv">
+        <span class="id">CMS-02</span>
+        <h3>Bespoke system</h3>
+        <p>A new algorithm written for you from scratch. Your data, your constraints, our palette. Includes 12 curated outputs and the perpetual right to re-run the system.</p>
+        <div class="price">€9,800<small>8–10 weeks</small></div>
+      </div>
+      <div class="tier rv">
+        <span class="id">CMS-03</span>
+        <h3>Living installation</h3>
+        <p>A permanent, self-running generative piece for lobbies, façades and stages. Reacts to weather, footfall, or market data. Hardware, calibration and 5 years of care included.</p>
+        <div class="price">from €42,000<small>scoped per site</small></div>
+      </div>
+    </div>
+    <p class="rv" style="margin-top:34px;color:var(--grey);font-size:13px">Enquiries: <a href="mailto:seed@datapoem.studio" style="color:var(--orange)">seed@datapoem.studio</a> — include a number that matters to you. We'll seed the first sketch with it.</p>
+  </div>
+</section>
+
+<canvas class="divider" data-divider="5" aria-hidden="true"></canvas>
+
+<!-- EXHIBITIONS -->
+<section class="exhibitions" id="exhibitions">
+  <div class="wrap">
+    <div class="kicker rv">Exhibitions & talks</div>
+    <h2 class="rv">Where the machines have shown</h2>
+    <table class="rv">
+      <thead>
+        <tr><th>Year</th><th>Show</th><th class="hidecol">Venue</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="year">2026</td>
+          <td><div class="venue">Seed 0472: A Retrospective of Nothing Repeated</div><div class="city">Solo — 41 systems, re-run nightly</div></td>
+          <td class="hidecol"><div>Het Nieuwe Instituut</div><div class="city">Rotterdam, NL</div></td>
+          <td><span class="badge">Current</span></td>
+        </tr>
+        <tr>
+          <td class="year">2025</td>
+          <td><div class="venue">The Drawing Is a Verb</div><div class="city">Group show, generative wing</div></td>
+          <td class="hidecol"><div>ZKM Center for Art and Media</div><div class="city">Karlsruhe, DE</div></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="year">2025</td>
+          <td><div class="venue">Windreader — Live Façade</div><div class="city">Permanent commission, 240 m² LED</div></td>
+          <td class="hidecol"><div>Oslo Opera Quarter</div><div class="city">Oslo, NO</div></td>
+          <td><span class="badge">Permanent</span></td>
+        </tr>
+        <tr>
+          <td class="year">2024</td>
+          <td><div class="venue">Respect the Seed (keynote)</div><div class="city">Talk + live coding, 40 min</div></td>
+          <td class="hidecol"><div>Eyeo Festival</div><div class="city">Minneapolis, US</div></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="year">2023</td>
+          <td><div class="venue">Ink / Signal</div><div class="city">First solo — 12 plotter series</div></td>
+          <td class="hidecol"><div>Galerie Fons Welters</div><div class="city">Amsterdam, NL</div></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand rv">DATA<em>POEM</em></div>
+      <div class="links rv">
+        <ul>
+          <li class="h">Studio</li>
+          <li><a href="#statement">Statement</a></li>
+          <li><a href="#works">Works</a></li>
+          <li><a href="#commissions">Commissions</a></li>
+        </ul>
+        <ul>
+          <li class="h">Contact</li>
+          <li><a href="mailto:seed@datapoem.studio">seed@datapoem.studio</a></li>
+          <li><a href="#top">Keizerstraat 114, Rotterdam</a></li>
+          <li><a href="#top">@datapoem.studio</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="base">
+      <span>© 2026 DATAPOEM. This page contains zero image files. Session seed: <span id="seedReadout">—</span></span>
+      <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+"use strict";
+const ORANGE = "#ff4d00", PAPER = "#f5efe2", INK = "#100e0c", GREY = "#8a8375";
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+/* ---------- seeded RNG ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let sessionSeed = (Math.random()*99999|0)+1;
+document.getElementById("seedReadout").textContent = String(sessionSeed).padStart(5,"0");
+
+/* ---------- simple value noise ---------- */
+function makeNoise(rand){
+  const perm = new Uint8Array(512);
+  const p = [...Array(256).keys()];
+  for(let i=255;i>0;i--){const j=(rand()*(i+1))|0;[p[i],p[j]]=[p[j],p[i]]}
+  for(let i=0;i<512;i++)perm[i]=p[i&255];
+  const grad=(h,x,y)=>{switch(h&3){case 0:return x+y;case 1:return -x+y;case 2:return x-y;default:return -x-y}};
+  const fade=t=>t*t*t*(t*(t*6-15)+10);
+  return (x,y)=>{
+    const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+    x-=Math.floor(x); y-=Math.floor(y);
+    const u=fade(x),v=fade(y);
+    const a=perm[X]+Y, b=perm[X+1]+Y;
+    return (1+ ( (1-v)*((1-u)*grad(perm[a],x,y)+u*grad(perm[b],x-1,y))
+        + v*((1-u)*grad(perm[a+1],x,y-1)+u*grad(perm[b+1],x-1,y-1)) ))/2;
+  };
+}
+
+/* =========================================================
+   HERO — particle typography
+========================================================= */
+const heroCanvas = document.getElementById("heroCanvas");
+const hctx = heroCanvas.getContext("2d");
+const PHRASES = ["DATAPOEM","CODE IS INK","SEED 0472","NOTHING REPEATS","WE WRITE RAIN"];
+let heroW=0, heroH=0, particles=[], phraseIdx=0, mouse={x:-9999,y:-9999,vx:0,vy:0};
+let lastSwitch = performance.now();
+const PHRASE_MS = 5200;
+
+function sizeHero(){
+  const r = heroCanvas.parentElement.getBoundingClientRect();
+  heroW = r.width; heroH = r.height;
+  heroCanvas.width = heroW*DPR; heroCanvas.height = heroH*DPR;
+  hctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+function sampleText(text){
+  const off = document.createElement("canvas");
+  const s = 0.5; // sample scale
+  off.width = Math.max(2, heroW*s); off.height = Math.max(2, heroH*s);
+  const o = off.getContext("2d");
+  o.fillStyle="#000"; o.fillRect(0,0,off.width,off.height);
+  const isMobile = heroW < 700;
+  // on small screens, break long phrases onto two lines for bigger letters
+  let lines = [text];
+  if(isMobile && text.length > 10 && text.includes(" ")){
+    // split at the space nearest the middle, keeping word order
+    const mid = text.length/2;
+    let best=-1, bestD=1e9;
+    for(let i=0;i<text.length;i++){
+      if(text[i]===" " && Math.abs(i-mid)<bestD){ best=i; bestD=Math.abs(i-mid); }
+    }
+    lines = [text.slice(0,best), text.slice(best+1)];
+  }
+  const longest = Math.max(...lines.map(l=>l.length));
+  let fs = (heroW*s*0.93) / (longest*(isMobile?0.56:0.62));
+  fs = Math.min(fs, (heroH*s*0.42)/lines.length);
+  o.fillStyle="#fff";
+  o.font = `${fs}px 'IBM Plex Mono', monospace`;
+  o.textAlign="center"; o.textBaseline="middle";
+  const cy = off.height*(isMobile?0.42:0.45);
+  lines.forEach((ln,i)=>{
+    o.fillText(ln, off.width/2, cy + (i-(lines.length-1)/2)*fs*1.15);
+  });
+  const data = o.getImageData(0,0,off.width,off.height).data;
+  const pts=[];
+  const step = 2;
+  for(let y=0;y<off.height;y+=step){
+    for(let x=0;x<off.width;x+=step){
+      if(data[(y*off.width+x)*4] > 128){
+        pts.push({x:x/s, y:y/s});
+      }
+    }
+  }
+  return pts;
+}
+
+function buildParticles(text){
+  const pts = sampleText(text);
+  const isMobile = heroW < 700;
+  const target = Math.min(pts.length, isMobile ? 1900 : 3200);
+  const szSmall = isMobile ? 2.1 : 1.3, szBig = isMobile ? 3.2 : 2.4;
+  // shuffle-select
+  const rand = mulberry32(sessionSeed + phraseIdx*77);
+  for(let i=pts.length-1;i>0;i--){const j=(rand()*(i+1))|0;[pts[i],pts[j]]=[pts[j],pts[i]]}
+  const chosen = pts.slice(0,target);
+  // grow/shrink particle pool
+  while(particles.length < chosen.length){
+    particles.push({x:Math.random()*heroW,y:Math.random()*heroH,vx:0,vy:0,tx:0,ty:0,
+      size: Math.random()<0.08?szBig:szSmall, orange: Math.random()<0.07});
+  }
+  particles.length = chosen.length;
+  for(let i=0;i<particles.length;i++){particles[i].tx = chosen[i].x; particles[i].ty = chosen[i].y;}
+}
+
+function heroFrame(now){
+  hctx.fillStyle = INK;
+  hctx.fillRect(0,0,heroW,heroH);
+  if(!reduced && now - lastSwitch > PHRASE_MS){
+    lastSwitch = now;
+    phraseIdx = (phraseIdx+1)%PHRASES.length;
+    buildParticles(PHRASES[phraseIdx]);
+    const pc = document.getElementById("poemCount");
+    pc.innerHTML = "POEM <b>" + String(phraseIdx+1).padStart(2,"0") + "</b> / " + String(PHRASES.length).padStart(2,"0");
+  }
+  const mr = 110; // mouse radius
+  const t = now*0.00045;
+  for(const p of particles){
+    // spring to target + faint idle breath
+    p.vx += (p.tx - p.x)*0.012 + Math.sin(t + p.ty*0.05)*0.012;
+    p.vy += (p.ty - p.y)*0.012 + Math.cos(t + p.tx*0.05)*0.012;
+    // mouse repulsion
+    const dx = p.x - mouse.x, dy = p.y - mouse.y;
+    const d2 = dx*dx+dy*dy;
+    if(d2 < mr*mr){
+      const d = Math.sqrt(d2)||1;
+      const f = (1 - d/mr)*3.2;
+      p.vx += (dx/d)*f + mouse.vx*0.06;
+      p.vy += (dy/d)*f + mouse.vy*0.06;
+    }
+    p.vx *= 0.86; p.vy *= 0.86;
+    p.x += p.vx; p.y += p.vy;
+    hctx.fillStyle = p.orange ? ORANGE : PAPER;
+    hctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+  mouse.vx*=0.8; mouse.vy*=0.8;
+  requestAnimationFrame(heroFrame);
+}
+
+let lastMouse={x:0,y:0};
+heroCanvas.addEventListener("pointermove", e=>{
+  const r = heroCanvas.getBoundingClientRect();
+  const x = e.clientX-r.left, y = e.clientY-r.top;
+  mouse.vx = x-lastMouse.x; mouse.vy = y-lastMouse.y;
+  mouse.x=x; mouse.y=y; lastMouse={x,y};
+});
+heroCanvas.addEventListener("pointerleave", ()=>{mouse.x=-9999;mouse.y=-9999});
+
+function initHero(){
+  sizeHero();
+  buildParticles(PHRASES[phraseIdx]);
+  if(reduced){
+    // static: place at targets, draw once
+    hctx.fillStyle=INK; hctx.fillRect(0,0,heroW,heroH);
+    for(const p of particles){
+      hctx.fillStyle = p.orange?ORANGE:PAPER;
+      hctx.fillRect(p.tx,p.ty,p.size,p.size);
+    }
+  }else{
+    requestAnimationFrame(heroFrame);
+  }
+}
+// wait for the mono font so sampling matches final rendering
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(initHero);
+  // fallback if fonts hang
+  setTimeout(()=>{ if(particles.length===0) initHero(); }, 1500);
+}else{ initHero(); }
+
+let resizeT;
+window.addEventListener("resize", ()=>{
+  clearTimeout(resizeT);
+  resizeT = setTimeout(()=>{ sizeHero(); buildParticles(PHRASES[phraseIdx]); if(reduced) initHero(); }, 150);
+});
+
+/* =========================================================
+   DIVIDERS — seeded generative strips
+========================================================= */
+function drawDivider(cv, seed){
+  const r = cv.getBoundingClientRect();
+  cv.width = r.width*DPR; cv.height = r.height*DPR;
+  const c = cv.getContext("2d");
+  c.setTransform(DPR,0,0,DPR,0,0);
+  const w=r.width,h=r.height;
+  const rand = mulberry32(seed*911 + sessionSeed);
+  const noise = makeNoise(rand);
+  c.fillStyle = INK; c.fillRect(0,0,w,h);
+  c.strokeStyle = "rgba(245,239,226,0.25)";
+  c.lineWidth = 1;
+  const lines = 4;
+  for(let l=0;l<lines;l++){
+    c.beginPath();
+    const base = h*(0.25 + 0.5*l/(lines-1));
+    for(let x=0;x<=w;x+=6){
+      const y = base + (noise(x*0.006, l*3.7)-0.5)*h*0.9;
+      x===0 ? c.moveTo(x,y) : c.lineTo(x,y);
+    }
+    c.stroke();
+  }
+  // orange ticks
+  c.fillStyle = ORANGE;
+  const n = Math.floor(w/90);
+  for(let i=0;i<n;i++){
+    const x = rand()*w, y = h*0.2+rand()*h*0.6;
+    c.fillRect(x,y,3,3);
+  }
+}
+const dividers = [...document.querySelectorAll(".divider")];
+function drawAllDividers(){ dividers.forEach((d,i)=>drawDivider(d, i+1)); }
+drawAllDividers();
+let divT;
+window.addEventListener("resize", ()=>{clearTimeout(divT); divT=setTimeout(()=>{drawAllDividers()},160)});
+
+/* =========================================================
+   WORKS — six live algorithms
+========================================================= */
+const SIZE = 540; // internal square resolution
+
+function prepCtx(cv){
+  cv.width = SIZE; cv.height = SIZE;
+  const c = cv.getContext("2d");
+  c.fillStyle = INK; c.fillRect(0,0,SIZE,SIZE);
+  return c;
+}
+
+const ALGOS = {
+  flow(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const noise = makeNoise(rand);
+    const N = 2400, steps = reduced? 60 : 46;
+    c.globalAlpha = 0.55;
+    for(let i=0;i<N;i++){
+      let x = rand()*SIZE, y = rand()*SIZE;
+      const orange = rand()<0.06;
+      c.strokeStyle = orange?ORANGE:PAPER;
+      c.lineWidth = orange?1.4:0.7;
+      c.beginPath(); c.moveTo(x,y);
+      for(let s=0;s<steps;s++){
+        const a = noise(x*0.004, y*0.004)*Math.PI*4;
+        x += Math.cos(a)*3; y += Math.sin(a)*3;
+        c.lineTo(x,y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+  },
+  circles(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const placed = [];
+    let attempts = 0;
+    while(placed.length < 260 && attempts < 9000){
+      attempts++;
+      const x = rand()*SIZE, y = rand()*SIZE;
+      let maxR = Math.min(x, y, SIZE-x, SIZE-y, 90);
+      let ok = true;
+      for(const o of placed){
+        const d = Math.hypot(x-o.x,y-o.y) - o.r - 2;
+        if(d < 3){ ok=false; break }
+        maxR = Math.min(maxR, d);
+      }
+      if(!ok || maxR < 3) continue;
+      const r = Math.min(maxR, 6 + rand()*rand()*80);
+      placed.push({x,y,r});
+    }
+    for(const o of placed){
+      const style = rand();
+      c.beginPath(); c.arc(o.x,o.y,o.r,0,Math.PI*2);
+      if(style<0.12){ c.fillStyle=ORANGE; c.fill(); }
+      else if(style<0.3){ c.fillStyle=PAPER; c.fill(); }
+      else { c.strokeStyle=PAPER; c.lineWidth=1; c.stroke(); }
+    }
+  },
+  walk(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const walkers = 4;
+    for(let wk=0; wk<walkers; wk++){
+      let x = SIZE*0.5, y = SIZE*0.5;
+      const orange = wk===0;
+      c.strokeStyle = orange?ORANGE:PAPER;
+      c.globalAlpha = orange?0.9:0.5;
+      c.lineWidth = orange?1.6:0.8;
+      const g = 9; // grid step
+      c.beginPath(); c.moveTo(x,y);
+      for(let s=0;s<2200;s++){
+        const d = (rand()*4)|0;
+        if(d===0)x+=g; else if(d===1)x-=g; else if(d===2)y+=g; else y-=g;
+        x=Math.max(10,Math.min(SIZE-10,x)); y=Math.max(10,Math.min(SIZE-10,y));
+        c.lineTo(x,y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha=1;
+  },
+  lissajous(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const f1=1+(rand()*5|0), f2=1+(rand()*5|0), f3=1+(rand()*4|0), f4=1+(rand()*4|0);
+    const p1=rand()*Math.PI*2, p2=rand()*Math.PI*2;
+    const d1=0.00012+rand()*0.0002, d2=0.00012+rand()*0.0002;
+    const cx=SIZE/2, cy=SIZE/2, A=SIZE*0.42;
+    c.strokeStyle = PAPER; c.globalAlpha=0.8; c.lineWidth=0.8;
+    c.beginPath();
+    const T = 9000;
+    for(let t=0;t<T;t++){
+      const e1=Math.exp(-d1*t), e2=Math.exp(-d2*t);
+      const x = cx + A*(Math.sin(f1*t*0.01+p1)*e1*0.7 + Math.sin(f3*t*0.01)*e2*0.3);
+      const y = cy + A*(Math.sin(f2*t*0.01+p2)*e2*0.7 + Math.sin(f4*t*0.01)*e1*0.3);
+      t===0 ? c.moveTo(x,y) : c.lineTo(x,y);
+    }
+    c.stroke();
+    // orange accent: same curve, offset phase, short
+    c.strokeStyle = ORANGE; c.globalAlpha=0.9; c.lineWidth=1.4;
+    c.beginPath();
+    for(let t=0;t<900;t++){
+      const e1=Math.exp(-d1*t), e2=Math.exp(-d2*t);
+      const x = cx + A*(Math.sin(f1*t*0.01+p1+0.5)*e1*0.7 + Math.sin(f3*t*0.01)*e2*0.3);
+      const y = cy + A*(Math.sin(f2*t*0.01+p2+0.5)*e2*0.7 + Math.sin(f4*t*0.01)*e1*0.3);
+      t===0 ? c.moveTo(x,y) : c.lineTo(x,y);
+    }
+    c.stroke();
+    c.globalAlpha=1;
+  },
+  grid(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const cells=[];
+    function split(x,y,w,h,depth){
+      if(depth>5 || (w<70&&h<70) || (depth>1 && rand()<0.22)){ cells.push({x,y,w,h}); return }
+      if(w>h){ const cut=w*(0.3+rand()*0.4); split(x,y,cut,h,depth+1); split(x+cut,y,w-cut,h,depth+1); }
+      else { const cut=h*(0.3+rand()*0.4); split(x,y,w,cut,depth+1); split(x,y+cut,w,h-cut,depth+1); }
+    }
+    split(24,24,SIZE-48,SIZE-48,0);
+    for(const cell of cells){
+      const s = rand();
+      if(s<0.1){ c.fillStyle=ORANGE; c.fillRect(cell.x+3,cell.y+3,cell.w-6,cell.h-6); }
+      else if(s<0.22){ c.fillStyle=PAPER; c.fillRect(cell.x+3,cell.y+3,cell.w-6,cell.h-6); }
+      else if(s<0.5){
+        // hatch fill
+        c.save();
+        c.beginPath(); c.rect(cell.x+3,cell.y+3,cell.w-6,cell.h-6); c.clip();
+        c.strokeStyle="rgba(245,239,226,0.5)"; c.lineWidth=1;
+        for(let i=-cell.h;i<cell.w;i+=7){
+          c.beginPath();
+          c.moveTo(cell.x+i,cell.y); c.lineTo(cell.x+i+cell.h,cell.y+cell.h);
+          c.stroke();
+        }
+        c.restore();
+        c.strokeStyle=PAPER; c.strokeRect(cell.x+3,cell.y+3,cell.w-6,cell.h-6);
+      }
+      else { c.strokeStyle="rgba(245,239,226,0.85)"; c.lineWidth=1; c.strokeRect(cell.x+3,cell.y+3,cell.w-6,cell.h-6); }
+    }
+  },
+  dunes(cv, seed){
+    const c = prepCtx(cv);
+    const rand = mulberry32(seed);
+    const noise = makeNoise(rand);
+    const rows = 42;
+    for(let i=0;i<rows;i++){
+      const baseY = SIZE*0.12 + (SIZE*0.82)*(i/rows);
+      const orange = rand()<0.08;
+      c.beginPath();
+      c.moveTo(0,SIZE);
+      let firstY;
+      for(let x=0;x<=SIZE;x+=4){
+        const y = baseY - Math.abs(noise(x*0.004+i*0.35, i*0.22))*110;
+        if(x===0){ firstY = y; c.lineTo(x,y); } else c.lineTo(x,y);
+      }
+      c.lineTo(SIZE,SIZE);
+      c.closePath();
+      c.fillStyle = INK; c.fill(); // occlude lines behind
+      c.beginPath();
+      for(let x=0;x<=SIZE;x+=4){
+        const y = baseY - Math.abs(noise(x*0.004+i*0.35, i*0.22))*110;
+        x===0 ? c.moveTo(x,y) : c.lineTo(x,y);
+      }
+      c.strokeStyle = orange?ORANGE:PAPER;
+      c.globalAlpha = orange?0.95:0.7;
+      c.lineWidth = orange?1.6:1;
+      c.stroke();
+    }
+    c.globalAlpha=1;
+  }
+};
+
+const works = [...document.querySelectorAll(".work")];
+function renderWork(w, seed){
+  const algo = w.dataset.algo;
+  const cv = w.querySelector("canvas");
+  ALGOS[algo](cv, seed);
+  w.querySelector(".wseed").textContent = "seed " + String(seed%100000).padStart(5,"0");
+  w.dataset.seed = seed;
+}
+works.forEach((w,i)=>{
+  renderWork(w, sessionSeed*7 + i*1013);
+  w.addEventListener("click", ()=>{
+    renderWork(w, (Math.random()*99999|0)+1);
+    w.animate(
+      [{outline:"2px solid "+ORANGE, outlineOffset:"0px"},{outline:"2px solid transparent", outlineOffset:"6px"}],
+      {duration:500, easing:"cubic-bezier(.16,1,.3,1)"}
+    );
+  });
+});
+
+/* R = reseed everything */
+document.addEventListener("keydown", e=>{
+  if((e.key==="r"||e.key==="R") && !e.metaKey && !e.ctrlKey && !e.altKey){
+    sessionSeed = (Math.random()*99999|0)+1;
+    document.getElementById("seedReadout").textContent = String(sessionSeed).padStart(5,"0");
+    works.forEach((w,i)=>renderWork(w, sessionSeed*7 + i*1013));
+    drawAllDividers();
+    buildParticles(PHRASES[phraseIdx]);
+  }
+});
+
+/* =========================================================
+   Scroll reveals
+========================================================= */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+},{threshold:0.05,rootMargin:"0px 0px -40px 0px"});
+document.querySelectorAll(".rv").forEach(el=>io.observe(el));
+
+/* console easter egg */
+console.log("%cDATAPOEM","font:24px serif;color:#ff4d00");
+console.log("You read source code. We like you.\nEvery pixel on this page was computed, not stored.\nPress R to reseed the whole site. Session seed: " + sessionSeed);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sonnet 5.5 - Shape Morph</title>
+<style>
+  @font-face { font-family: 'Outfit'; font-weight: 500; src: url(assets/outfit-latin-500-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Outfit'; font-weight: 600; src: url(assets/outfit-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Outfit'; font-weight: 700; src: url(assets/outfit-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'JBMono'; font-weight: 700; src: url(assets/jbmono-latin-700-normal.woff2) format('woff2'); }
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f1ece0; }
+  canvas { display: block; }
+</style>
+<script src="assets/glyphs.js"></script>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(() => {
+  const W = 1920, H = 1080, FPS = 30, N = 240, K = 9;
+  const COL = {
+    cream: '#f1ece0', black: '#16151a', yellow: '#f3ba2e', red: '#ec3b2b', blue: '#2630dd',
+    dark: '#121116', white: '#f7f3ea', word: '#e6e1d3', coral: '#f2432f', lav: '#d3d9ff', fold: '#9ea8f3'
+  };
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+  const scene = mk(), sx = scene.getContext('2d');
+  const grp = mk(), gx = grp.getContext('2d');
+  const layer = mk(), lx = layer.getContext('2d');
+  const small = document.createElement('canvas'); small.width = 240; small.height = 135;
+  const smx = small.getContext('2d');
+
+  // ---------- math ----------
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const prog = (t, s, d) => clamp((t - s) / d);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const easeOutCubic = x => 1 - Math.pow(1 - x, 3);
+  const easeInCubic = x => x * x * x;
+  const easeInOutCubic = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const easeInOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
+  const easeOutBack = (x, s = 1.70158) => { const c3 = s + 1; return 1 + c3 * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };
+  const easeInOutBack = (x, s = 0.9) => {
+    const c2 = s * 1.525;
+    return x < 0.5 ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+                   : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+  };
+  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const mixCol = (a, b, k) => { const A = hex(a), B = hex(b); return `rgb(${Math.round(lerp(A[0], B[0], k))},${Math.round(lerp(A[1], B[1], k))},${Math.round(lerp(A[2], B[2], k))})`; };
+  const mixHex = (a, b, k) => { const A = hex(a), B = hex(b); const h = v => Math.round(v).toString(16).padStart(2, '0'); return '#' + h(lerp(A[0], B[0], k)) + h(lerp(A[1], B[1], k)) + h(lerp(A[2], B[2], k)); };
+
+  // ---------- polygon helpers ----------
+  function signedArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return a / 2; }
+  function resample(poly, n = N) {
+    const pts = poly.slice();
+    if (signedArea(pts) < 0) pts.reverse();
+    const L = [0];
+    for (let i = 1; i <= pts.length; i++) { const a = pts[i - 1], b = pts[i % pts.length]; L.push(L[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
+    const total = L[L.length - 1];
+    const out = []; let j = 0;
+    for (let i = 0; i < n; i++) {
+      const d = total * i / n;
+      while (L[j + 1] < d) j++;
+      const a = pts[j], b = pts[(j + 1) % pts.length];
+      const k = (d - L[j]) / Math.max(1e-9, L[j + 1] - L[j]);
+      out.push([lerp(a[0], b[0], k), lerp(a[1], b[1], k)]);
+    }
+    return out;
+  }
+  function smoothClosed(P, seg = 10) {
+    const n = P.length, out = [];
+    for (let i = 0; i < n; i++) {
+      const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+      for (let k = 0; k < seg; k++) {
+        const t = k / seg, t2 = t * t, t3 = t2 * t;
+        const f = c => 0.5 * ((2 * p1[c]) + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3);
+        out.push([f(0), f(1)]);
+      }
+    }
+    return out;
+  }
+  function circle(cx, cy, r, n = 120) { const o = []; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i / n * Math.PI * 2; o.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } return o; }
+  function halfDisc(cx, cy, r, n = 64) {
+    const o = [];
+    for (let i = 0; i <= n; i++) { const a = -Math.PI / 2 - i / n * Math.PI; o.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+    return o; // closes with the straight diameter
+  }
+  function capsule(x1, y1, x2, y2, w) {
+    const p = []; const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy), nx = -dy / l * w / 2, ny = dx / l * w / 2, a0 = Math.atan2(dy, dx);
+    for (let i = 0; i <= 10; i++) { const a = a0 - Math.PI / 2 + Math.PI * i / 10; p.push([x2 + Math.cos(a) * w / 2, y2 + Math.sin(a) * w / 2]); }
+    for (let i = 0; i <= 10; i++) { const a = a0 + Math.PI / 2 + Math.PI * i / 10; p.push([x1 + Math.cos(a) * w / 2, y1 + Math.sin(a) * w / 2]); }
+    return p;
+  }
+  const xform = (pts, cx, cy, rot, sc = 1) => { const c = Math.cos(rot), s = Math.sin(rot); return pts.map(p => [cx + (p[0] * c - p[1] * s) * sc, cy + (p[0] * s + p[1] * c) * sc]); };
+  const centroid = pts => { let x = 0, y = 0; for (const q of pts) { x += q[0]; y += q[1]; } return [x / pts.length, y / pts.length]; };
+  const collapsedAt = (c) => { const o = []; for (let i = 0; i < N; i++) o.push([c[0], c[1]]); return o; };
+
+  // ---------- layout ----------
+  const CX = 960, CY = 500;
+  const SC = 0.28;                          // wordmark scale (font units to px)
+  const G = window.GLYPHS;
+  const WORD_L = Math.min(...G.letters.map(L => Math.min(...L.contours.map(c => Math.min(...c.pts.map(p => p[0]))))));
+  const WORD_R = G.width + 6 + G.period.cx + G.period.r;
+  const OX = 960 - ((WORD_L + WORD_R) / 2) * SC;
+  const BASE = 588;
+  const DOT_X = OX + (G.width + 6 + G.period.cx) * SC, DOT_R = G.period.r * SC, DOT_Y = BASE + G.period.cy * SC;
+  const BALL = [960, 478], BALL_R = 86;
+  const LET = G.letters.map(L => L.contours.map(c => ({ hole: c.hole, pts: resample(c.pts.map(p => [OX + p[0] * SC, BASE + p[1] * SC])) })));
+  // slot assignment: fills in 0,3,5,6,7,8 (S o n n e t), holes in 1 (o) and 2 (e)
+  const LSLOT = [0, 3, 5, 6, 7, 8];
+
+  // ---------- the drop ----------
+  const DROP_H = 352, DROP_W = 268, FLOOR = 677, T_LAND = 0.2, T_FALL = 0.34;
+  function dropPoly(cx, bottom, h, w, sy) {
+    const o = [];
+    for (let i = 0; i < 180; i++) {
+      const t = i / 180 * Math.PI * 2;
+      const x = Math.sin(t) * Math.pow(Math.sin(t / 2), 1.35) * w / 2;
+      const yl = (1 - Math.cos(t)) / 2 * h; // 0 tip .. h bottom
+      o.push([cx + x / Math.sqrt(sy), bottom - (h - yl) * sy]);
+    }
+    return o;
+  }
+  function dropPose(t) {
+    if (t < T_LAND) {
+      const u = clamp((t - (T_LAND - T_FALL)) / T_FALL);
+      return { bottom: lerp(190, FLOOR, Math.pow(u, 1.5)), sy: 1 + 0.5 * Math.pow(u, 1.1) };
+    }
+    const tau = t - T_LAND;
+    let sy;
+    if (tau < 0.08) sy = lerp(1.5, 0.56, easeOutCubic(tau / 0.08));
+    else { const s = tau - 0.08; sy = 1 + (0.56 - 1) * Math.exp(-6.2 * s) * Math.cos(21 * s); }
+    return { bottom: FLOOR, sy };
+  }
+  const SPLASH = [
+    { dir: -1, vx: 250, vy: -520, r: 16, x0: 112 }, { dir: -1, vx: 430, vy: -330, r: 11, x0: 130 }, { dir: -1, vx: 160, vy: -700, r: 9, x0: 100 },
+    { dir: 1, vx: 300, vy: -470, r: 14, x0: 112 }, { dir: 1, vx: 500, vy: -300, r: 10, x0: 130 }, { dir: 1, vx: 200, vy: -650, r: 12, x0: 100 }
+  ];
+  function splashParts(t) {
+    const tau = t - T_LAND, out = [];
+    if (tau < 0 || tau > 0.4) return out;
+    for (const s of SPLASH) {
+      const k = tau / 0.4;
+      const x = CX + s.dir * (s.x0 + s.vx * tau), y = FLOOR - 26 + s.vy * tau + 0.5 * 2700 * tau * tau;
+      const rr = s.r * (1 - k * k * k) * easeOutCubic(clamp(tau / 0.04));
+      if (rr > 0.5) out.push(circle(x, y, rr, 24));
+    }
+    return out;
+  }
+
+  // ---------- nib ----------
+  const NIB_R = [[46, -172], [63, -150], [67, -120], [90, -82], [115, -44], [119, -4], [105, 40], [77, 88], [42, 134], [12, 168]];
+  const NIB_OUT = smoothClosed([[0, -176], ...NIB_R, [0, 178], ...NIB_R.slice().reverse().map(p => [-p[0], p[1]])], 8);
+  const NIB_FACET = [[8, -190], [220, -190], [220, 200], [18, 200], [-4, 100], [14, -20]];
+  const NIB_HOLE = circle(0, -66, 23, 40);
+  const NIB_SLIT = capsule(0, -42, 0, 126, 12);
+  const NIB_NECK = capsule(-110, -118, 110, -118, 7);
+
+  // ---------- plane ----------
+  const PLANE_UP = [[142, -2], [-112, -86], [-50, 8]];
+  const PLANE_LOW = [[142, -2], [-50, 8], [-92, 70], [-18, 30]];
+  const PLANE_FOLD = [[-50, 8], [-92, 70], [-18, 30]];
+  const PP = [[500, 748], [690, 752], [800, 520], [986, 466]];
+  const bez = u => { const a = (1 - u) ** 3, b = 3 * (1 - u) ** 2 * u, c = 3 * (1 - u) * u * u, d = u ** 3; return [a * PP[0][0] + b * PP[1][0] + c * PP[2][0] + d * PP[3][0], a * PP[0][1] + b * PP[1][1] + c * PP[2][1] + d * PP[3][1]]; };
+  const bezT = u => { const a = 3 * (1 - u) ** 2, b = 6 * (1 - u) * u, c = 3 * u * u; return [a * (PP[1][0] - PP[0][0]) + b * (PP[2][0] - PP[1][0]) + c * (PP[3][0] - PP[2][0]), a * (PP[1][1] - PP[0][1]) + b * (PP[2][1] - PP[1][1]) + c * (PP[3][1] - PP[2][1])]; };
+  const F0 = 2.14, F1 = 2.7;
+  const planeU = t => easeInOutSine(Math.pow(prog(t, F0, F1 - F0), 0.9));
+  function planePose(t) {
+    const u = planeU(t); const p = bez(u), d = bezT(Math.max(0.001, u));
+    return { x: p[0], y: p[1], rot: Math.atan2(d[1], d[0]), u };
+  }
+
+  // ---------- states ----------
+  function part(pts, color, o = {}) { return Object.assign({ pts: resample(pts), color, hole: false, top: false }, o); }
+  function state(name, t) {
+    const S = new Array(K).fill(null);
+    if (name === 'drop') {
+      const ps = dropPose(t);
+      S[0] = part(dropPoly(CX, ps.bottom, DROP_H, DROP_W, ps.sy), COL.black);
+      const sp = splashParts(t);
+      // splash droplets ride along in slots 5..8 only while they live (they are never morph partners)
+      S.splash = sp;
+    } else if (name === 'nib') {
+      const a = 0.075 * Math.exp(-Math.max(0, t - 0.74) * 4.4) * Math.sin(Math.max(0, t - 0.74) * 15);
+      const x = (pp) => xform(pp, CX, CY, a, 1.1);
+      S[0] = part(x(NIB_OUT), COL.black, { facet: { pts: x(NIB_FACET), a: 0.1 } });
+      S[1] = part(x(NIB_HOLE), COL.black, { hole: true });
+      S[2] = part(x(NIB_SLIT), COL.black, { hole: true });
+      S[4] = part(capsule(CX - 196, 746, CX + 196, 746, 16), COL.black);
+      S[5] = part(xform(NIB_NECK, CX, CY, a, 1.1), COL.black, { hole: true });
+    } else if (name === 'coin' || name === 'half') {
+      S[0] = part(circle(CX, CY, 188), COL.red);
+      S[1] = part(circle(CX, CY, 157), COL.red, { hole: true });
+      S[3] = part(name === 'coin' ? circle(CX, CY, 124) : halfDisc(CX, CY, 124), COL.red, { top: true });
+    } else if (name === 'plane') {
+      const ps = planePose(t);
+      const x = pp => xform(pp, ps.x, ps.y, ps.rot, 1.35);
+      S[0] = part(x(PLANE_UP), COL.white);
+      S[3] = part(x(PLANE_LOW), COL.lav);
+      S[4] = part(x(PLANE_FOLD), COL.fold);
+    } else if (name === 'ball') {
+      for (const i of LSLOT) S[i] = part(circle(BALL[0], BALL[1], BALL_R), COL.white);
+    } else if (name === 'word') {
+      LSLOT.forEach((slot, li) => {
+        for (const c of LET[li]) {
+          if (c.hole) { const hs = li === 1 ? 1 : 2; S[hs] = { pts: c.pts, color: COL.word, hole: true, top: false }; }
+          else S[slot] = { pts: c.pts, color: COL.word, hole: false, top: false };
+        }
+      });
+    }
+    return S;
+  }
+
+  // ---------- timeline ----------
+  const TR = [
+    { a: 'drop', b: 'nib',   t0: 0.44, d: 0.30, s: 0.75 },
+    { a: 'nib',  b: 'coin',  t0: 0.96, d: 0.32, s: 0.8 },
+    { a: 'coin', b: 'half',  t0: 1.40, d: 0.28, s: 0.55, nosq: true },
+    { a: 'half', b: 'plane', t0: 1.86, d: 0.32, s: 0.7 },
+    { a: 'plane', b: 'ball', t0: 2.6, d: 0.28, s: 0.6, nosq: true },
+    { a: 'ball', b: 'word',  t0: 2.9, d: 0.28, s: 0.55, letters: true, nosq: true }
+  ];
+  const LSTEP = 0.032;
+  function lagOf(tr, i, a, b) {
+    if (tr.letters) {
+      const li = LSLOT.indexOf(i);
+      if (li >= 0) return li * LSTEP;
+      return (i === 1 ? 1 : 4) * LSTEP + 0.1;
+    }
+    if (!a && b) return tr.b === 'nib' ? 0.16 : 0.07;
+    if (a && !b) return 0;
+    return i === 0 ? 0 : 0.025;
+  }
+  for (const tr of TR) { let m = 0; for (let i = 0; i < K; i++) m = Math.max(m, lagOf(tr, i, true, true), lagOf(tr, i, false, true)); tr.span = tr.d + m; }
+
+  const WIPES = [
+    { t0: 0.98, d: 0.46, type: 'circle', c: COL.yellow, x: CX, y: CY, soft: 70 },
+    { t0: 1.88, d: 0.5, type: 'sea', c: COL.blue },
+    { t0: 2.58, d: 0.52, type: 'sea', c: COL.dark, ph: 2.4 }
+  ];
+  const LABELS = [
+    { at: -1, n: '01', title: 'Ink', cap: 'ONE DROP', light: false },
+    { at: 0.66, n: '02', title: 'Write', cap: 'LINE BY LINE', light: false },
+    { at: 1.2, n: '03', title: 'Half the price', cap: 'OF OPUS 5.5  ·  $2 IN, $10 OUT PER 1M TOKENS', light: false },
+    { at: 2.0, n: '04', title: 'Faster', cap: '139 TOKENS A SECOND', light: true }
+  ];
+
+  // morph alignment offsets between matching slots, computed once
+  const OFF = [];
+  function bestOffset(A, B) {
+    let best = 0, bd = Infinity;
+    for (let k = 0; k < N; k += 1) {
+      let d = 0;
+      for (let i = 0; i < N; i += 3) { const a = A[i], b = B[(i + k) % N]; const dx = a[0] - b[0], dy = a[1] - b[1]; d += dx * dx + dy * dy; if (d > bd) break; }
+      if (d < bd) { bd = d; best = k; }
+    }
+    return best;
+  }
+  function buildOffsets() {
+    for (const tr of TR) {
+      const A = state(tr.a, tr.t0), B = state(tr.b, tr.t0 + tr.span);
+      OFF.push(A.map((p, i) => (p && B[i]) ? bestOffset(p.pts, B[i].pts) : 0));
+    }
+  }
+
+  function resolve(t) {
+    let idx = -1;
+    for (let i = 0; i < TR.length; i++) if (t >= TR[i].t0) idx = i;
+    if (idx < 0) return { rest: true, name: 'drop', parts: state('drop', t), since: 99, idx: -1 };
+    const tr = TR[idx];
+    if (t >= tr.t0 + tr.span) return { rest: true, name: tr.b, parts: state(tr.b, t), since: t - tr.t0 - tr.span, idx };
+    const A = state(tr.a, t), B = state(tr.b, t), off = OFF[idx];
+    const parts = new Array(K).fill(null);
+    for (let i = 0; i < K; i++) {
+      const a = A[i], b = B[i];
+      if (!a && !b) continue;
+      const lag = lagOf(tr, i, !!a, !!b);
+      let p = clamp((t - tr.t0 - lag) / tr.d);
+      let ap = a, bp = b, e;
+      // new parts grow out of the old main shape and travel with it; holes of the wordmark grow in place
+      if (!a) { const org = (tr.letters && b.hole) ? centroid(b.pts) : centroid(A[0] ? A[0].pts : b.pts); ap = { pts: collapsedAt(org), color: b.color, hole: b.hole, top: b.top }; p = clamp((p - 0.15) / 0.85); e = easeOutBack(p, 1.5); }
+      else if (!b) { bp = { pts: collapsedAt(centroid(a.pts)), color: a.color, hole: a.hole, top: a.top }; p = clamp(p * 1.6); e = easeInOutBack(p, 0.5); }
+      else e = easeInOutBack(p, tr.s);
+      const o = (a && b) ? off[i] : 0;
+      const pts = new Array(N);
+      for (let j = 0; j < N; j++) { const q = bp.pts[(j + o) % N]; pts[j] = [lerp(ap.pts[j][0], q[0], e), lerp(ap.pts[j][1], q[1], e)]; }
+      const mixk = easeInOutSine(clamp((e - 0.28) / 0.4));
+      parts[i] = {
+        pts, color: mixCol(ap.color, bp.color, mixk), hole: e > 0.5 ? bp.hole : ap.hole, top: e > 0.5 ? bp.top : ap.top, e,
+        facets: [a && a.facet ? { pts: a.facet.pts, a: a.facet.a * (1 - clamp(e * 3)) } : null, b && b.facet ? { pts: b.facet.pts, a: b.facet.a * clamp((e - 0.55) * 2.2) } : null].filter(Boolean)
+      };
+    }
+    return { rest: false, name: tr.b, parts, tr, idx, p: prog(t, tr.t0, tr.d) };
+  }
+
+  // ---------- drawing ----------
+  function polyPath(g, pts) { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); }
+
+  function drawBackground(g, t) {
+    g.fillStyle = COL.cream; g.fillRect(0, 0, W, H);
+    for (const w of WIPES) {
+      const k = prog(t, w.t0, w.d);
+      if (k <= 0) continue;
+      g.fillStyle = w.c;
+      if (w.type === 'circle') {
+        if (k >= 1) { g.fillRect(0, 0, W, H); continue; }
+        const r = 1500 * (1 - Math.pow(1 - k, w.pw || 2.6));
+        if (r < 1) continue;
+        const f = Math.min(w.soft, r * 0.25);
+        const gr = g.createRadialGradient(w.x, w.y, 0, w.x, w.y, r + f * 0.35);
+        const s0 = Math.max(0, (r - f) / (r + f * 0.35));
+        gr.addColorStop(0, w.c); gr.addColorStop(s0, w.c);
+        const c = hex(w.c); gr.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+        g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      } else {
+        const e = easeInOutCubic(k);
+        const y0 = lerp(H + 70, -90, e);
+        const amp = 30 * Math.sin(Math.PI * k);
+        const ph = k * 8.5 + (w.ph || 0);
+        const edge = x => y0 + amp * Math.sin(x * 0.0062 + ph) + amp * 0.4 * Math.sin(x * 0.0135 - ph * 1.3);
+        const draw = (dy, a) => {
+          g.globalAlpha = a; g.beginPath(); g.moveTo(0, H + 2); g.lineTo(0, edge(0) + dy);
+          for (let x = 0; x <= W; x += 10) g.lineTo(x, edge(x) + dy);
+          g.lineTo(W, H + 2); g.closePath(); g.fill();
+        };
+        draw(-30, 0.22); draw(-14, 0.4); draw(0, 1);
+        g.globalAlpha = 1;
+      }
+    }
+  }
+
+  function fillPart(g, pt) { g.fillStyle = pt.color; polyPath(g, pt.pts); g.fill(); }
+
+  function drawFacets(g, pt, facets, amt) {
+    if (!facets || !facets.length) return;
+    g.save(); polyPath(g, pt.pts); g.clip();
+    for (const f of facets) {
+      const al = f.a * amt; if (al <= 0.003) continue;
+      g.fillStyle = `rgba(255,255,255,${al})`; polyPath(g, f.pts); g.fill();
+    }
+    g.restore();
+  }
+
+  function drawShapeLayer(t, st) {
+    const g = lx; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H);
+    const parts = st.parts;
+    // squash and stretch of the whole group around the main part's centre
+    let kx = 1, ky = 1;
+    if (st.name !== 'drop' && parts[0]) {
+      if (!st.rest && !st.tr.nosq) { const s = Math.sin(Math.PI * clamp(st.p)); kx = 1 + 0.075 * s; ky = 1 - 0.075 * s; }
+      else if (st.rest && st.since < 1 && (st.name === 'nib' || st.name === 'coin' || st.name === 'half')) {
+        const w = 0.07 * Math.exp(-st.since * 9) * Math.sin(st.since * 26 + 0.4); kx = 1 - w; ky = 1 + w;
+      }
+    }
+    const [gcx, gcy] = parts[0] ? centroid(parts[0].pts) : [CX, CY];
+    g.save(); g.translate(gcx, gcy); g.scale(kx, ky); g.translate(-gcx, -gcy);
+    // 1: base fills (and the splash droplets of the drop)
+    for (let i = 0; i < K; i++) { const p = parts[i]; if (p && !p.hole && !p.top) { fillPart(g, p); drawFacets(g, p, p.facet ? [p.facet] : p.facets, 1); } }
+    if (parts.splash) { g.fillStyle = COL.black; for (const sp of parts.splash) { polyPath(g, sp); g.fill(); } }
+    // a soft light glint travels across the finished wordmark
+    const gk = prog(t, 3.85, 0.75);
+    if (st.rest && st.name === 'word' && gk > 0 && gk < 1) {
+      const gxp = lerp(OX - 160, OX + 1150, easeInOutSine(gk));
+      g.save(); g.globalCompositeOperation = 'source-atop'; g.translate(gxp, 520); g.rotate(0.32);
+      const gr = g.createLinearGradient(-140, 0, 140, 0);
+      gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(-140, -700, 280, 1400); g.restore();
+    }
+    // 2: holes cut through everything painted so far
+    g.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < K; i++) { const p = parts[i]; if (p && p.hole) { g.fillStyle = '#000'; polyPath(g, p.pts); g.fill(); } }
+    g.globalCompositeOperation = 'source-over';
+    // the half that was taken away stays as a faint ghost inside the ring
+    const ga = easeOutCubic(prog(t, 1.48, 0.24)) * (1 - prog(t, 1.88, 0.16));
+    if (ga > 0.01) { g.fillStyle = `rgba(236,59,43,${0.2 * ga})`; polyPath(g, halfDisc(CX, CY, 124).map(p => [2 * CX - p[0], p[1]])); g.fill(); }
+    // 3: top fills (sit inside a hole)
+    for (let i = 0; i < K; i++) { const p = parts[i]; if (p && !p.hole && p.top) fillPart(g, p); }
+    g.restore();
+  }
+
+  function dotPos(e) {
+    const x = lerp(BALL[0], DOT_X, easeInOutSine(e));
+    const y = lerp(BALL[1], DOT_Y, e) - 250 * Math.sin(Math.PI * Math.pow(e, 0.92));
+    return [x, y];
+  }
+  const DOT0 = 2.96, DOTD = 0.5;
+  const TRAIL = [COL.yellow, COL.red, COL.blue, COL.white];
+  function drawDot(g, t) {
+    if (t < DOT0) return;
+    const p = clamp((t - DOT0) / DOTD);
+    const e = easeInOutCubic(p);
+    const landed = t - (DOT0 + DOTD);
+    // colour ribbons following the dot
+    const fade = clamp(1 - landed / 0.3);
+    if (fade > 0) {
+      for (let k = 0; k < 4; k++) {
+        const off = (k - 1.5) * 9;
+        g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = TRAIL[k]; g.globalAlpha = 0.9 * fade;
+        const n = 22, lagT = 0.2;
+        let prev = null;
+        for (let s = 0; s <= n; s++) {
+          const ts = t - lagT * (1 - s / n);
+          const pp = clamp((ts - DOT0) / DOTD);
+          if (pp <= 0) { prev = null; continue; }
+          const [px, py] = dotPos(easeInOutCubic(pp));
+          const [qx, qy] = dotPos(easeInOutCubic(clamp(pp + 0.012)));
+          let dx = qx - px, dy = qy - py; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+          const cur = [px - dy * off * (s / n), py + dx * off * (s / n)];
+          if (prev) { g.lineWidth = 1 + 8 * (s / n); g.beginPath(); g.moveTo(prev[0], prev[1]); g.lineTo(cur[0], cur[1]); g.stroke(); }
+          prev = cur;
+        }
+        g.restore();
+      }
+    }
+    let [x, y] = dotPos(e);
+    let r = lerp(BALL_R * 0.62, DOT_R, easeOutCubic(Math.min(1, p * 1.25)));
+    let sqx = 1, sqy = 1;
+    if (landed > 0) {
+      const b = Math.exp(-landed * 7.5) * Math.sin(landed * 25);
+      sqx = 1 + 0.3 * b; sqy = 1 - 0.3 * b;
+      y = DOT_Y + r * (1 - sqy); x = DOT_X;
+      r *= 1 + 0.03 * Math.sin((t - 3.8) * 4.2) * clamp((t - 3.8) / 0.4);
+    } else {
+      // stretch along flight
+      const [qx, qy] = dotPos(clamp(e + 0.01)); const sp = Math.hypot(qx - x, qy - y) / 0.01 / 900;
+      const ang = Math.atan2(qy - y, qx - x);
+      g.save(); g.translate(x, y); g.rotate(ang); g.scale(1 + 0.35 * clamp(sp), 1 - 0.18 * clamp(sp)); g.fillStyle = mixCol(COL.white, COL.coral, clamp((p - 0.2) * 2)); g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill(); g.restore();
+      return;
+    }
+    g.save(); g.translate(x, y); g.scale(sqx, sqy);
+    g.fillStyle = COL.coral; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill(); g.restore();
+  }
+  // a soft ping from the coin when the half lands
+  function drawCoinPing(g, t) {
+    for (const [rt, a] of [[1.6, 0.5], [1.7, 0.28]]) {
+      const k = prog(t, rt, 0.5);
+      if (k <= 0 || k >= 1) continue;
+      g.save(); g.strokeStyle = COL.red; g.lineWidth = 3;
+      g.globalAlpha = a * (1 - k); g.beginPath(); g.arc(CX, CY, 192 + 150 * easeOutCubic(k), 0, Math.PI * 2); g.stroke();
+      g.restore();
+    }
+  }
+  // ripple rings from the landed dot, drawn behind the letters
+  function drawRipples(g, t) {
+    for (const rt of [3.48, 4.12, 4.76]) {
+      const k = prog(t, rt, 0.95);
+      if (k <= 0 || k >= 1) continue;
+      g.save(); g.strokeStyle = COL.coral; g.lineWidth = 2.5;
+      g.globalAlpha = 0.6 * (1 - k); g.beginPath(); g.arc(DOT_X, DOT_Y, DOT_R + 170 * easeOutCubic(k), 0, Math.PI * 2); g.stroke();
+      g.globalAlpha = 0.34 * (1 - k); g.beginPath(); g.arc(DOT_X, DOT_Y, DOT_R + 90 * easeOutCubic(k), 0, Math.PI * 2); g.stroke();
+      g.restore();
+    }
+  }
+
+  function drawPlaneTrail(g, t) {
+    if (t < F0 - 0.04 || t > 3.0) return;
+    const u1 = planeU(t);
+    const fade = 1 - easeInOutSine(prog(t, F1 - 0.06, 0.26));
+    if (fade <= 0.01) return;
+    const u0 = 0;
+    // keep a gap behind the plane
+    const uEnd = Math.max(u0 + 0.01, u1 - 0.06);
+    g.save(); g.strokeStyle = `rgba(247,243,234,${0.88 * fade})`; g.lineWidth = 4; g.lineCap = 'round'; g.setLineDash([13, 16]); g.lineDashOffset = -Math.min(t, F1) * 90;
+    g.beginPath();
+    const n = 70;
+    for (let i = 0; i <= n; i++) { const u = lerp(u0, uEnd, i / n); const p = bez(u); if (i === 0) g.moveTo(p[0], p[1]); else g.lineTo(p[0], p[1]); }
+    g.stroke(); g.restore();
+  }
+
+  function drawTagline(g, t) {
+    const sk = easeOutCubic(prog(t, 3.6, 0.45));
+    if (sk <= 0) return;
+    g.save();
+    g.textBaseline = 'middle'; g.textAlign = 'left';
+    g.font = '500 30px Outfit'; g.letterSpacing = '11px';
+    g.globalAlpha = sk;
+    const wl = g.measureText('CLAUDE SONNET').width - 11, wr = g.measureText('5.5').width - 11;
+    const total = wl + 64 + wr, x0 = 960 - total / 2, y = 698 + (1 - sk) * 16;
+    g.fillStyle = 'rgba(247,243,234,0.7)'; g.fillText('CLAUDE SONNET', x0, y);
+    g.fillStyle = COL.coral; g.beginPath(); g.arc(x0 + wl + 32, y + 1, 5.5, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(247,243,234,1)'; g.fillText('5.5', x0 + wl + 64, y);
+    g.restore();
+  }
+
+  function drawScene(g, t) {
+    drawBackground(g, t);
+    const st = resolve(t);
+    drawShapeLayer(t, st);
+    // gentle push-in while the wordmark holds
+    const z = 1 + 0.02 * easeInOutSine(prog(t, 3.4, 1.6));
+    g.save(); g.translate(960, 540); g.scale(z, z); g.translate(-960, -540);
+    // soft contact shadow from a blurred, downscaled copy of the shapes
+    const darkK = prog(t, 2.8, 0.25);
+    const sa = 0.13 * (1 - darkK);
+    if (sa > 0.005) {
+      smx.setTransform(1, 0, 0, 1, 0, 0); smx.globalCompositeOperation = 'source-over'; smx.clearRect(0, 0, 240, 135);
+      smx.imageSmoothingEnabled = true; smx.imageSmoothingQuality = 'high';
+      smx.drawImage(layer, 0, 0, 240, 135);
+      smx.globalCompositeOperation = 'source-in'; smx.fillStyle = '#0b0a14'; smx.fillRect(0, 0, 240, 135);
+      g.globalAlpha = sa; g.imageSmoothingEnabled = true; g.drawImage(small, 0, 20, W, H);
+      g.globalAlpha = 1;
+    }
+    drawRipples(g, t);
+    drawCoinPing(g, t);
+    g.drawImage(layer, 0, 0);
+    drawPlaneTrail(g, t);
+    drawDot(g, t);
+    drawTagline(g, t);
+    g.restore();
+  }
+
+  // ---------- chapter label and pager (drawn once per frame, not motion-blurred) ----------
+  function drawUI(g, t) {
+    const uiA = 1 - clamp((t - 2.62) / 0.2);
+    if (uiA <= 0) return;
+    let li = 0; for (let i = 0; i < LABELS.length; i++) if (t >= LABELS[i].at) li = i;
+    const L = LABELS[li];
+    const k = easeOutCubic(clamp((t - L.at) / 0.24));
+    const dark = L.light ? '247,243,234' : '22,21,26';
+    g.save(); g.globalAlpha = uiA; g.textBaseline = 'alphabetic';
+    g.font = '700 18px JBMono'; g.letterSpacing = '1px';
+    g.fillStyle = `rgba(${dark},0.92)`; g.fillText(L.n, 96, 996);
+    const nw = g.measureText(L.n).width;
+    g.fillStyle = `rgba(${dark},0.4)`; g.fillText('/04', 96 + nw + 4, 996);
+    g.save(); g.beginPath(); g.rect(190, 950, 1200, 70); g.clip();
+    g.font = '600 36px Outfit'; g.letterSpacing = '0.5px';
+    const tw = g.measureText(L.title).width;
+    g.fillStyle = `rgba(${dark},${0.96 * k})`; g.fillText(L.title, 196, 998 + (1 - k) * 34);
+    g.font = '500 17px Outfit'; g.letterSpacing = '3.4px';
+    g.fillStyle = `rgba(${dark},${0.58 * k})`; g.fillText(L.cap, 196 + tw + 24, 996 + (1 - k) * 34);
+    g.restore();
+    for (let i = 0; i < LABELS.length; i++) {
+      const active = i === li;
+      const x = 1700 + i * 24 + (i > li ? 28 : 0);
+      g.fillStyle = `rgba(${dark},${active ? 0.95 : 0.32})`;
+      if (active) { g.beginPath(); g.roundRect(x, 988, 36, 8, 4); g.fill(); }
+      else { g.beginPath(); g.arc(x + 4, 992, 4, 0, Math.PI * 2); g.fill(); }
+    }
+    g.restore();
+  }
+
+  // ---------- paper, grain, light ----------
+  const paperTex = mk();
+  const grains = [];
+  function buildTextures() {
+    const p = paperTex.getContext('2d');
+    const id = p.createImageData(W, H); const d = id.data; const rnd = mulberry32(606);
+    for (let i = 0; i < d.length; i += 4) { const v = 128 + (rnd() - 0.5) * 34; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    p.putImageData(id, 0, 0);
+    for (let i = 0; i < 70; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 120 + rnd() * 420;
+      const light = rnd() < 0.5;
+      const gr = p.createRadialGradient(x, y, 0, x, y, r);
+      gr.addColorStop(0, light ? 'rgba(165,165,165,0.2)' : 'rgba(95,95,95,0.2)');
+      gr.addColorStop(1, light ? 'rgba(165,165,165,0)' : 'rgba(95,95,95,0)');
+      p.fillStyle = gr; p.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+    // fine paper fibres
+    p.lineCap = 'round';
+    for (let i = 0; i < 1400; i++) {
+      const x = rnd() * W, y = rnd() * H, a = rnd() * Math.PI, l = 6 + rnd() * 22;
+      p.strokeStyle = rnd() < 0.5 ? 'rgba(190,190,190,0.10)' : 'rgba(80,80,80,0.08)'; p.lineWidth = 0.8;
+      p.beginPath(); p.moveTo(x, y); p.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); p.stroke();
+    }
+    for (let k = 0; k < 6; k++) {
+      const g = document.createElement('canvas'); g.width = 640; g.height = 360;
+      const c = g.getContext('2d'); const im = c.createImageData(640, 360); const dd = im.data; const r2 = mulberry32(90 + k * 13);
+      for (let i = 0; i < dd.length; i += 4) { const v = 128 + (r2() - 0.5) * 140; dd[i] = dd[i + 1] = dd[i + 2] = v; dd[i + 3] = 255; }
+      c.putImageData(im, 0, 0); grains.push(g);
+    }
+  }
+
+  // ---------- frame render with sub-frame motion blur ----------
+  const SHUTTER = 0.7 / FPS;
+  function moving(t) { return t < 3.6; }
+  function render(t) {
+    const act = moving(t);
+    const [n1, n2] = act ? [5, 5] : [1, 1];
+    const Nn = n1 * n2;
+    for (let a = 0; a < n1; a++) {
+      for (let b = 0; b < n2; b++) {
+        const i = a * n2 + b;
+        const ts = act ? t - SHUTTER / 2 + SHUTTER * (i + 0.5) / Nn : t;
+        sx.setTransform(1, 0, 0, 1, 0, 0);
+        drawScene(sx, Math.max(0, ts));
+        gx.globalAlpha = 1 / (b + 1); gx.drawImage(scene, 0, 0);
+      }
+      ctx.globalAlpha = 1 / (a + 1); ctx.drawImage(grp, 0, 0);
+    }
+    ctx.globalAlpha = 1;
+    drawUI(ctx, t);
+    ctx.save();
+    ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.5; ctx.drawImage(paperTex, 0, 0);
+    ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = 0.06;
+    ctx.drawImage(grains[Math.floor(t * FPS + 1e-6) % grains.length], 0, 0, W, H);
+    ctx.restore();
+    // a touch of studio light in the centre, darker corners
+    const lg = ctx.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.46, 1000);
+    lg.addColorStop(0, 'rgba(255,255,255,0.06)'); lg.addColorStop(0.5, 'rgba(255,255,255,0.025)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+    const vg = ctx.createRadialGradient(W / 2, H / 2, 300, W / 2, H / 2, 1250);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(0.55, 'rgba(0,0,0,0.02)'); vg.addColorStop(0.8, 'rgba(0,0,0,0.07)'); vg.addColorStop(1, 'rgba(0,0,0,0.15)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  window.DURATION = 5;
+  window.ready = (async () => {
+    await Promise.all([document.fonts.load('600 36px Outfit'), document.fonts.load('500 25px Outfit'), document.fonts.load('500 17px Outfit'), document.fonts.load('700 18px JBMono')]);
+    await document.fonts.ready;
+    buildTextures(); buildOffsets();
+  })();
+  window.renderAt = async (t) => { await window.ready; render(t); };
+  if (!location.search.includes('capture')) {
+    window.ready.then(() => { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })(); });
+  }
+})();
+</script>
+</body>
+</html>

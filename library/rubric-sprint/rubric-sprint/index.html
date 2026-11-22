@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUBRIC Sprint & Backlog</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050505;
+    --surface: #0a0a0a;
+    --border: #1a1a1a;
+    --text: #e0e0e0;
+    --text-muted: #555;
+    --text-secondary: #888;
+    --accent: #50e3c2;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+
+  /* Brand */
+  .brand { display: flex; align-items: center; gap: 10px; padding: 20px 24px 4px; }
+  .brand-icon { width: 22px; height: 22px; }
+  .brand-name { font-size: 13px; font-weight: 700; color: #ff6b1a; letter-spacing: 0.05em; }
+  .brand-sub { font-size: 11px; color: #444; padding: 0 24px 16px; }
+  .brand-sub a { color: #444; text-decoration: none; }
+  .brand-sub a:hover { color: #666; }
+
+  /* Tabs */
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 24px; }
+  .tab-btn { background: none; border: none; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ==================== SPRINT ==================== */
+  .sprint-container { padding: 24px; height: calc(100vh - 120px); display: flex; flex-direction: column; }
+  .sprint-header { margin-bottom: 20px; }
+  .sprint-title-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .sprint-title { margin: 0; font-size: 22px; font-weight: 700; }
+  .sprint-dates { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .sprint-countdown { font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .sprint-countdown span { font-size: 11px; color: var(--text-muted); font-weight: 400; display: block; text-align: right; }
+  .sprint-progress { height: 12px; background: #1a1a1a; border-radius: 6px; overflow: hidden; display: flex; border: 1px solid #333; margin-bottom: 6px; }
+  .sprint-progress-bar { display: flex; width: 100%; }
+  .sprint-bar-done { background: linear-gradient(90deg, #2a8a6e, #50e3c2); transition: width 0.3s; }
+  .sprint-bar-review { background: linear-gradient(90deg, #2563eb, #3b82f6); transition: width 0.3s; }
+  .sprint-bar-ip { background: linear-gradient(90deg, #c47a10, #f5a623); transition: width 0.3s; }
+  .sprint-bar-todo { background: #333; transition: width 0.3s; }
+  .sprint-progress-stats { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+  .sprint-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .sprint-nav-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 14px; }
+  .sprint-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sprint-today-btn { width: auto; padding: 0 12px; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; }
+  .sprint-view-toggle { display: flex; gap: 0; border: 1px solid #333; border-radius: 6px; overflow: hidden; margin-left: auto; }
+  .sprint-view-btn { background: #111; color: #888; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; font-weight: 600; font-family: 'Outfit', sans-serif; }
+  .sprint-view-btn.active { background: #222; color: var(--accent); }
+  .sprint-view-btn:hover { color: var(--text); }
+  .sprint-sort-wrap { position: relative; }
+  .sprint-sort-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 4px 12px; font-size: 11px; cursor: pointer; font-weight: 600; font-family: 'Outfit', sans-serif; }
+  .sprint-sort-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sprint-sort-dropdown { display: none; position: absolute; top: 100%; left: 0; background: #111; border: 1px solid #333; border-radius: 6px; z-index: 10; min-width: 120px; margin-top: 4px; }
+  .sprint-sort-opt { display: block; padding: 6px 12px; font-size: 11px; color: var(--text-muted); cursor: pointer; transition: background 0.15s; }
+  .sprint-sort-opt:hover { background: #1a1a1a; color: var(--text); }
+
+  /* Board */
+  .sprint-board { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; flex: 1; min-height: 0; overflow-x: auto; }
+  .sprint-column { background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; min-height: 300px; min-width: 220px; }
+  .sprint-col-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+  .sprint-col-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sprint-col-count { margin-left: auto; background: #222; padding: 1px 7px; border-radius: 10px; font-size: 10px; }
+  .sprint-col-body { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .sprint-col-body.drag-over { background: rgba(80,227,194,0.05); }
+
+  /* Cards */
+  .sprint-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; padding-left: 16px; cursor: grab; transition: border-color 0.2s, transform 0.1s; position: relative; }
+  .sprint-card:hover { border-color: #444; }
+  .sprint-card.dragging { opacity: 0.4; transform: scale(0.95); }
+  .sprint-card-priority { width: 4px; height: 100%; position: absolute; left: 0; top: 0; border-radius: 6px 0 0 6px; }
+  .sprint-card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .sprint-card-id { font-size: 10px; color: #555; font-family: monospace; }
+  .sprint-pri-dots { font-size: 8px; color: #666; letter-spacing: 1px; }
+  .sprint-card-title { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.3; margin-bottom: 8px; }
+  .sprint-card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .sprint-card-project { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(80,227,194,0.1); color: var(--accent); }
+  .sprint-card-assignee { font-size: 10px; padding: 1px 6px; border-radius: 3px; }
+  .sprint-card-effort { font-size: 9px; color: #555; margin-left: 4px; }
+  .pri-high { background: #f5a623; }
+  .pri-mid { background: #58f; }
+  .pri-low { background: #444; }
+  .epic-engineering { background: #3b82f6; }
+  .epic-marketing { background: #ff6b1a; }
+  .epic-operations { background: #78909c; }
+
+  /* Grid view */
+  .sprint-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; flex: 1; overflow-y: auto; }
+
+  /* ==================== BACKLOG ==================== */
+  .backlog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .backlog-title-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .backlog-count { font-size: 12px; color: var(--text-muted); background: var(--surface); padding: 3px 10px; border-radius: 12px; border: 1px solid var(--border); }
+  .backlog-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .backlog-filter-group { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  .bl-select {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; font-size: 12px; font-family: 'Outfit', sans-serif;
+    cursor: pointer; min-width: 110px;
+  }
+  .bl-select:focus { border-color: var(--accent); outline: none; }
+  .bl-search {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; font-family: 'Outfit', sans-serif;
+    min-width: 160px; flex: 1;
+  }
+  .bl-search:focus { border-color: var(--accent); outline: none; }
+  .bl-search::placeholder { color: var(--text-muted); }
+  .bl-btn {
+    background: var(--accent); color: #000; border: none; border-radius: 6px;
+    padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'Outfit', sans-serif; white-space: nowrap;
+  }
+  .bl-btn:hover { opacity: 0.85; }
+  .bl-btn-danger { background: #e44; color: #fff; }
+  .bl-btn-danger:hover { opacity: 0.85; }
+  .backlog-table-wrap { overflow-x: auto; max-height: calc(100vh - 220px); }
+  .backlog-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .backlog-table thead { position: sticky; top: 0; z-index: 2; }
+  .backlog-table th {
+    background: #0a0a0a; color: var(--text-muted); font-weight: 500; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px;
+    text-align: left; border-bottom: 1px solid var(--border); cursor: pointer;
+    user-select: none; white-space: nowrap; position: relative;
+  }
+  .backlog-table th:hover { color: var(--text); }
+  .backlog-table th.sort-asc::after { content: ' \2191'; color: var(--accent); }
+  .backlog-table th.sort-desc::after { content: ' \2193'; color: var(--accent); }
+  .backlog-table td {
+    padding: 8px 12px; border-bottom: 1px solid #111; color: var(--text);
+    vertical-align: middle; max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .backlog-table tr:hover { background: #0d0d0d; }
+  .bl-col-id { width: 70px; }
+  .bl-col-epic { width: 100px; }
+  .bl-col-theme { width: 120px; }
+  .bl-col-project { width: 120px; }
+  .bl-col-task { min-width: 200px; }
+  .bl-col-status { width: 100px; }
+  .bl-col-assignee { width: 90px; }
+  .bl-col-priority { width: 80px; }
+  .bl-col-effort { width: 60px; }
+  .bl-col-sprint { width: 80px; }
+  .bl-col-quarter { width: 90px; }
+  .bl-col-actions { width: 40px; }
+
+  /* Inline edit */
+  .bl-editable { cursor: pointer; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+  .bl-editable:hover { background: #1a1a1a; }
+  .bl-edit-select {
+    background: #111; color: var(--text); border: 1px solid var(--accent);
+    border-radius: 4px; padding: 3px 6px; font-size: 12px; font-family: 'Outfit', sans-serif;
+    width: 100%; outline: none;
+  }
+  .bl-edit-input {
+    background: #111; color: var(--text); border: 1px solid var(--accent);
+    border-radius: 4px; padding: 3px 6px; font-size: 12px; font-family: 'Outfit', sans-serif;
+    width: 100%; outline: none;
+  }
+
+  /* Status badges */
+  .bl-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .bl-badge-todo { background: #1a1a2e; color: #7788cc; }
+  .bl-badge-inprogress { background: #2a1f0a; color: #f5a623; }
+  .bl-badge-done { background: #0a1f0a; color: #50e3c2; }
+  .bl-badge-review { background: #0a1a2e; color: #3b82f6; }
+
+  /* Priority dots */
+  .bl-prio { display: inline-flex; align-items: center; gap: 5px; }
+  .bl-prio-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .bl-prio-high .bl-prio-dot { background: #f5a623; }
+  .bl-prio-mid .bl-prio-dot { background: #58f; }
+  .bl-prio-low .bl-prio-dot { background: #444; }
+
+  /* Epic colors */
+  .bl-epic { font-weight: 500; }
+  .bl-epic-engineering { color: #3b82f6; }
+  .bl-epic-marketing { color: #ff6b1a; }
+  .bl-epic-operations { color: #78909c; }
+
+  /* Delete button */
+  .bl-delete-btn { background: none; border: none; color: #555; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .bl-delete-btn:hover { color: #e44; background: rgba(228,68,68,0.1); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: #111; border: 1px solid #333; border-radius: 10px; padding: 24px; width: 480px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .modal-field input, .modal-field select, .modal-field textarea {
+    width: 100%; background: #0a0a0a; color: var(--text); border: 1px solid #333;
+    border-radius: 6px; padding: 8px 12px; font-size: 13px; font-family: 'Outfit', sans-serif;
+    outline: none;
+  }
+  .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-field textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .modal-cancel { background: #222; color: var(--text); border: none; border-radius: 6px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; }
+  .modal-cancel:hover { background: #333; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #333; color: var(--text); font-size: 12px; font-family: 'Outfit', sans-serif; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="gen-rubric-brand" style="padding:20px 20px 0;">
+  <div style="font-size:27px;font-weight:700;letter-spacing:4px;color:#e0e0e0;display:flex;align-items:center;">
+    <svg viewBox="0 0 48 48" width="36" height="36" fill="none" stroke="#ff6b1a" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" style="vertical-align:bottom;margin-right:8px;">
+      <path d="M24 6l18 10v16L24 42 6 32V16Z"/>
+      <path d="M24 6v16l18 10" opacity="0.5"/>
+      <path d="M24 22L6 32" opacity="0.5"/>
+      <path d="M6 16l18 10 18-10"/>
+    </svg>RUBRIC <span style="font-weight:400;color:#555;font-size:22px;letter-spacing:1px;">Sprint & Backlog</span>
+  </div>
+  <div style="font-size:16px;color:#555;margin-top:2px;">The command center for AI agents</div>
+  <div style="font-size:10px;color:#444;margin-top:4px;">
+    &copy; Created by <a href="https://robolabs.so/" target="_blank" style="color:#555;text-decoration:none;">RoboLabs</a>.
+    Learn more at <a href="https://robonuggets.com" target="_blank" style="color:#555;text-decoration:none;">RoboNuggets</a>
+  </div>
+</div>
+
+<!-- ==================== SPRINT TAB ==================== -->
+<div id="sprint" class="sprint-pane">
+  <div class="sprint-container">
+    <div class="sprint-header">
+      <div class="sprint-title-row">
+        <div>
+          <h2 class="sprint-title" id="sprint-name">Sprint</h2>
+          <div class="sprint-dates" id="sprint-dates"></div>
+        </div>
+        <div class="sprint-countdown" id="sprint-countdown"></div>
+      </div>
+      <div class="sprint-progress"><div class="sprint-progress-bar" id="sprint-progress-bar"></div></div>
+      <div class="sprint-progress-stats" id="sprint-progress-stats"></div>
+    </div>
+    <div class="sprint-controls">
+      <button class="sprint-nav-btn" id="sprint-prev" title="Previous sprint">&#9664;</button>
+      <button class="sprint-nav-btn sprint-today-btn" id="sprint-today">Today</button>
+      <button class="sprint-nav-btn" id="sprint-next" title="Next sprint">&#9654;</button>
+      <div class="sprint-sort-wrap">
+        <button class="sprint-sort-btn" id="sprint-sort-btn">Sort</button>
+        <div class="sprint-sort-dropdown" id="sprint-sort-dropdown">
+          <span class="sprint-sort-opt" data-sort="default">Default</span>
+          <span class="sprint-sort-opt" data-sort="epic">By Epic</span>
+          <span class="sprint-sort-opt" data-sort="priority">By Priority</span>
+          <span class="sprint-sort-opt" data-sort="id">By ID</span>
+        </div>
+      </div>
+    </div>
+    <div id="sprint-board-view">
+      <div class="sprint-board" id="sprint-board">
+        <div class="sprint-column" data-status="Todo">
+          <div class="sprint-col-header"><span class="sprint-col-dot" style="background:#555"></span><span>Todo</span><span class="sprint-col-count" id="sprint-count-todo">0</span></div>
+          <div class="sprint-col-body" id="sprint-col-todo" data-status="Todo"></div>
+        </div>
+        <div class="sprint-column" data-status="In Progress">
+          <div class="sprint-col-header"><span class="sprint-col-dot" style="background:#f5a623"></span><span>In Progress</span><span class="sprint-col-count" id="sprint-count-ip">0</span></div>
+          <div class="sprint-col-body" id="sprint-col-ip" data-status="In Progress"></div>
+        </div>
+        <div class="sprint-column" data-status="Review">
+          <div class="sprint-col-header"><span class="sprint-col-dot" style="background:#3b82f6"></span><span>Review</span><span class="sprint-col-count" id="sprint-count-review">0</span></div>
+          <div class="sprint-col-body" id="sprint-col-review" data-status="Review"></div>
+        </div>
+        <div class="sprint-column" data-status="Done">
+          <div class="sprint-col-header"><span class="sprint-col-dot" style="background:var(--accent)"></span><span>Done</span><span class="sprint-col-count" id="sprint-count-done">0</span></div>
+          <div class="sprint-col-body" id="sprint-col-done" data-status="Done"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BACKLOG TAB ==================== -->
+<div id="backlog" class="sprint-pane">
+  <div style="max-width:none;padding:0;">
+    <div class="backlog-header">
+      <div class="backlog-title-row">
+        <h2 style="margin:0;font-size:18px;font-weight:600;">Backlog</h2>
+        <span class="backlog-count" id="backlog-count">0 tasks</span>
+      </div>
+      <div class="backlog-filters">
+        <div class="backlog-filter-group">
+          <select id="bl-filter-epic" class="bl-select"><option value="">All Epics</option></select>
+          <select id="bl-filter-status" class="bl-select"><option value="">All Status</option></select>
+          <select id="bl-filter-assignee" class="bl-select"><option value="">All Assignees</option></select>
+          <select id="bl-filter-priority" class="bl-select"><option value="">All Priorities</option></select>
+          <select id="bl-filter-sprint" class="bl-select"><option value="">All Sprints</option></select>
+          <input type="text" id="bl-search" class="bl-search" placeholder="Search tasks...">
+        </div>
+        <button class="bl-btn" id="bl-add-btn" title="Add task">+ New</button>
+      </div>
+    </div>
+    <div class="backlog-table-wrap">
+      <table class="backlog-table" id="backlog-table">
+        <thead>
+          <tr>
+            <th data-col="id" class="bl-sortable bl-col-id">ID</th>
+            <th data-col="epic" class="bl-sortable bl-col-epic">Epic</th>
+            <th data-col="theme" class="bl-sortable bl-col-theme">Theme</th>
+            <th data-col="project" class="bl-sortable bl-col-project">Project</th>
+            <th data-col="task" class="bl-sortable bl-col-task">Task</th>
+            <th data-col="status" class="bl-sortable bl-col-status">Status</th>
+            <th data-col="assignee" class="bl-sortable bl-col-assignee">Assignee</th>
+            <th data-col="priority" class="bl-sortable bl-col-priority">Priority</th>
+            <th data-col="effort" class="bl-sortable bl-col-effort">Effort</th>
+            <th data-col="sprint" class="bl-sortable bl-col-sprint">Sprint</th>
+            <th data-col="quarter" class="bl-sortable bl-col-quarter">Quarter</th>
+            <th class="bl-col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="backlog-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- New Task Modal -->
+<div class="modal-overlay" id="new-task-modal">
+  <div class="modal">
+    <h3>New Task</h3>
+    <div class="modal-field"><label>Epic</label><select id="nt-epic"></select></div>
+    <div class="modal-field"><label>Task</label><input id="nt-task" type="text" placeholder="Task name"></div>
+    <div class="modal-field"><label>Description</label><textarea id="nt-desc" placeholder="Optional description"></textarea></div>
+    <div class="modal-field"><label>Project</label><input id="nt-project" type="text" placeholder="Project name"></div>
+    <div class="modal-field"><label>Theme</label><input id="nt-theme" type="text" placeholder="Theme"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="modal-field"><label>Status</label><select id="nt-status"></select></div>
+      <div class="modal-field"><label>Priority</label><select id="nt-priority"></select></div>
+      <div class="modal-field"><label>Effort</label><select id="nt-effort"></select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="modal-field"><label>Assignee</label><select id="nt-assignee"></select></div>
+      <div class="modal-field"><label>Sprint</label><input id="nt-sprint" type="text" placeholder="e.g. Wk13"></div>
+      <div class="modal-field"><label>Quarter</label><input id="nt-quarter" type="text" placeholder="e.g. Q1 2026"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="nt-cancel">Cancel</button>
+      <button class="bl-btn" id="nt-save">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Optional API auth: set window.RUBRIC_TOKEN to the server's RUBRIC_TOKEN to authorize /api calls
+(function () {
+  const _fetch = window.fetch;
+  window.fetch = function (url, opts) {
+    opts = opts || {};
+    try {
+      const u = typeof url === 'string' ? url : (url && url.url) || '';
+      if (window.RUBRIC_TOKEN && u.indexOf('/api/') !== -1) {
+        opts.headers = Object.assign({}, opts.headers, { 'x-rubric-token': window.RUBRIC_TOKEN });
+      }
+    } catch (e) {}
+    return _fetch.call(this, url, opts);
+  };
+})();
+(function() {
+  // State
+  let allTasks = [];
+  let config = {};
+  let sprintOffset = 0;
+  let sprintSortMode = 'default';
+  let backlogSortCol = null;
+  let backlogSortDir = 'asc';
+
+  // Helpers
+  const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // API
+  async function fetchConfig() {
+    const res = await fetch('/api/sprint/config');
+    config = await res.json();
+  }
+  async function fetchTasks() {
+    const res = await fetch('/api/sprint/tasks');
+    const data = await res.json();
+    allTasks = data.tasks || [];
+  }
+  async function apiCreate(task) {
+    const res = await fetch('/api/sprint/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(task) });
+    return res.json();
+  }
+  async function apiUpdate(id, updates) {
+    const res = await fetch('/api/sprint/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _action: 'update', id, ...updates }) });
+    return res.json();
+  }
+  async function apiDelete(id) {
+    const res = await fetch('/api/sprint/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _action: 'delete', id }) });
+    return res.json();
+  }
+
+  // Sprint calculation
+  function getSprintForOffset(offset) {
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMon = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMon + (offset * 7));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    const jan1 = new Date(monday.getFullYear(), 0, 1);
+    const days = Math.floor((monday - jan1) / 86400000);
+    const wk = Math.ceil((days + jan1.getDay() + 1) / 7);
+    return { name: 'Wk' + wk, start: monday, end: sunday };
+  }
+
+  // Sort sprint tasks
+  function sortSprintTasks(tasks) {
+    if (sprintSortMode === 'default') return tasks;
+    const sorted = [...tasks];
+    if (sprintSortMode === 'epic') {
+      const epicNames = Object.keys(config.epics || {});
+      sorted.sort((a, b) => {
+        const ai = epicNames.indexOf(a.epic);
+        const bi = epicNames.indexOf(b.epic);
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      });
+    } else if (sprintSortMode === 'priority') {
+      const priOrder = {};
+      (config.priorities || ['High', 'Mid', 'Low']).forEach((p, i) => priOrder[p] = i);
+      sorted.sort((a, b) => (priOrder[a.priority] ?? 99) - (priOrder[b.priority] ?? 99));
+    } else if (sprintSortMode === 'id') {
+      sorted.sort((a, b) => {
+        const aPfx = (a.id || '').split('-')[0];
+        const bPfx = (b.id || '').split('-')[0];
+        if (aPfx !== bPfx) return aPfx.localeCompare(bPfx);
+        return (parseInt(a.id.replace(/\D/g, '')) || 0) - (parseInt(b.id.replace(/\D/g, '')) || 0);
+      });
+    }
+    return sorted;
+  }
+
+  // Render sprint card
+  function renderCard(t) {
+    const epicClass = 'epic-' + (t.epic || '').toLowerCase().replace(/\s+/g, '-');
+    const priClass = 'pri-' + (t.priority || 'mid').toLowerCase();
+    const priDots = { 'High': 3, 'Mid': 2, 'Low': 1 }[t.priority] || 2;
+    return '<div class="sprint-card" data-id="' + t.id + '" draggable="true">' +
+      '<div class="sprint-card-priority ' + epicClass + '"></div>' +
+      '<div class="sprint-card-top-row"><span class="sprint-card-id">' + t.id + '</span><span class="sprint-pri-dots">' + '\u25CF'.repeat(priDots) + '</span></div>' +
+      '<div class="sprint-card-title">' + esc(t.task) + '</div>' +
+      '<div class="sprint-card-footer">' +
+        '<span class="sprint-card-project">' + esc(t.project || t.epic) + '</span>' +
+        '<span style="display:flex;align-items:center;gap:6px;">' +
+          '<span class="sprint-card-effort">' + (t.effort || '') + '</span>' +
+          '<span class="sprint-card-assignee" style="background:rgba(80,227,194,0.15);color:var(--accent);font-size:10px;padding:1px 6px;border-radius:3px;">' + (t.assignee || '')[0] + '</span>' +
+        '</span>' +
+      '</div></div>';
+  }
+
+  // Render sprint board
+  function renderSprint() {
+    const sprint = getSprintForOffset(sprintOffset);
+    const sprintTasks = allTasks.filter(t => t.sprint === sprint.name);
+
+    // Header
+    document.getElementById('sprint-name').textContent = sprint.name + ' Sprint';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    document.getElementById('sprint-dates').textContent = months[sprint.start.getMonth()] + ' ' + sprint.start.getDate() + ' - ' + months[sprint.end.getMonth()] + ' ' + sprint.end.getDate() + ', ' + sprint.end.getFullYear();
+
+    // Countdown
+    const now = new Date();
+    const diffMs = sprint.end - now;
+    const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
+    const countdown = document.getElementById('sprint-countdown');
+    if (sprintOffset === 0) {
+      countdown.innerHTML = daysLeft + '<span>day' + (daysLeft !== 1 ? 's' : '') + ' left</span>';
+    } else if (sprintOffset > 0) {
+      countdown.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">upcoming</span>';
+    } else {
+      countdown.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">past</span>';
+    }
+
+    const todo = sprintTasks.filter(t => t.status === 'Todo');
+    const ip = sprintTasks.filter(t => t.status === 'In Progress');
+    const review = sprintTasks.filter(t => t.status === 'Review');
+    const done = sprintTasks.filter(t => t.status === 'Done');
+    const total = sprintTasks.length;
+
+    // Progress bar
+    const bar = document.getElementById('sprint-progress-bar');
+    if (total > 0) {
+      const donePct = done.length / total * 100;
+      const reviewPct = review.length / total * 100;
+      const ipPct = ip.length / total * 100;
+      const todoPct = 100 - donePct - reviewPct - ipPct;
+      bar.innerHTML = '<div class="sprint-bar-done" style="width:' + donePct + '%"></div><div class="sprint-bar-review" style="width:' + reviewPct + '%"></div><div class="sprint-bar-ip" style="width:' + ipPct + '%"></div><div class="sprint-bar-todo" style="width:' + todoPct + '%"></div>';
+    } else {
+      bar.innerHTML = '<div class="sprint-bar-todo" style="width:100%"></div>';
+    }
+
+    // Stats
+    document.getElementById('sprint-progress-stats').innerHTML = '<span style="color:var(--accent)">' + done.length + ' done</span><span style="color:#3b82f6">' + review.length + ' review</span><span style="color:#f5a623">' + ip.length + ' in progress</span><span>' + todo.length + ' todo</span><span style="margin-left:auto">' + (total > 0 ? Math.round(done.length / total * 100) : 0) + '% complete</span>';
+
+    // Counts
+    document.getElementById('sprint-count-todo').textContent = todo.length;
+    document.getElementById('sprint-count-ip').textContent = ip.length;
+    document.getElementById('sprint-count-review').textContent = review.length;
+    document.getElementById('sprint-count-done').textContent = done.length;
+
+    // Board columns
+    document.getElementById('sprint-col-todo').innerHTML = sortSprintTasks(todo).map(renderCard).join('');
+    document.getElementById('sprint-col-ip').innerHTML = sortSprintTasks(ip).map(renderCard).join('');
+    document.getElementById('sprint-col-review').innerHTML = sortSprintTasks(review).map(renderCard).join('');
+    document.getElementById('sprint-col-done').innerHTML = sortSprintTasks(done).map(renderCard).join('');
+
+    // Attach drag events
+    document.querySelectorAll('#sprint-board .sprint-card').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', card.dataset.id);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    });
+
+  }
+
+  // Drag-and-drop
+  document.querySelectorAll('.sprint-col-body').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', async e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const taskId = e.dataTransfer.getData('text/plain');
+      const newStatus = col.dataset.status;
+      if (!taskId || !newStatus) return;
+      const result = await apiUpdate(taskId, { status: newStatus });
+      if (result.success) {
+        const task = allTasks.find(t => t.id === taskId);
+        if (task) {
+          task.status = newStatus;
+          if (newStatus === 'Done') task.completed = new Date().toISOString().slice(0, 10);
+        }
+        renderSprint();
+        showToast(taskId + ' moved to ' + newStatus);
+      }
+    });
+  });
+
+  // Sprint navigation
+  document.getElementById('sprint-prev').addEventListener('click', () => { sprintOffset--; renderSprint(); });
+  document.getElementById('sprint-next').addEventListener('click', () => { sprintOffset++; renderSprint(); });
+  document.getElementById('sprint-today').addEventListener('click', () => { sprintOffset = 0; renderSprint(); });
+
+  // Sort dropdown
+  document.getElementById('sprint-sort-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    const dd = document.getElementById('sprint-sort-dropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', () => { document.getElementById('sprint-sort-dropdown').style.display = 'none'; });
+  document.querySelectorAll('.sprint-sort-opt').forEach(opt => {
+    opt.addEventListener('click', e => {
+      e.stopPropagation();
+      sprintSortMode = opt.dataset.sort;
+      document.getElementById('sprint-sort-dropdown').style.display = 'none';
+      document.getElementById('sprint-sort-btn').textContent = sprintSortMode === 'default' ? 'Sort' : 'Sort: ' + opt.textContent;
+      renderSprint();
+    });
+  });
+
+
+  // ==================== BACKLOG ====================
+  function populateFilters() {
+    const epics = [...new Set(allTasks.map(t => t.epic).filter(Boolean))];
+    const statuses = config.statuses || ['Todo', 'In Progress', 'Review', 'Done'];
+    const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+    const priorities = config.priorities || ['High', 'Mid', 'Low'];
+    const sprints = [...new Set(allTasks.map(t => t.sprint).filter(Boolean))].sort();
+
+    const fillSelect = (id, values, label) => {
+      const el = document.getElementById(id);
+      const current = el.value;
+      el.innerHTML = '<option value="">All ' + label + '</option>' + values.map(v => '<option value="' + esc(v) + '"' + (v === current ? ' selected' : '') + '>' + esc(v) + '</option>').join('');
+    };
+    fillSelect('bl-filter-epic', epics, 'Epics');
+    fillSelect('bl-filter-status', statuses, 'Status');
+    fillSelect('bl-filter-assignee', assignees, 'Assignees');
+    fillSelect('bl-filter-priority', priorities, 'Priorities');
+    fillSelect('bl-filter-sprint', sprints, 'Sprints');
+  }
+
+  function statusBadge(s) {
+    const cls = { 'Todo': 'todo', 'In Progress': 'inprogress', 'Review': 'review', 'Done': 'done' }[s] || 'todo';
+    return '<span class="bl-badge bl-badge-' + cls + '">' + s + '</span>';
+  }
+
+  function prioBadge(p) {
+    const cls = 'bl-prio-' + (p || 'mid').toLowerCase();
+    return '<span class="bl-prio ' + cls + '"><span class="bl-prio-dot"></span>' + p + '</span>';
+  }
+
+  function epicColor(epic) {
+    const colors = {};
+    const epicNames = Object.keys(config.epics || {});
+    const palette = ['#3b82f6', '#ff6b1a', '#78909c', '#b47aff', '#50e3c2', '#f5a623', '#e44'];
+    epicNames.forEach((name, i) => colors[name] = palette[i % palette.length]);
+    return colors[epic] || '#888';
+  }
+
+  function renderBacklog() {
+    const epicFilter = document.getElementById('bl-filter-epic').value;
+    const statusFilter = document.getElementById('bl-filter-status').value;
+    const assigneeFilter = document.getElementById('bl-filter-assignee').value;
+    const priorityFilter = document.getElementById('bl-filter-priority').value;
+    const sprintFilter = document.getElementById('bl-filter-sprint').value;
+    const search = document.getElementById('bl-search').value.toLowerCase();
+
+    let filtered = allTasks.filter(t => {
+      if (epicFilter && t.epic !== epicFilter) return false;
+      if (statusFilter && t.status !== statusFilter) return false;
+      if (assigneeFilter && t.assignee !== assigneeFilter) return false;
+      if (priorityFilter && t.priority !== priorityFilter) return false;
+      if (sprintFilter && t.sprint !== sprintFilter) return false;
+      if (search && !(t.task || '').toLowerCase().includes(search) && !(t.id || '').toLowerCase().includes(search) && !(t.project || '').toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    // Sort
+    if (backlogSortCol) {
+      filtered.sort((a, b) => {
+        const av = (a[backlogSortCol] || '').toString().toLowerCase();
+        const bv = (b[backlogSortCol] || '').toString().toLowerCase();
+        if (backlogSortCol === 'priority') {
+          const priOrder = {};
+          (config.priorities || ['High', 'Mid', 'Low']).forEach((p, i) => priOrder[p] = i);
+          const diff = (priOrder[a.priority] ?? 99) - (priOrder[b.priority] ?? 99);
+          return backlogSortDir === 'asc' ? diff : -diff;
+        }
+        const cmp = av.localeCompare(bv);
+        return backlogSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    document.getElementById('backlog-count').textContent = filtered.length + ' task' + (filtered.length !== 1 ? 's' : '');
+
+    const tbody = document.getElementById('backlog-tbody');
+    tbody.innerHTML = filtered.map(t => {
+      const color = epicColor(t.epic);
+      return '<tr data-id="' + t.id + '">' +
+        '<td class="bl-col-id">' + t.id + '</td>' +
+        '<td class="bl-col-epic"><span class="bl-editable bl-edit" data-field="epic" data-id="' + t.id + '" style="color:' + color + '">' + esc(t.epic) + '</span></td>' +
+        '<td class="bl-col-theme"><span class="bl-editable bl-edit bl-edit-text" data-field="theme" data-id="' + t.id + '">' + esc(t.theme) + '</span></td>' +
+        '<td class="bl-col-project"><span class="bl-editable bl-edit bl-edit-text" data-field="project" data-id="' + t.id + '">' + esc(t.project) + '</span></td>' +
+        '<td class="bl-col-task"><span class="bl-editable bl-edit bl-edit-text" data-field="task" data-id="' + t.id + '">' + esc(t.task) + '</span></td>' +
+        '<td class="bl-col-status"><span class="bl-editable bl-edit" data-field="status" data-id="' + t.id + '">' + statusBadge(t.status) + '</span></td>' +
+        '<td class="bl-col-assignee"><span class="bl-editable bl-edit" data-field="assignee" data-id="' + t.id + '">' + esc(t.assignee) + '</span></td>' +
+        '<td class="bl-col-priority"><span class="bl-editable bl-edit" data-field="priority" data-id="' + t.id + '">' + prioBadge(t.priority) + '</span></td>' +
+        '<td class="bl-col-effort"><span class="bl-editable bl-edit" data-field="effort" data-id="' + t.id + '">' + esc(t.effort) + '</span></td>' +
+        '<td class="bl-col-sprint"><span class="bl-editable bl-edit bl-edit-text" data-field="sprint" data-id="' + t.id + '">' + esc(t.sprint) + '</span></td>' +
+        '<td class="bl-col-quarter"><span class="bl-editable bl-edit bl-edit-text" data-field="quarter" data-id="' + t.id + '">' + esc(t.quarter) + '</span></td>' +
+        '<td class="bl-col-actions"><button class="bl-delete-btn" data-id="' + t.id + '" title="Delete task">&times;</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // Inline editing
+  const BL_ENUMS = {};
+  function buildEnums() {
+    BL_ENUMS.epic = Object.keys(config.epics || {});
+    BL_ENUMS.status = config.statuses || ['Todo', 'In Progress', 'Review', 'Done'];
+    BL_ENUMS.assignee = config.assignees || [];
+    BL_ENUMS.priority = config.priorities || ['High', 'Mid', 'Low'];
+    BL_ENUMS.effort = config.efforts || ['S', 'M', 'L'];
+  }
+
+  function startInlineEdit(el) {
+    if (el.querySelector('select, input')) return;
+    const field = el.dataset.field;
+    const id = el.dataset.id;
+    const task = allTasks.find(t => t.id === id);
+    if (!task) return;
+
+    if (BL_ENUMS[field]) {
+      const current = task[field] || '';
+      const opts = BL_ENUMS[field].map(v => '<option value="' + esc(v) + '"' + (v === current ? ' selected' : '') + '>' + esc(v) + '</option>').join('');
+      el.innerHTML = '<select class="bl-edit-select">' + opts + '</select>';
+      const sel = el.querySelector('select');
+      sel.focus();
+      sel.addEventListener('change', async () => {
+        const result = await apiUpdate(id, { [field]: sel.value });
+        if (result.success) {
+          task[field] = sel.value;
+          if (field === 'status' && sel.value === 'Done') task.completed = new Date().toISOString().slice(0, 10);
+          renderBacklog();
+          renderSprint();
+          showToast(id + ' updated');
+        }
+      });
+      sel.addEventListener('blur', () => setTimeout(renderBacklog, 100));
+      sel.addEventListener('keydown', ev => { if (ev.key === 'Escape') renderBacklog(); });
+    } else if (el.classList.contains('bl-edit-text')) {
+      const current = task[field] || '';
+      el.innerHTML = '<input class="bl-edit-input" type="text" value="' + current.replace(/"/g, '&quot;') + '">';
+      const inp = el.querySelector('input');
+      inp.focus();
+      inp.select();
+      const save = async () => {
+        const result = await apiUpdate(id, { [field]: inp.value });
+        if (result.success) {
+          task[field] = inp.value;
+          renderBacklog();
+          renderSprint();
+          showToast(id + ' updated');
+        }
+      };
+      inp.addEventListener('blur', save);
+      inp.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') save();
+        if (ev.key === 'Escape') renderBacklog();
+      });
+    }
+  }
+
+  // Backlog event delegation
+  document.getElementById('backlog-tbody').addEventListener('click', function(e) {
+    // Inline edit
+    const editable = e.target.closest('.bl-edit');
+    if (editable) { e.stopPropagation(); startInlineEdit(editable); return; }
+    // Delete
+    const delBtn = e.target.closest('.bl-delete-btn');
+    if (delBtn) {
+      e.stopPropagation();
+      const id = delBtn.dataset.id;
+      if (confirm('Delete task ' + id + '?')) {
+        apiDelete(id).then(result => {
+          if (result.success) {
+            allTasks = allTasks.filter(t => t.id !== id);
+            renderBacklog();
+            renderSprint();
+            populateFilters();
+            showToast(id + ' deleted');
+          }
+        });
+      }
+    }
+  });
+
+  // Sortable columns
+  document.querySelectorAll('.bl-sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (backlogSortCol === col) {
+        backlogSortDir = backlogSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        backlogSortCol = col;
+        backlogSortDir = 'asc';
+      }
+      document.querySelectorAll('.bl-sortable').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+      th.classList.add('sort-' + backlogSortDir);
+      renderBacklog();
+    });
+  });
+
+  // Filter listeners
+  ['bl-filter-epic', 'bl-filter-status', 'bl-filter-assignee', 'bl-filter-priority', 'bl-filter-sprint'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderBacklog);
+  });
+  document.getElementById('bl-search').addEventListener('input', renderBacklog);
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'sprint') renderSprint();
+      if (btn.dataset.tab === 'backlog') { populateFilters(); renderBacklog(); }
+    });
+  });
+
+  // New task modal
+  function populateModal() {
+    const epics = Object.keys(config.epics || {});
+    const statuses = config.statuses || ['Todo', 'In Progress', 'Review', 'Done'];
+    const priorities = config.priorities || ['High', 'Mid', 'Low'];
+    const efforts = config.efforts || ['S', 'M', 'L'];
+    const assignees = config.assignees || [];
+
+    document.getElementById('nt-epic').innerHTML = epics.map(e => '<option value="' + esc(e) + '">' + esc(e) + '</option>').join('');
+    document.getElementById('nt-status').innerHTML = statuses.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+    document.getElementById('nt-priority').innerHTML = priorities.map(p => '<option value="' + esc(p) + '">' + esc(p) + '</option>').join('');
+    document.getElementById('nt-effort').innerHTML = efforts.map(e => '<option value="' + esc(e) + '">' + esc(e) + '</option>').join('');
+    document.getElementById('nt-assignee').innerHTML = assignees.map(a => '<option value="' + esc(a) + '">' + esc(a) + '</option>').join('');
+  }
+
+  document.getElementById('bl-add-btn').addEventListener('click', () => {
+    populateModal();
+    document.getElementById('nt-task').value = '';
+    document.getElementById('nt-desc').value = '';
+    document.getElementById('nt-project').value = '';
+    document.getElementById('nt-theme').value = '';
+    document.getElementById('nt-sprint').value = '';
+    document.getElementById('nt-quarter').value = '';
+    document.getElementById('new-task-modal').classList.add('active');
+    document.getElementById('nt-task').focus();
+  });
+
+  document.getElementById('nt-cancel').addEventListener('click', () => {
+    document.getElementById('new-task-modal').classList.remove('active');
+  });
+
+  document.getElementById('new-task-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('new-task-modal')) {
+      document.getElementById('new-task-modal').classList.remove('active');
+    }
+  });
+
+  document.getElementById('nt-save').addEventListener('click', async () => {
+    const task = {
+      epic: document.getElementById('nt-epic').value,
+      task: document.getElementById('nt-task').value,
+      description: document.getElementById('nt-desc').value,
+      project: document.getElementById('nt-project').value,
+      theme: document.getElementById('nt-theme').value,
+      status: document.getElementById('nt-status').value,
+      priority: document.getElementById('nt-priority').value,
+      effort: document.getElementById('nt-effort').value,
+      assignee: document.getElementById('nt-assignee').value,
+      sprint: document.getElementById('nt-sprint').value,
+      quarter: document.getElementById('nt-quarter').value
+    };
+    if (!task.task.trim()) { showToast('Task name is required'); return; }
+    const result = await apiCreate(task);
+    if (result.success) {
+      allTasks.push(result.task);
+      document.getElementById('new-task-modal').classList.remove('active');
+      populateFilters();
+      renderBacklog();
+      renderSprint();
+      showToast('Created ' + result.task.id);
+    } else {
+      showToast('Error: ' + (result.error || 'Unknown'));
+    }
+  });
+
+  // Init
+  async function init() {
+    await fetchConfig();
+    buildEnums();
+    await fetchTasks();
+    populateFilters();
+    renderSprint();
+    renderBacklog();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

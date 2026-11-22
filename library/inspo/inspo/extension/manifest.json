@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Inspo",
+  "description": "Save any YouTube video to your Inspos wall: click the toolbar button on a video, or right-click a video and choose /inspo.",
+  "version": "1.1.0",
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
+  "action": {
+    "default_title": "Save this video to Inspos",
+    "default_icon": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["activeTab", "contextMenus", "notifications"],
+  "host_permissions": ["http://127.0.0.1:5299/*"]
+}

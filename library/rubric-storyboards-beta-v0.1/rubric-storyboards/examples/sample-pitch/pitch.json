@@ -1,0 +1,63 @@
+{
+ "id": "sample-pitch",
+ "title": "Pitch - Harbor Cold Brew launch",
+ "aspect": "16:9",
+ "source": "examples/sample-pitch/frames.html",
+ "captionLines": 3,
+ "request": "Logline: a new oat milk cold brew in a can, for people who start work at 7. Twenty seconds from the Monday slump to the first sip.\nAudience: office workers and students who grab a coffee on the way in.\nLength and format: 20 s, 16:9, 4 shots.\nTone: warm, dry and quick. A small smile, not a hype reel.\nMusic: a soft beat that picks up when the can lands, and one bright chime on the end card.",
+ "briefBullets": [
+  { "label": "Goal", "text": "Make people want to try the can next Monday morning." },
+  { "label": "Audience", "text": "People who start work early and buy coffee on the way in." },
+  { "label": "Feel", "text": "Warm and a little funny at the start, then bright and easy." },
+  { "label": "Shape", "text": "The slump, the can, three reasons, the offer." },
+  { "label": "Music", "text": "A soft beat that picks up when the can lands, then one chime at the end." },
+  { "label": "Not this", "text": "No hype, no stock-footage baristas, no slow-motion pours." }
+ ],
+ "shots": [
+  {
+   "id": "slump", "title": "Monday, 7:00", "image": "frames/01.jpg", "length": 4, "t": 2.4,
+   "caption": "A dark desk at dawn. A big clock reads 7:00, an empty mug sits beside a long to-do list. The line: Monday. Again.",
+   "animate": "The clock flips from 6:59 to 7:00 at 0.8 s. The to-do list creeps up the right side. At 2 s the words rise one at a time and Again lands last, in orange.",
+   "bullets": [
+    { "label": "See", "text": "A dark desk at dawn, a big clock at 7:00 and an empty mug." },
+    { "label": "Moves", "text": "The clock flips to 7:00, then the words rise one at a time." },
+    { "label": "Timing", "text": "The words are in by 3 seconds, so the joke has a beat to land." },
+    { "label": "Sound", "text": "One tired drum hit, then a clock tick." }
+   ]
+  },
+  {
+   "id": "can", "title": "Meet Harbor", "image": "frames/02.jpg", "length": 6, "t": 6.8,
+   "caption": "Hard cut to orange. The Harbor can drops into frame and bounces once, and cold drops bead on the metal. The line: Meet Harbor.",
+   "animate": "The can falls from above and lands on the first big beat, 0.5 s in, with one small bounce. Drops fade in across 1 s. The line slides up from the bottom at 2 s.",
+   "bullets": [
+    { "label": "See", "text": "The Harbor can in the middle of a bright orange frame." },
+    { "label": "Moves", "text": "The can drops in and bounces once, then cold drops bead on it." },
+    { "label": "Timing", "text": "It lands on the first big beat, about half a second in." },
+    { "label": "Sound", "text": "A can opening on the landing, and the beat picks up." },
+    { "label": "Try first", "text": "Check the name on the can still reads on a phone." }
+   ]
+  },
+  {
+   "id": "reasons", "title": "Three reasons", "image": "frames/03.jpg", "length": 5, "t": 12.8,
+   "caption": "Three cards side by side: Oat milk, No added sugar, Twice the kick. The last one gets the orange shadow.",
+   "animate": "The cards flip in left to right, 0.5 s apart. The icons draw on as each card lands. Twice the kick gets a small shake when it arrives.",
+   "bullets": [
+    { "label": "See", "text": "Three cards: Oat milk, No added sugar, Twice the kick." },
+    { "label": "Moves", "text": "The cards flip in one after another, left to right." },
+    { "label": "Timing", "text": "One card every half second, all three in by 1.5 seconds." },
+    { "label": "Sound", "text": "A light tap for each card." }
+   ]
+  },
+  {
+   "id": "offer", "title": "Your first can", "image": "frames/04.jpg", "length": 5, "t": 17.6,
+   "caption": "The end card: the Harbor Cold Brew name, the offer Your first can is on us, and an Order now button.",
+   "animate": "The name fades up, the offer types on, and the button pulses twice, then everything holds still to the end.",
+   "bullets": [
+    { "label": "See", "text": "The Harbor name, the offer and an Order now button." },
+    { "label": "Moves", "text": "The button gently pulses twice, then everything holds still." },
+    { "label": "Timing", "text": "Hold the end card for at least 3 seconds so people can read it." },
+    { "label": "Sound", "text": "One bright chime, then quiet." }
+   ]
+  }
+ ]
+}

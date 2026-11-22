@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUBRIC Scripts</title>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* header: Home first, then the RUBRIC brand block, then the work buttons on the right */
+  .top { flex: none; display: flex; align-items: center; gap: 14px; padding: 9px 20px; border-bottom: 2px solid var(--line); }
+  .backhome { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px 7px 8px; border-radius: 8px; background: var(--p-icon); color: var(--text); font: 600 13px 'Outfit', sans-serif; text-decoration: none; transition: transform .15s, box-shadow .15s, color .15s; }
+  .backhome:hover { color: var(--accent); transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--shadow); }
+  .backhome svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  #saveState { font-size: 12px; min-width: 64px; text-align: right; }
+  .switch { display: inline-flex; align-items: center; gap: 8px; font: 500 12.5px/1 'Outfit', sans-serif; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 6px 4px; white-space: nowrap; }
+  .switch .sw { position: relative; width: 30px; height: 17px; border-radius: 9px; background: var(--line); transition: background .2s; flex: none; }
+  .switch .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--text); transition: transform .2s; }
+  .switch[aria-checked="true"] { color: var(--text); }
+  .switch[aria-checked="true"] .sw { background: var(--green); }
+  .switch[aria-checked="true"] .sw::after { transform: translateX(13px); background: #fff; }
+
+  /* one 16:9 screen: nothing scrolls the page, every window scrolls inside itself, the lines between windows drag to resize */
+  .shell { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--w-rail, 286px) 10px minmax(0, 1fr); }
+  .split { position: relative; z-index: 9; touch-action: none; user-select: none; }
+  .split::after { content: ""; position: absolute; background: var(--line); border-radius: 2px; transition: background .15s; }
+  .split.v { width: 10px; cursor: col-resize; }
+  .split.v::after { left: 4px; top: 0; bottom: 0; width: 2px; }
+  .split.h { height: 10px; cursor: row-resize; margin: 3px 0; flex: none; }
+  .split.h::after { top: 4px; left: 0; right: 6px; height: 2px; }
+  .split:hover::after, .split.drag::after { background: var(--accent); }
+
+  /* the navigator: every script with its own drawing, so you find it by shape */
+  .rail { min-height: 0; overflow: hidden; padding: 12px 0 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .rail-head { display: flex; align-items: center; gap: 8px; padding: 2px 10px 0 2px; }
+  .list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 10px 10px 2px; }
+  .item { flex: none; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 11px; align-items: center; padding: 10px 11px; border: 2px solid var(--frame); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+  .item:hover { transform: translate(-2px,-3px); box-shadow: 6px 6px 0 var(--shadow); }
+  .item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .item.on { box-shadow: 6px 6px 0 var(--accent); }
+  html[data-theme="light"] .item.on { border-color: var(--accent); }
+  .item .ico { width: 48px; height: 48px; border-radius: 8px; background: var(--well); display: grid; place-items: center; color: var(--text); }
+  .item .ico .art { stroke-width: 3; }
+  .item .t { display: block; font-weight: 500; font-size: 13.5px; line-height: 1.25; }
+  .item.on .t { color: var(--accent); }
+  .item .meta { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+  .item .num { font: 600 11px/1 'Outfit', sans-serif; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .item .fbc { display: inline-flex; align-items: center; gap: 5px; font: 600 11px/1 'Outfit', sans-serif; color: var(--text); }
+  .item .fbc i { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+  .rail-note textarea { width: 100%; height: 50px; min-height: 36px; margin-top: 6px; font-size: 12.5px; padding: 7px 10px; resize: none; }
+  .rail-note { padding-right: 10px; }
+
+  .work { min-width: 0; min-height: 0; overflow: hidden; padding: 12px 16px 16px 6px; display: flex; flex-direction: column; gap: 10px; }
+  .head { flex: none; display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .head .h-art { flex: none; width: 34px; height: 34px; border-radius: 8px; background: var(--card); display: grid; place-items: center; }
+  .head h1 { font-size: 23px; font-weight: 500; letter-spacing: -.4px; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .panes { position: relative; flex: 1; min-height: 0; display: flex; }
+  .side { flex: 1 1 0; min-width: 300px; min-height: 0; display: flex; flex-direction: column; }
+  #scriptPanel { flex: 0 1 var(--w-script, 55%); min-width: 340px; margin: 0 6px 6px 0; }
+  #capPanel { flex: 0 1 var(--h-caption, 39%); min-height: 90px; margin-right: 6px; }
+  #vidPanel { flex: 0 1 var(--h-video, 31%); min-height: 120px; margin-right: 6px; }
+  #refPanel { flex: 1 1 0; min-height: 80px; margin: 0 6px 6px 0; }
+
+  .panel { background: var(--tone); border: 2px solid var(--frame); border-radius: 8px; box-shadow: 6px 6px 0 var(--shadow); display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+  html[data-theme="dark"] .panel { border-color: var(--tone); }
+  .panel[data-box="script"] { --tone: var(--p-script); }
+  .panel[data-box="caption"] { --tone: var(--p-caption); }
+  .panel[data-box="video"] { --tone: var(--p-video); }
+  .panel[data-box="refs"] { --tone: var(--p-refs); }
+  .panel.focus { position: absolute; inset: 0; z-index: 40; margin: 0 6px 6px 0; }
+  .panel-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; border-bottom: 2px solid var(--line); white-space: nowrap; overflow: hidden; }
+  .picon { flex: none; width: 27px; height: 27px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: var(--p-icon); color: var(--text); }
+  .picon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .badge { font: 600 10px/1 'Outfit', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 7px; border-radius: 5px; background: var(--p-icon); color: var(--muted); }
+  .grow { width: 30px; height: 30px; padding: 0; justify-content: center; }
+  .grow svg { width: 16px; height: 16px; stroke-width: 2.2; }
+  .panel.focus .grow { color: var(--accent); }
+  .panel-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 18px 16px; }
+
+  /* hooks: the three options sit on top of the script, big enough to compare at a glance */
+  .hooks { flex: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 12px 14px 4px; }
+  .hk { text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 9px 11px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--well); color: var(--text); cursor: pointer; transition: transform .15s, box-shadow .15s, border-color .15s; font: inherit; }
+  .hk:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--shadow); border-color: var(--muted); }
+  .hk-top { display: flex; align-items: center; gap: 8px; }
+  .hk-l { font: 700 21px/1 'Outfit', sans-serif; letter-spacing: -.02em; color: var(--muted); }
+  .hk-n { font: 500 10px/1.1 'Outfit', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hk-c { display: inline-flex; align-items: center; gap: 4px; font: 600 11px/1 'Outfit', sans-serif; }
+  .hk-c i { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+  .hk-t { font-size: 12.5px; line-height: 1.38; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .hk.on { border-color: var(--accent); background: var(--hook); box-shadow: 4px 4px 0 var(--accent); transform: translate(-2px,-2px); }
+  .hk.on .hk-l { color: var(--accent); }
+  .hk.on .hk-n, .hk.on .hk-t { color: var(--text); }
+
+  /* the hook inside the script: its own colour, so switching H1, H2, H3 shows exactly what changes */
+  .hookblock { position: relative; background: var(--hook); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 16px 13px; margin: 0 0 18px; }
+  .hookblock.swap { animation: swap .6s ease; }
+  @keyframes swap { 0% { background: rgba(255,107,26,.42); } 100% { background: var(--hook); } }
+  .hb-l { display: flex; align-items: center; gap: 8px; font: 600 10.5px/1 'Outfit', sans-serif; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 7px; user-select: none; }
+  .hb-l span { color: var(--muted); letter-spacing: 1.5px; }
+  .tx { white-space: pre-wrap; overflow-wrap: anywhere; outline: none; }
+  #hookTx { font-size: 21px; line-height: 1.42; font-weight: 500; letter-spacing: -.2px; }
+  #bodyTx { font-size: 16px; line-height: 1.62; }
+  #capTx { font-size: 14px; line-height: 1.55; }
+  .tx[contenteditable] { border-radius: 6px; box-shadow: inset 0 0 0 2px var(--accent); padding: 4px 6px; margin: -4px -6px; cursor: text; }
+
+  /* highlights: yellow (a comment), with its number after it */
+  mark.hl { background: var(--hl); color: inherit; border-bottom: 2px solid var(--yellow); border-radius: 3px; padding: 1px 0; cursor: pointer; transition: background .15s; }
+  mark.hl:hover, mark.hl.flash { background: rgba(245,166,35,.5); }
+  mark.hl.pend { background: rgba(245,166,35,.42); border-bottom-style: dashed; cursor: default; }
+  mark.hl[data-n]::after { content: attr(data-n); display: inline-block; margin-left: 3px; transform: translateY(-.45em); font: 700 10px/1 'Outfit', sans-serif; letter-spacing: 0; color: #1c1a16; background: var(--yellow); border-radius: 8px; padding: 2px 5px; }
+
+  /* video: a placeholder until posting opens in Week 4, with the channels it will go to, darkened for now */
+  .vid { padding: 0; overflow: hidden; container-type: size; }
+  .vin { height: 100%; display: flex; gap: 16px; padding: 12px 14px; }
+  .vframe { flex: none; height: 100%; aspect-ratio: 9 / 16; max-width: 45%; border: 2px dashed var(--muted); border-radius: 10px; display: grid; place-items: center; text-align: center; opacity: .75;
+    background-image: radial-gradient(var(--line) 1px, transparent 1.2px); background-size: 10px 10px; }
+  .vframe svg { width: 34%; max-width: 54px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linejoin: round; }
+  .vframe b { display: block; font-weight: 600; font-size: 13px; margin-top: 6px; }
+  .vframe small { display: block; color: var(--muted); font-size: 11px; line-height: 1.3; margin-top: 3px; padding: 0 6px; }
+  .chans { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ch-list { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .ch { display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: 8px; background: var(--p-icon); opacity: .42; filter: grayscale(1); }
+  .ch svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--text); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .ch .nm { font-weight: 500; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch .lk { display: inline-flex; align-items: center; gap: 4px; font: 600 10px/1 'Outfit', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .ch .lk svg { width: 11px; height: 11px; stroke: var(--muted); }
+  .vnote { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  @container (max-height: 250px) { .vnote { display: none; } }
+  /* a big video window (dragged taller, or made big): channel cards in a 2 x 2 grid beside a large frame */
+  @container (min-width: 520px) and (min-height: 300px) {
+    .vin { gap: 28px; padding: 20px 26px; align-items: center; }
+    .chans { justify-content: center; gap: 12px; }
+    .chans .kicker { font-size: 12px; }
+    .ch-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .ch { flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px 16px 14px; }
+    .ch svg { width: 30px; height: 30px; }
+    .ch .nm { font-size: 16px; white-space: normal; }
+    .vframe b { font-size: 16px; } .vframe small { font-size: 12.5px; }
+    .vnote { font-size: 13.5px; }
+  }
+  @container (min-width: 900px) and (min-height: 420px) {
+    .vin { gap: 44px; padding: 26px 40px; }
+    .chans { max-width: 760px; }
+    .ch { padding: 22px 22px 18px; }
+    .ch svg { width: 40px; height: 40px; }
+    .ch .nm { font-size: 20px; }
+    .vframe b { font-size: 20px; } .vframe small { font-size: 14px; }
+  }
+
+  /* references: one line each, the link and a few words */
+  #refs { padding: 6px 14px 46px; }
+  .refs { list-style: none; margin: 0; padding: 0; }
+  .refs li { display: flex; align-items: baseline; gap: 6px; font-size: 13px; line-height: 1.45; padding: 5px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+  .refs li:last-child { border-bottom: 0; }
+  .refs .ln { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .refs a { color: var(--accent); font-weight: 500; text-decoration: none; }
+  .refs a:hover { text-decoration: underline; }
+  .refs .rest { color: var(--muted); }
+  .refs .mine { font: 600 9.5px/1 'Outfit', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: var(--blue); flex: none; }
+  .refs .x { flex: none; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0 2px; }
+  .refs .x:hover { color: var(--accent); }
+  .addref { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 10px; }
+  .addref input { font-size: 13px; padding: 6px 9px; min-width: 0; }
+
+  /* comments: select words, a Comment button appears; the popup folds into the Comments tab bottom right */
+  #selBtn { position: fixed; display: none; z-index: 80; }
+  #selBtn.show { display: inline-flex; }
+  .cpop { position: fixed; z-index: 90; width: 350px; display: flex; flex-direction: column; gap: 8px; padding: 11px 12px 12px; background: var(--card); border: 2px solid var(--yellow); border-radius: 8px; box-shadow: 6px 6px 0 var(--shadow); }
+  .cpop.minimizing { transition: transform .25s ease, opacity .25s ease; opacity: 0; pointer-events: none; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .cpop textarea { height: 66px; font-size: 13.5px; padding: 8px 10px; resize: none; }
+  .cm-quote { font-size: 12.5px; color: var(--muted); border-left: 3px solid var(--yellow); padding-left: 9px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .hint { font-size: 11px; color: var(--muted); }
+  .ctab { position: fixed; right: 26px; bottom: 22px; z-index: 65; display: inline-flex; align-items: center; gap: 7px; font: 500 12.5px/1 'Outfit', sans-serif; padding: 9px 12px; border-radius: 8px; border: 2px solid var(--frame); background: var(--card); color: var(--muted); box-shadow: 4px 4px 0 var(--shadow); cursor: pointer; }
+  .ctab i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .ctab.has { color: var(--text); border-color: var(--yellow); }
+  .ctab.has i { background: var(--yellow); }
+  .ctab.open { background: var(--yellow); border-color: var(--yellow); color: #1c1a16; }
+  .ctab.open i { background: #1c1a16; }
+  .ctab.bump { animation: bump .55s ease; }
+  @keyframes bump { 40% { transform: scale(1.14); } }
+  .cbox { position: fixed; right: 26px; bottom: 68px; z-index: 66; width: 390px; max-height: min(66vh, 620px); display: flex; flex-direction: column; background: var(--card); border: 2px solid var(--frame); border-radius: 8px; box-shadow: 6px 6px 0 var(--shadow); overflow: hidden; }
+  .cbox-head { flex: none; padding: 7px 8px 7px 14px; border-bottom: 2px solid var(--line); }
+  .cbox-body { flex: 1; min-height: 0; overflow: auto; padding: 12px; background: var(--well); display: flex; flex-direction: column; gap: 10px; }
+  .cm { border: 2px solid var(--frame); border-radius: 8px; background: var(--card); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 4px 4px 0 var(--shadow); transition: box-shadow .2s; }
+  .cm.flash { box-shadow: 4px 4px 0 var(--yellow); }
+  .cm.applied { opacity: .55; }
+  .cm-n { font-weight: 700; font-size: 12px; min-width: 20px; height: 20px; border-radius: 10px; display: inline-grid; place-items: center; background: var(--yellow); color: #1c1a16; }
+  .cm.applied .cm-n { background: var(--muted); }
+  .where { font: 500 10px/1 'Outfit', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; padding: 4px 6px; border-radius: 5px; background: var(--p-icon); color: var(--muted); }
+  .where.done { color: var(--green); }
+  .gone { font-size: 11px; color: var(--muted); }
+  .cm textarea { height: 46px; min-height: 36px; font-size: 13px; padding: 7px 9px; resize: vertical; }
+  .cnote textarea { width: 100%; height: 54px; font-size: 13px; margin-top: 6px; padding: 7px 9px; resize: vertical; }
+  .cfoot { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 10px 9px 14px; border-top: 2px solid var(--line); font-size: 12px; color: var(--muted); }
+  .empty { color: var(--muted); padding: 6px 2px; font-size: 13px; }
+
+  @media (max-width: 980px) {
+    body { overflow: auto; display: block; height: auto; }
+    .top { flex-wrap: wrap; } .top-actions { flex-wrap: wrap; margin-left: 0; }
+    .shell { display: block; } .split { display: none; }
+    .rail { padding: 12px 16px; border-bottom: 2px solid var(--line); }
+    .list { flex-direction: row; overflow-x: auto; overflow-y: hidden; } .item { width: 250px; }
+    .rail-note { display: none; }
+    .work { overflow: visible; padding: 14px 16px; }
+    .panes, .side { display: block; }
+    .panes .panel { height: 64vh; margin: 0 6px 16px 0; }
+    .hooks { grid-template-columns: 1fr; }
+    .cbox { left: 16px; right: 16px; width: auto; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="backhome" href="/" title="Back to all scripts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Home</a>
+  <div class="brand">
+    <a class="appmark" href="/" aria-label="RUBRIC Scripts home"><svg viewBox="0 0 48 48" fill="none" stroke="#ff6b1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5h17l9 9v29H12Z"/><path d="M29 5v9h9" opacity="0.5"/><path d="M18 23h14M18 30h14M18 37h8" opacity="0.5"/></svg><span class="brand-name"><strong>RUBRIC</strong><span>Scripts</span></span></a>
+    <small class="brand-sub">by Jay E | <a href="https://robonuggets.com" target="_blank" rel="noopener">RoboNuggets</a></small>
+  </div>
+  <div class="top-actions">
+    <span id="saveState" class="muted"></span>
+    <button class="switch" id="toneBtn" role="switch" aria-checked="true" title="On: when your agent applies your comments, it also teaches your /tone skill what they say about your voice"><span class="sw"></span>Teach my /tone</button>
+    <button id="btnCopy" class="btn tiny ghost" title="Comments, notes and edits on the script on screen">Copy comments for this script</button>
+    <button id="btnCopyAll" class="btn primary" title="Comments, notes and edits on every script">Copy comments for ALL scripts</button>
+    <button id="themeToggle" class="btn icon" aria-label="Toggle dark / light mode" title="Dark / light">&#9680;</button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail" id="rail">
+    <div class="rail-head"><span class="kicker">Scripts</span><span class="count" id="railN"></span></div>
+    <div class="list" id="list" title="j and k move through the list"></div>
+    <label class="rail-note"><span class="kicker">Across all scripts</span><textarea id="globalNote" placeholder="Patterns you see in every script"></textarea></label>
+  </aside>
+  <div class="split v" data-var="--w-rail" data-target="#rail" data-min="210" data-maxf="0.4" title="Drag to resize. Double-click to reset."></div>
+
+  <main class="work">
+    <div class="head"><span class="h-art" id="hArt"></span><h1 id="title"></h1></div>
+    <div class="panes" id="panes">
+      <section class="panel" data-box="script" id="scriptPanel">
+        <div class="panel-head">
+          <span class="picon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/></svg></span>
+          <span class="kicker">Script</span><span class="count" id="scriptCount"></span><span class="spacer"></span>
+          <button class="btn tiny ghost" data-reset="script" hidden>Reset</button>
+          <button class="btn tiny" data-edit="script">Edit</button>
+          <button class="btn tiny" data-copy="script">Copy</button>
+          <button class="btn tiny ghost grow" data-grow="scriptPanel" title="Make this window big (Esc to go back)" aria-label="Expand"><svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/><path d="M20 4l-6.5 6.5"/><path d="M4 20l6.5-6.5"/></svg></button>
+        </div>
+        <div class="hooks" id="hooks" role="group" aria-label="Hooks"></div>
+        <div class="panel-body" id="scriptBody">
+          <div class="hookblock" id="hookBlock"><div class="hb-l" id="hbL"></div><div class="tx" id="hookTx" data-region="hook"></div></div>
+          <div class="tx" id="bodyTx" data-region="body"></div>
+        </div>
+      </section>
+      <div class="split v" data-var="--w-script" data-target="#scriptPanel" data-min="340" data-maxf="0.72" title="Drag to resize. Double-click to reset."></div>
+
+      <div class="side">
+        <section class="panel" data-box="caption" id="capPanel">
+          <div class="panel-head">
+            <span class="picon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="10" rx="2"/><path d="M4 17h16"/><path d="M4 21h10"/></svg></span>
+            <span class="kicker">Caption</span><span class="count" id="capCount"></span><span class="spacer"></span>
+            <button class="btn tiny ghost" data-reset="caption" hidden>Reset</button>
+            <button class="btn tiny" data-edit="caption">Edit</button>
+            <button class="btn tiny" data-copy="caption">Copy</button>
+          </div>
+          <div class="panel-body"><div class="tx" id="capTx" data-region="caption"></div></div>
+        </section>
+        <div class="split h" data-var="--h-caption" data-target="#capPanel" data-axis="y" data-min="90" data-maxf="0.6" title="Drag to resize. Double-click to reset."></div>
+
+        <section class="panel" data-box="video" id="vidPanel">
+          <div class="panel-head">
+            <span class="picon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10.5l5-3v9l-5-3z"/></svg></span>
+            <span class="kicker">Video</span><span class="badge">Week 4</span><span class="spacer"></span>
+            <button class="btn tiny ghost grow" data-grow="vidPanel" title="Make this window big (Esc to go back)" aria-label="Expand"><svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/><path d="M20 4l-6.5 6.5"/><path d="M4 20l6.5-6.5"/></svg></button>
+          </div>
+          <div class="panel-body vid" id="vid"></div>
+        </section>
+        <div class="split h" data-var="--h-video" data-target="#vidPanel" data-axis="y" data-min="120" data-maxf="0.6" title="Drag to resize. Double-click to reset."></div>
+
+        <section class="panel" data-box="refs" id="refPanel">
+          <div class="panel-head">
+            <span class="picon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/><path d="M9 8h5"/></svg></span>
+            <span class="kicker">References</span><span class="count" id="refCount"></span><span class="spacer"></span>
+            <button class="btn tiny" id="addRefBtn" title="Add a link you used"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+          </div>
+          <div class="panel-body" id="refs"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<button id="selBtn" class="btn tiny primary"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Comment</button>
+<div class="cpop" id="cpop" role="dialog" aria-label="New comment" hidden>
+  <div class="row"><span class="kicker" id="cpopWhere">Comment</span><span class="spacer"></span><button class="btn tiny ghost" id="cpopX" aria-label="Cancel" title="Cancel (Esc)">&#10005;</button></div>
+  <div class="cm-quote" id="cpopQuote"></div>
+  <textarea id="cpopText" placeholder="What should change here?"></textarea>
+  <div class="row"><button class="btn tiny primary" id="cpopSave">Save</button><button class="btn tiny ghost" id="cpopCancel">Cancel</button><span class="spacer"></span><span class="hint">Enter saves, Esc cancels</span></div>
+</div>
+<button class="ctab" id="ctab" aria-expanded="false" title="Every comment on this script"><i></i>Comments <span id="ctabN">(0)</span></button>
+<div class="cbox" id="cbox" hidden>
+  <div class="cbox-head row"><span class="kicker" id="cboxTitle">Comments</span><span class="spacer"></span><button class="btn tiny ghost" id="cboxMin" title="Fold it back into the tab (Esc)">Hide</button></div>
+  <div class="cbox-body">
+    <div id="comments"></div>
+    <label class="cnote"><span class="kicker">Note on this script</span><textarea id="note" placeholder="Anything not tied to one line"></textarea></label>
+  </div>
+  <div class="cfoot"><span class="spacer" id="cfootTone"></span><button class="btn tiny primary" id="cboxCopy">Copy for my agent</button></div>
+</div>
+
+<script src="/common.js"></script>
+<script>
+(function () {
+  const { esc, words, secs, day, art, Store, toast, copyText, exportText, local } = window.RS;
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+  RS.wireTheme($('themeToggle'));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const idFromPath = () => decodeURIComponent((location.pathname.match(/^\/s\/([\w-]+)/) || [])[1] || '');
+  let CUR = idFromPath();
+  const cur = () => Store.byId(CUR) || Store.ordered()[0];
+  const editing = { script: false, caption: false };
+
+  // ---------- channel logos, drawn as simple shapes (posting opens in Week 4) ----------
+  const CH = {
+    tiktok: ['TikTok', '<path d="M14 3.5v11.8a3.6 3.6 0 1 1-3.1-3.56"/><path d="M14 3.5c.4 2.7 2.3 4.5 5.2 4.8"/>'],
+    instagram: ['Instagram', '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".5"/>'],
+    threads: ['Threads', '<path d="M16.8 9.2C16 6.4 14.1 5 11.7 5 8.1 5 6 7.8 6 12s2.1 7 5.7 7c3.2 0 5.3-1.9 5.3-4.6 0-2.4-1.8-3.8-4.5-3.8-2.2 0-3.6 1.1-3.6 2.7 0 1.4 1.1 2.3 2.7 2.3 2.7 0 3.9-2.3 3.5-6.2"/>'],
+    'youtube-shorts': ['YouTube Shorts', '<path d="M15.6 3.9 8 8.1a3.5 3.5 0 0 0 .1 6.2l.9.4-.9.5a3.5 3.5 0 0 0 3.4 6.1l7.6-4.2a3.5 3.5 0 0 0-.1-6.2l-.9-.4.9-.5a3.5 3.5 0 0 0-3.4-6.1z"/><path d="M10.6 9.6v4.8l4-2.4z"/>']
+  };
+  const LOCK = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+  // ---------- finding a comment's words again in the text, whatever the spacing ----------
+  function norm(t) {
+    let n = ''; const map = [];
+    for (let i = 0; i < t.length; i++) {
+      const ch = t[i];
+      if (/\s/.test(ch)) { if (!n.length || n[n.length - 1] === ' ') continue; n += ' '; map.push(i); }
+      else { n += ch === '’' || ch === '‘' ? "'" : ch; map.push(i); }
+    }
+    return { n, map };
+  }
+  function findRange(full, quote) {
+    const a = norm(full), q = norm(String(quote || '').trim()).n.trim();
+    if (!q) return null; const at = a.n.indexOf(q); if (at < 0) return null;
+    return [a.map[at], a.map[at + q.length - 1] + 1];
+  }
+  function paint(el, full, marks) {
+    const own = new Array(full.length).fill(null), last = new Map();
+    marks.sort((a, b) => a.range[0] - b.range[0]).forEach(m => { for (let i = m.range[0]; i < m.range[1]; i++) if (!own[i]) { own[i] = m; last.set(m, i); } });
+    let html = '', i = 0;
+    while (i < full.length) {
+      const o = own[i]; let j = i; while (j < full.length && own[j] === o) j++;
+      const seg = esc(full.slice(i, j));
+      html += !o ? seg : o.pend ? '<mark class="hl pend">' + seg + '</mark>'
+        : '<mark class="hl" data-c="' + esc(o.id) + '"' + (last.get(o) === j - 1 ? ' data-n="' + o.n + '"' : '') + '>' + seg + '</mark>';
+      i = j;
+    }
+    el.innerHTML = html;
+  }
+  const REG = {
+    hook: { el: () => $('hookTx'), text: s => Store.hookText(s, Store.hookId(s)), keep: (c, s) => c.region === 'hook' && c.hook === Store.hookId(s), group: 'script' },
+    body: { el: () => $('bodyTx'), text: s => Store.body(s), keep: c => c.region === 'body', group: 'script' },
+    caption: { el: () => $('capTx'), text: s => Store.caption(s), keep: c => c.region === 'caption', group: 'caption' }
+  };
+  function paintRegion(name) {
+    const s = cur(), R = REG[name], el = R.el(), full = R.text(s);
+    if (editing[R.group]) { el.textContent = full; return; }
+    const it = Store.item(s.id);
+    const marks = it.comments.map((c, i) => ({ c, i })).filter(x => !x.c.applied && R.keep(x.c, s))
+      .map(x => ({ id: x.c.id, n: x.i + 1, range: findRange(full, x.c.quote) })).filter(m => m.range);
+    // the words you are commenting on stay marked while you type, since the selection itself goes away
+    if (pending && !cpop.hidden && pending.region === name) { const r = findRange(full, pending.quote); if (r) marks.unshift({ id: 'pending', pend: true, range: r }); }
+    paint(el, full, marks);
+  }
+
+  // ---------- the navigator ----------
+  function renderList() {
+    const list = Store.ordered(), keep = $('list').scrollTop;
+    $('railN').textContent = list.length;
+    $('list').innerHTML = list.map((s, i) => {
+      const cm = Store.openComments(s).length;
+      return '<div class="item' + (s.id === cur().id ? ' on' : '') + '" role="button" tabindex="0" data-id="' + esc(s.id) + '">' +
+        '<span class="ico">' + art(s, 30) + '</span><span><span class="t">' + esc(s.title) + '</span><span class="meta"><span class="num">' + (i + 1) + '</span><span class="kw">' + esc(s.keyword) + '</span>' +
+        (cm ? '<span class="fbc"><i></i>' + cm + '</span>' : '') + '</span></span></div>';
+    }).join('');
+    $('list').scrollTop = keep;
+  }
+  function go(id) {
+    if (!Store.byId(id) || id === cur().id) return;
+    finishEdits(); CUR = id; history.replaceState(null, '', '/s/' + encodeURIComponent(id));
+    closePop(); hideSel(); unGrow(); render();
+    const on = $('list').querySelector('.item.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+    $('scriptBody').scrollTop = 0;
+  }
+  $('list').addEventListener('click', e => { const el = e.target.closest('.item'); if (el) go(el.dataset.id); });
+  $('list').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const el = e.target.closest('.item'); if (el) { e.preventDefault(); go(el.dataset.id); } });
+
+  // ---------- the windows ----------
+  function renderHooks(flash) {
+    const s = cur(), hid = Store.hookId(s), it = Store.item(s.id), h = s.hooks.find(x => x.id === hid) || {};
+    $('hooks').innerHTML = s.hooks.map((x, i) => {
+      const n = it.comments.filter(c => !c.applied && c.region === 'hook' && c.hook === x.id).length;
+      return '<button class="hk' + (x.id === hid ? ' on' : '') + '" data-h="' + esc(x.id) + '" aria-pressed="' + (x.id === hid) + '" title="Use ' + esc(x.id.toUpperCase()) + ' (key ' + (i + 1) + ')">' +
+        '<span class="hk-top"><span class="hk-l">' + esc(x.id.toUpperCase()) + '</span><span class="hk-n">' + esc(x.note) + '</span>' + (n ? '<span class="hk-c"><i></i>' + n + '</span>' : '') + '<kbd>' + (i + 1) + '</kbd></span>' +
+        '<span class="hk-t">' + esc(Store.hookText(s, x.id)) + '</span></button>';
+    }).join('');
+    $('hbL').innerHTML = 'Hook ' + esc(hid.toUpperCase()) + (h.note ? '<span>' + esc(h.note) + '</span>' : '');
+    paintRegion('hook');
+    if (flash) { const b = $('hookBlock'); b.classList.remove('swap'); void b.offsetWidth; b.classList.add('swap'); }
+  }
+  function renderScript() {
+    const s = cur(); renderHooks(false); paintRegion('body');
+    const w = words(Store.hookText(s, Store.hookId(s))) + words(Store.body(s));
+    $('scriptCount').textContent = w + ' words, ~' + secs(w) + ' s';
+    const e = Store.item(s.id).edits;
+    document.querySelector('[data-reset="script"]').hidden = !(e.body != null || (e.hooks && Object.keys(e.hooks).length));
+  }
+  function renderCaption() {
+    const s = cur(); paintRegion('caption');
+    $('capCount').textContent = Store.caption(s).length + ' characters';
+    document.querySelector('[data-reset="caption"]').hidden = Store.item(s.id).edits.caption == null;
+  }
+  function renderVideo() {
+    const s = cur(), chans = (s.channels || []).filter(c => CH[c]);
+    $('vid').innerHTML = '<div class="vin">' +
+      '<div class="vframe" title="Your finished video shows here once posting opens"><div><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M10 8.5v7l6-3.5z"/></svg><b>Video</b><small>Lands here in Week 4</small></div></div>' +
+      '<div class="chans"><span class="kicker">Channels</span><div class="ch-list">' +
+      chans.map(c => '<div class="ch" title="' + esc(CH[c][0]) + ': posting opens in Week 4"><svg viewBox="0 0 24 24">' + CH[c][1] + '</svg><span class="nm">' + esc(CH[c][0]) + '</span><span class="lk">' + LOCK + 'Week 4</span></div>').join('') +
+      '</div><p class="vnote">Posting opens in Week 4. These are the default channels.</p></div></div>';
+  }
+  function host(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
+  function renderRefs() {
+    const s = cur(), mine = Store.item(s.id).refs;
+    const li = (r, k) => '<li><span class="ln">' + (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.label || host(r.url)) + '</a>' : '') +
+      (r.note ? ' <span class="rest">' + esc(r.note) + '</span>' : '') + '</span>' +
+      (k != null ? '<span class="mine">Added</span><button class="x" data-unref="' + k + '" title="Remove" aria-label="Remove">&#10005;</button>' : '') + '</li>';
+    $('refCount').textContent = s.references.length + mine.length;
+    $('refs').innerHTML = '<ul class="refs" data-region="refs">' + s.references.map(r => li(r)).join('') + mine.map((r, k) => li(r, k)).join('') + '</ul>' +
+      '<form class="addref" id="addRef" hidden><input type="url" id="refUrl" placeholder="Paste a link" required><input type="text" id="refNote" placeholder="One line on why it matters"><button class="btn tiny primary" type="submit">Add</button></form>';
+  }
+  function renderHead() {
+    const s = cur();
+    $('title').textContent = s.title; $('title').title = s.title;
+    $('hArt').innerHTML = art(s, 24);
+    document.title = s.keyword + ' | RUBRIC Scripts';
+    if (document.activeElement !== $('globalNote')) $('globalNote').value = Store.state.note || '';
+    const on = !!Store.state.tone; $('toneBtn').setAttribute('aria-checked', on ? 'true' : 'false');
+    $('cfootTone').textContent = on ? 'Your agent also updates /tone' : '/tone stays as it is';
+  }
+  function renderComments() {
+    const s = cur(), it = Store.item(s.id), open = it.comments.filter(c => !c.applied).length;
+    $('ctabN').textContent = '(' + open + ')';
+    $('ctab').classList.toggle('has', open > 0);
+    $('cboxTitle').textContent = 'Comments on ' + s.keyword;
+    if (document.activeElement !== $('note')) $('note').value = it.note || '';
+    const box = $('comments');
+    if (!it.comments.length) { box.innerHTML = '<div class="empty">Select words in the script or caption, then press Comment.</div>'; return; }
+    box.innerHTML = it.comments.map((c, i) => {
+      const reg = REG[c.region], found = !reg || c.applied || (c.region === 'hook' && c.hook !== Store.hookId(s)) || findRange(reg.text(s), c.quote);
+      return '<div class="cm' + (c.applied ? ' applied' : '') + '" data-cid="' + esc(c.id) + '"><div class="row"><span class="cm-n">' + (i + 1) + '</span><span class="where">' + esc(c.where) + '</span>' +
+        (c.applied ? '<span class="where done">Applied ' + esc(day(c.applied)) + '</span>' : '') + (!found ? '<span class="gone">text changed</span>' : '') +
+        '<span class="spacer"></span><button class="btn tiny ghost" data-del="' + i + '">Delete</button></div>' +
+        '<div class="cm-quote">' + esc(c.quote) + '</div><textarea data-i="' + i + '" placeholder="What should change here?"' + (c.applied ? ' readonly' : '') + '>' + esc(c.note) + '</textarea></div>';
+    }).join('');
+  }
+  function render() { renderList(); renderHead(); renderScript(); renderCaption(); renderVideo(); renderRefs(); renderComments(); }
+
+  // hooks: click a card or press 1, 2, 3 (h cycles). The one on is the one you are choosing.
+  function useHook(hid) {
+    const s = cur(); if (!s.hooks.some(h => h.id === hid) || hid === Store.hookId(s)) return;
+    finishEdits(); Store.item(s.id).hook = hid; Store.touch(s.id); Store.save();
+    renderHooks(true); renderScript(); renderList();
+  }
+  $('hooks').addEventListener('click', e => { const b = e.target.closest('.hk'); if (b) { useHook(b.dataset.h); b.blur(); } });
+
+  // ---------- edit: the window turns into plain text you type into; Done (or another script) saves it ----------
+  const tidy = t => String(t).replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  function startEdit(group) {
+    editing[group] = true; closePop(); hideSel();
+    const els = group === 'script' ? [$('hookTx'), $('bodyTx')] : [$('capTx')];
+    if (group === 'script') { paintRegion('hook'); paintRegion('body'); } else paintRegion('caption');
+    els.forEach(el => el.setAttribute('contenteditable', 'plaintext-only'));
+    document.querySelector('[data-edit="' + group + '"]').textContent = 'Done';
+    els[els.length - 1].focus();
+  }
+  function finishEdit(group) {
+    if (!editing[group]) return;
+    const s = cur(), it = Store.item(s.id);
+    if (group === 'script') {
+      const hid = Store.hookId(s), orig = s.hooks.find(h => h.id === hid).text, ht = tidy($('hookTx').innerText), bt = tidy($('bodyTx').innerText);
+      it.edits.hooks = it.edits.hooks || {};
+      if (ht === orig || !ht) delete it.edits.hooks[hid]; else it.edits.hooks[hid] = ht;
+      if (!Object.keys(it.edits.hooks).length) delete it.edits.hooks;
+      if (bt === s.body || !bt) delete it.edits.body; else it.edits.body = bt;
+      [$('hookTx'), $('bodyTx')].forEach(el => el.removeAttribute('contenteditable'));
+    } else {
+      const ct = tidy($('capTx').innerText);
+      if (ct === s.caption || !ct) delete it.edits.caption; else it.edits.caption = ct;
+      $('capTx').removeAttribute('contenteditable');
+    }
+    editing[group] = false; document.querySelector('[data-edit="' + group + '"]').textContent = 'Edit';
+    Store.touch(s.id); Store.save();
+    if (group === 'script') renderScript(); else renderCaption();
+    renderComments();
+  }
+  function finishEdits() { finishEdit('script'); finishEdit('caption'); }
+  document.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => { const g = b.dataset.edit; editing[g] ? finishEdit(g) : startEdit(g); b.blur(); }));
+  document.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => {
+    const s = cur(), e = Store.item(s.id).edits, g = b.dataset.reset;
+    if (g === 'script') { delete e.body; delete e.hooks; editing.script = false; } else { delete e.caption; editing.caption = false; }
+    Store.touch(s.id); Store.save(); renderScript(); renderCaption(); renderComments(); toast('Back to the original ' + (g === 'script' ? 'script' : 'caption') + '.', 1600);
+  }));
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    const s = cur(), t = b.dataset.copy === 'script' ? Store.hookText(s, Store.hookId(s)) + '\n\n' + Store.body(s) : Store.caption(s);
+    const ok = await copyText(t); b.textContent = ok ? 'Copied' : 'Copy failed'; setTimeout(() => { b.textContent = 'Copy'; }, 1400);
+  }));
+
+  // ---------- make a window big (and back) ----------
+  let grown = null;
+  function unGrow() { if (grown) { grown.classList.remove('focus'); grown = null; } }
+  document.querySelectorAll('[data-grow]').forEach(b => b.addEventListener('click', () => {
+    const p = $(b.dataset.grow); b.blur(); if (grown === p) { unGrow(); return; } unGrow(); p.classList.add('focus'); grown = p;
+  }));
+
+  // ---------- references: add your own (saved with your work) ----------
+  $('addRefBtn').addEventListener('click', () => { const f = $('addRef'); f.hidden = !f.hidden; if (!f.hidden) $('refUrl').focus(); });
+  $('refs').addEventListener('submit', e => {
+    e.preventDefault(); const url = $('refUrl').value.trim(), note = $('refNote').value.trim(); if (!url) return;
+    const s = cur(); Store.item(s.id).refs.push({ label: host(url), url, note }); Store.touch(s.id); Store.save(); renderRefs(); toast('Reference added.', 1400);
+  });
+  $('refs').addEventListener('click', e => { const x = e.target.closest('[data-unref]'); if (!x) return; const s = cur(); Store.item(s.id).refs.splice(+x.dataset.unref, 1); Store.touch(s.id); Store.save(); renderRefs(); });
+
+  // ---------- comments: select words, press Comment (or c), type, Enter. The words stay highlighted. ----------
+  const selBtn = $('selBtn'), cpop = $('cpop');
+  let pending = null, lastRect = null;
+  const regionOf = n => { const el = n && (n.nodeType === 3 ? n.parentElement : n); return el && el.closest ? el.closest('[data-region]') : null; };
+  function readSelection() {
+    const sel = getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    const a = regionOf(sel.anchorNode), f = regionOf(sel.focusNode);
+    if (!a || a !== f) return null;
+    const region = a.dataset.region; if (REG[region] && editing[REG[region].group]) return null;
+    const quote = sel.toString().replace(/\s+\n/g, '\n').trim(); if (!quote) return null;
+    const g = sel.getRangeAt(0).getBoundingClientRect();
+    return { region, quote, rect: { left: g.left, right: g.right, top: g.top, bottom: g.bottom } };
+  }
+  document.addEventListener('mouseup', e => {
+    if (e.target.closest('#selBtn, #cpop, #cbox, #ctab')) return;
+    setTimeout(() => {
+      const p = readSelection(); if (!p) { hideSel(); return; }
+      pending = p; lastRect = p.rect;
+      selBtn.classList.add('show');
+      selBtn.style.left = clamp(p.rect.left, 8, innerWidth - selBtn.offsetWidth - 8) + 'px';
+      selBtn.style.top = clamp(p.rect.bottom + 8, 8, innerHeight - selBtn.offsetHeight - 8) + 'px';
+    }, 10);
+  });
+  function hideSel() { selBtn.classList.remove('show'); }
+  document.addEventListener('scroll', hideSel, { capture: true, passive: true });
+  const whereOf = (region, s) => region === 'hook' ? 'hook ' + Store.hookId(s).toUpperCase() : region === 'body' ? 'script' : region === 'refs' ? 'references' : region;
+  function openPop(p) {
+    if (!p) { toast('Select some words first, then press Comment.'); return; }
+    pending = p; hideSel();
+    $('cpopWhere').textContent = 'Comment on ' + whereOf(p.region, cur());
+    $('cpopQuote').textContent = p.quote; $('cpopText').value = '';
+    cpop.classList.remove('minimizing'); cpop.style.transform = ''; cpop.hidden = false;
+    const r = p.rect, w = cpop.offsetWidth, h = cpop.offsetHeight;
+    let top = r.bottom + 10; if (top + h > innerHeight - 12) top = r.top - h - 10;
+    cpop.style.left = clamp(r.left, 12, innerWidth - w - 12) + 'px';
+    cpop.style.top = clamp(top, 12, innerHeight - h - 12) + 'px';
+    if (REG[p.region]) paintRegion(p.region);
+    $('cpopText').focus();
+  }
+  function closePop() { const was = pending && pending.region; cpop.hidden = true; pending = null; if (was && REG[was]) paintRegion(was); }
+  function savePop() {
+    if (cpop.hidden || !pending) return;
+    const s = cur(), it = Store.item(s.id), p = pending;
+    const c = { id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), region: p.region, where: whereOf(p.region, s), quote: p.quote, note: $('cpopText').value.trim(), at: new Date().toISOString() };
+    if (p.region === 'hook') c.hook = Store.hookId(s);
+    it.comments.push(c); Store.touch(s.id); Store.save(); pending = null;
+    getSelection().removeAllRanges();
+    renderScript(); renderCaption(); renderComments(); renderList();
+    // fold the popup into the Comments tab
+    const a = cpop.getBoundingClientRect(), t = $('ctab').getBoundingClientRect();
+    cpop.style.transformOrigin = '0 0'; cpop.classList.add('minimizing');
+    cpop.style.transform = 'translate(' + Math.round(t.left - a.left) + 'px,' + Math.round(t.top - a.top) + 'px) scale(.15)';
+    setTimeout(() => { cpop.hidden = true; cpop.classList.remove('minimizing'); cpop.style.transform = ''; }, 260);
+    const tab = $('ctab'); tab.classList.remove('bump'); void tab.offsetWidth; tab.classList.add('bump');
+  }
+  selBtn.addEventListener('click', () => openPop(pending));
+  $('cpopSave').addEventListener('click', savePop);
+  $('cpopCancel').addEventListener('click', closePop);
+  $('cpopX').addEventListener('click', closePop);
+  $('cpopText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); savePop(); } });
+  function setBox(open) { $('cbox').hidden = !open; $('ctab').classList.toggle('open', open); $('ctab').setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  $('ctab').addEventListener('click', () => setBox($('cbox').hidden));
+  $('cboxMin').addEventListener('click', () => setBox(false));
+  // a click on highlighted words opens that comment
+  document.addEventListener('click', e => {
+    const m = e.target.closest('mark.hl'); if (!m || !getSelection().isCollapsed) return;
+    setBox(true); const card = document.querySelector('.cm[data-cid="' + m.dataset.c + '"]');
+    if (card) { card.scrollIntoView({ block: 'nearest' }); card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 900); const ta = card.querySelector('textarea'); if (ta && !ta.readOnly) ta.focus(); }
+  });
+  $('comments').addEventListener('input', e => { const ta = e.target.closest('textarea[data-i]'); if (!ta) return; const s = cur(); Store.item(s.id).comments[+ta.dataset.i].note = ta.value; Store.touch(s.id); Store.save(); });
+  $('comments').addEventListener('click', e => {
+    const d = e.target.closest('[data-del]'); if (!d) return; const s = cur();
+    Store.item(s.id).comments.splice(+d.dataset.del, 1); Store.touch(s.id); Store.save(); renderScript(); renderCaption(); renderComments(); renderList();
+  });
+  $('note').addEventListener('input', e => { const s = cur(); Store.item(s.id).note = e.target.value; Store.touch(s.id); Store.save(); });
+  $('globalNote').addEventListener('input', e => { Store.state.note = e.target.value; Store.save(); });
+
+  // ---------- the hand-off: copy for the agent, and the /tone switch (on by default) ----------
+  $('toneBtn').addEventListener('click', () => { Store.state.tone = !Store.state.tone; Store.save(); renderHead(); $('toneBtn').blur(); toast(Store.state.tone ? 'Your agent will also teach your /tone skill from these comments.' : 'Your /tone skill stays as it is this time.', 2200); });
+  const n = k => k + (k === 1 ? ' item' : ' items');
+  async function copyFor(scope) {
+    finishEdits();
+    const { text, count } = exportText(scope === 'one' ? [cur()] : Store.ordered(), scope), ok = await copyText(text);
+    toast(ok ? 'Copied ' + n(count) + (scope === 'one' ? ' on ' + cur().keyword : ' across all scripts') + '. Paste it to your agent.' : 'Copy failed. Click the page once and try again.');
+  }
+  $('btnCopy').addEventListener('click', () => copyFor('one'));
+  $('btnCopyAll').addEventListener('click', () => copyFor('all'));
+  $('cboxCopy').addEventListener('click', () => copyFor('one'));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!cpop.hidden) { e.preventDefault(); closePop(); return; }
+      if (!$('cbox').hidden) { e.preventDefault(); setBox(false); return; }
+      if (editing.script || editing.caption) { e.preventDefault(); finishEdits(); return; }
+      if (grown) { unGrow(); return; }
+      hideSel(); return;
+    }
+    if (e.target.matches('textarea, input, [contenteditable]') || e.ctrlKey || e.metaKey || e.altKey) return;
+    const list = Store.ordered(), i = list.findIndex(s => s.id === cur().id), s = cur();
+    if (e.key === 'j' && list.length) go(list[Math.min(list.length - 1, i + 1)].id);
+    if (e.key === 'k' && list.length) go(list[Math.max(0, i - 1)].id);
+    if (/^[1-9]$/.test(e.key) && s.hooks[+e.key - 1]) useHook(s.hooks[+e.key - 1].id);
+    if (e.key === 'h' && s.hooks.length > 1) { const k = s.hooks.findIndex(h => h.id === Store.hookId(s)); useHook(s.hooks[(k + 1) % s.hooks.length].id); }
+    if (e.key === 'c') { const p = readSelection(); if (p) { e.preventDefault(); openPop(p); } }
+  });
+
+  // ---------- resizable windows: drag a line, sizes remembered on this computer, double-click resets ----------
+  (function () {
+    const LAYOUT = 'rubric-scripts:layout';
+    let sizes = {}; try { sizes = JSON.parse(local.get(LAYOUT)) || {}; } catch (e) { sizes = {}; }
+    const keep = () => local.set(LAYOUT, JSON.stringify(sizes));
+    Object.entries(sizes).forEach(([k, v]) => root.style.setProperty(k, v + 'px'));
+    document.querySelectorAll('.split').forEach(sp => {
+      const name = sp.dataset.var, vert = sp.dataset.axis === 'y', target = document.querySelector(sp.dataset.target);
+      let d = null;
+      sp.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); const b = target.getBoundingClientRect(); d = { p0: vert ? e.clientY : e.clientX, v0: vert ? b.height : b.width }; sp.classList.add('drag'); sp.setPointerCapture(e.pointerId); });
+      sp.addEventListener('pointermove', e => {
+        if (!d) return; const max = (vert ? innerHeight : innerWidth) * (+sp.dataset.maxf || .6);
+        const v = Math.round(clamp(d.v0 + (vert ? e.clientY : e.clientX) - d.p0, +sp.dataset.min || 120, max)); sizes[name] = v; root.style.setProperty(name, v + 'px');
+      });
+      const end = () => { if (!d) return; d = null; sp.classList.remove('drag'); keep(); };
+      sp.addEventListener('pointerup', end); sp.addEventListener('pointercancel', end);
+      sp.addEventListener('dblclick', () => { delete sizes[name]; root.style.removeProperty(name); keep(); });
+    });
+  })();
+
+  // ---------- boot, and pick up what the agent changed while you were away ----------
+  Store.on(kind => { if (kind === 'reload' && !editing.script && !editing.caption && cpop.hidden) { if (!Store.byId(CUR) && Store.ordered()[0]) CUR = Store.ordered()[0].id; render(); } });
+  Store.load().then(() => {
+    if (!Store.scripts.length) { $('title').textContent = 'No scripts yet. Ask your agent to run /rubricscripts.'; return; }
+    if (!Store.byId(CUR)) { CUR = Store.ordered()[0].id; history.replaceState(null, '', '/s/' + encodeURIComponent(CUR)); }
+    render();
+    const on = $('list').querySelector('.item.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { renderScript(); });
+  }).catch(() => { $('title').textContent = 'Couldn\'t reach the app. Start it with: node server.mjs'; });
+  const again = () => { if (!document.hidden) Store.refresh(); };
+  document.addEventListener('visibilitychange', again); window.addEventListener('focus', again);
+})();
+</script>
+</body>
+</html>

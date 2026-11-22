@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUBRIC Scripts</title>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<style>
+  .wrap { padding: 34px clamp(16px, 3vw, 44px) 70px; max-width: 1760px; margin: 0 auto; }
+  header.home { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 26px; }
+  /* the brand block at homepage size, so it still reads as the page title */
+  .brand.hero { column-gap: 14px; }
+  .brand.hero svg { width: 56px; height: 56px; }
+  .brand.hero strong { font-size: 30px; letter-spacing: 2.5px; }
+  .brand.hero .brand-name span { font-size: 20px; margin-top: 5px; }
+  .brand.hero .brand-sub { font-size: 12px; margin-top: 7px; }
+  .stats { display: flex; gap: 20px; flex-wrap: wrap; color: var(--muted); font-size: 14px; margin-top: 14px; }
+  .stats b { font-weight: 600; letter-spacing: -.01em; color: var(--text); font-size: 19px; margin-right: 5px; }
+  .stats i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .tr { margin-left: auto; align-self: flex-start; display: flex; gap: 10px; }
+  /* Cards / List switch, same as the RUBRIC Editor homepage: the view you're on is orange. Flat at rest, lifts on hover like the buttons beside it */
+  .seg { display: flex; background: var(--card); border: 2px solid var(--frame); border-radius: 8px; overflow: hidden; transition: transform .15s ease, box-shadow .15s ease; }
+  .seg:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--shadow); }
+  .seg:active { transform: translate(1px,1px); box-shadow: none; transition-duration: .06s; }
+  .seg button { font: 500 13px/1 'Outfit', sans-serif; color: var(--muted); background: none; border: 0; padding: 0 12px; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: color .15s; }
+  .seg button:hover { color: var(--text); }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .seg button:focus-visible { outline: 2px solid var(--text); outline-offset: -5px; border-radius: 6px; }
+  .seg button svg { width: 15px; height: 15px; }
+
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 26px; }
+  .search { position: relative; flex: 0 1 340px; min-width: 220px; }
+  .search input { width: 100%; padding-left: 36px; padding-right: 34px; }
+  .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
+  .search kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+  .chip { font: 500 13px 'Outfit', sans-serif; color: var(--text); background: var(--card); border: 2px solid var(--frame); border-radius: 8px; padding: 7px 12px; cursor: pointer; transition: transform .15s, box-shadow .15s; display: inline-flex; align-items: center; gap: 6px; }
+  .chip:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--shadow); }
+  .chip:active { transform: translate(1px,1px); box-shadow: none; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip .n { opacity: .72; font-weight: 600; }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
+  .sep { flex: 1; }
+  .sort { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+  .sort button { font: 500 13px 'Outfit', sans-serif; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px 6px; }
+  .sort button:hover { color: var(--text); }
+  .sort button.on { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 30px 26px; }
+  .addcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 220px; border: 2px dashed var(--line); border-radius: 8px;
+    background: none; color: var(--muted); cursor: pointer; font: 500 15px 'Outfit', sans-serif; transition: color .15s, border-color .15s; padding: 20px; text-align: center; }
+  .addcard:hover { color: var(--text); border-color: var(--accent); }
+  .addcard svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .addcard code { font: 500 13px ui-monospace, Consolas, monospace; background: var(--card); color: var(--text); padding: 4px 8px; border-radius: 6px; }
+  .card { position: relative; display: flex; flex-direction: column; color: inherit; text-decoration: none; background: var(--card); border: 2px solid var(--frame);
+    border-radius: 8px; box-shadow: 6px 6px 0 var(--shadow); overflow: hidden; transition: transform .18s ease, box-shadow .18s ease, opacity .15s; }
+  .card:hover { transform: translate(-2px,-4px); box-shadow: 9px 9px 0 var(--shadow); }
+  .card:hover h3 { color: var(--accent); }
+  .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .card.dragging { opacity: .45; transform: scale(.98); box-shadow: none; }
+  .mine .card { cursor: grab; }
+  .cover { position: relative; aspect-ratio: 16 / 8.2; background-color: var(--well); display: grid; place-items: center; color: var(--text);
+    background-image: radial-gradient(var(--line) 1.1px, transparent 1.3px); background-size: 14px 14px; background-position: 7px 7px; }
+  .cover .art { width: 96px; height: 96px; filter: drop-shadow(3px 3px 0 var(--shadow)); transition: transform .25s ease; }
+  .card:hover .cover .art { transform: rotate(-4deg) scale(1.06); }
+  .cover .num { position: absolute; left: 12px; top: 10px; font: 600 15px/1 'Outfit', sans-serif; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cover .kw { position: absolute; right: 12px; top: 10px; background: var(--card); border-color: transparent; color: var(--text); }
+  .cover .grip { position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%); width: 26px; height: 8px; opacity: 0; transition: opacity .15s;
+    background-image: radial-gradient(var(--muted) 1.4px, transparent 1.6px); background-size: 6px 4px; }
+  .mine .card:hover .grip { opacity: 1; }
+  .bd { padding: 13px 16px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  h3 { margin: 0; font-weight: 500; font-size: 18px; letter-spacing: -.3px; line-height: 1.25; transition: color .15s;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hookq { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; border-left: 3px solid var(--accent); padding-left: 10px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hookq b { color: var(--accent); font-weight: 600; margin-right: 4px; }
+  .meta { display: flex; gap: 6px 12px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: 12.5px; }
+  .meta b { color: var(--text); font-weight: 600; }
+  .meta .cm { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+  .meta .cm i { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
+  .foot { margin-top: auto; padding-top: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .foot .dates { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
+  /* list view: one row per script in a card frame. On a narrow screen the table scrolls sideways inside the frame, never the page */
+  .tablewrap { overflow-x: auto; background: var(--card); border: 2px solid var(--frame); border-radius: 8px; box-shadow: 6px 6px 0 var(--shadow); }
+  .tablewrap table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tablewrap th { text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 12px; white-space: nowrap; }
+  .tablewrap td { padding: 10px 12px; border-top: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+  tr.row { cursor: pointer; transition: background .12s; }
+  tr.row:hover { background: var(--well); }
+  tr.row:hover .tt { color: var(--accent); }
+  td.no { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; width: 1%; }
+  td.script { white-space: normal; min-width: 300px; width: 46%; }
+  .tt { font-weight: 500; font-size: 15px; letter-spacing: -.2px; color: var(--text); text-decoration: none; transition: color .12s; }
+  .tt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+  .tk { color: var(--muted); font-size: 12.5px; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .tk b { color: var(--accent); font-weight: 600; margin-right: 4px; }
+  td .tags { display: flex; gap: 6px; }
+  td b { font-weight: 600; color: var(--text); }
+  td .cm { display: inline-flex; align-items: center; gap: 6px; }
+  td .cm i { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
+  .empty { color: var(--muted); padding: 30px 0; font-size: 15px; }
+  .problems { border: 2px solid var(--yellow); border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 13.5px; }
+  .problems b { color: var(--yellow); }
+  @media (max-width: 640px) { header.home { flex-wrap: wrap; } .tr { margin-left: 0; flex-wrap: wrap; } .search { flex-basis: 100%; } .sep { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="home">
+    <div>
+      <div class="brand hero">
+        <a class="appmark" href="/" aria-label="RUBRIC Scripts home"><svg viewBox="0 0 48 48" fill="none" stroke="#ff6b1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5h17l9 9v29H12Z"/><path d="M29 5v9h9" opacity="0.5"/><path d="M18 23h14M18 30h14M18 37h8" opacity="0.5"/></svg><h1 class="brand-name"><strong>RUBRIC</strong><span>Scripts</span></h1></a>
+        <small class="brand-sub">by Jay E | <a href="https://robonuggets.com" target="_blank" rel="noopener">RoboNuggets</a></small>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="tr">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="cards" title="View as cards"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Cards</button>
+        <button type="button" data-view="list" title="View as a list"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 3.5h9.5M5 8h9.5M5 12.5h9.5"/><path d="M1.5 3.5h.5M1.5 8h.5M1.5 12.5h.5"/></svg>List</button>
+      </div>
+      <button class="btn" id="newBtn" title="How a new script gets here"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New script</button>
+      <button class="btn icon" id="themeToggle" aria-label="Toggle dark / light mode" title="Dark / light">&#9680;</button>
+    </div>
+  </header>
+  <div class="problems" id="problems" hidden></div>
+  <div class="bar" id="bar">
+    <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+      <input type="search" id="q" placeholder="Search scripts, hooks, captions" autocomplete="off" aria-label="Search"><kbd>/</kbd></label>
+    <span id="chips" style="display:contents"></span>
+    <span class="sep"></span>
+    <span class="sort" id="sort"></span>
+  </div>
+  <div id="view"><p class="empty">Loading your scripts...</p></div>
+</div>
+
+<div class="scrim" id="newDlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="newH">
+    <h2 id="newH">New scripts come from your agent</h2>
+    <p>Ask your agent to run the /rubricscripts skill. It reads your shortlist, writes each script with your /hooks and /tone skills, and they show up here.</p>
+    <code id="newCmd">/rubricscripts from my shortlist</code>
+    <p>Or give it one idea: <b>/rubricscripts</b> followed by the idea.</p>
+    <div class="row"><button class="btn ghost" id="newClose">Close</button><button class="btn primary" id="newCopy">Copy the command</button></div>
+  </div>
+</div>
+
+<script src="/common.js"></script>
+<script>
+(function () {
+  const { esc, words, secs, day, ago, ms, art, Store, toast, copyText, local } = window.RS;
+  const $ = id => document.getElementById(id);
+  RS.wireTheme($('themeToggle'));
+
+  let Q = '', TAG = 'all', SORT = local.get('rubric-scripts:sort') || 'mine';
+  const SORTS = [['mine', 'My order'], ['edited', 'Last edited'], ['created', 'Newest'], ['length', 'Shortest'], ['az', 'A to Z']];
+  if (!SORTS.some(x => x[0] === SORT)) SORT = 'mine';
+  // Cards or List, remembered on this computer (cards unless you picked List)
+  let VIEW = local.get('rubric-scripts:view') === 'list' ? 'list' : 'cards';
+
+  const scriptWords = s => words(Store.hookText(s, Store.hookId(s))) + words(Store.body(s));
+  const hay = s => [s.title, s.keyword, s.tags.join(' '), s.hooks.map(h => Store.hookText(s, h.id)).join(' '), Store.body(s), Store.caption(s)].join(' ').toLowerCase();
+  function visible() {
+    const q = Q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let list = Store.ordered().filter(s => (TAG === 'all' || (TAG === '#comments' ? Store.openComments(s).length > 0 : s.tags.includes(TAG))) && q.every(w => hay(s).includes(w)));
+    if (SORT === 'edited') list.sort((a, b) => Store.edited(b) - Store.edited(a));
+    if (SORT === 'created') list.sort((a, b) => ms(b.created) - ms(a.created));
+    if (SORT === 'length') list.sort((a, b) => scriptWords(a) - scriptWords(b));
+    if (SORT === 'az') list.sort((a, b) => a.title.localeCompare(b.title));
+    return list;
+  }
+
+  function card(s) {
+    const n = Store.state.order.indexOf(s.id) + 1, hid = Store.hookId(s), w = scriptWords(s), cm = Store.openComments(s).length;
+    return '<a class="card" href="/s/' + encodeURIComponent(s.id) + '" data-id="' + esc(s.id) + '"' + (SORT === 'mine' ? ' draggable="true"' : '') + '>' +
+      '<div class="cover"><span class="num">' + String(n).padStart(2, '0') + '</span><span class="kw">' + esc(s.keyword) + '</span>' + art(s, 96) + '<span class="grip"></span></div>' +
+      '<div class="bd"><h3>' + esc(s.title) + '</h3>' +
+        '<p class="hookq"><b>' + esc(hid.toUpperCase()) + '</b>' + esc(Store.hookText(s, hid)) + '</p>' +
+        '<div class="meta"><span><b>' + s.hooks.length + '</b> hooks</span><span><b>' + w + '</b> words, ~' + secs(w) + ' s</span>' +
+          (cm ? '<span class="cm"><i></i>' + cm + (cm === 1 ? ' comment' : ' comments') + '</span>' : '') + '</div>' +
+        '<div class="foot">' + s.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') +
+          '<span class="dates" title="Created ' + esc(day(s.created)) + '">Edited ' + esc(ago(Store.edited(s))) + '</span></div>' +
+      '</div></a>';
+  }
+
+  // one row per script for the List view: the same facts as the card, and the whole row opens the script
+  function row(s) {
+    const n = Store.state.order.indexOf(s.id) + 1, hid = Store.hookId(s), hook = Store.hookText(s, hid), w = scriptWords(s), cm = Store.openComments(s).length;
+    return '<tr class="row" data-id="' + esc(s.id) + '">' +
+      '<td class="no">' + String(n).padStart(2, '0') + '</td>' +
+      '<td><span class="kw">' + esc(s.keyword) + '</span></td>' +
+      '<td class="script"><a class="tt" href="/s/' + encodeURIComponent(s.id) + '">' + esc(s.title) + '</a>' +
+        '<div class="tk" title="' + esc(hook) + '"><b>' + esc(hid.toUpperCase()) + '</b>' + esc(hook) + '</div></td>' +
+      '<td><span class="tags">' + s.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</span></td>' +
+      '<td><b>' + s.hooks.length + '</b></td>' +
+      '<td class="muted"><b>' + w + '</b> words, ~' + secs(w) + ' s</td>' +
+      '<td>' + (cm ? '<span class="cm"><i></i><b>' + cm + '</b></span>' : '<span class="muted">0</span>') + '</td>' +
+      '<td class="muted" title="Created ' + esc(day(s.created)) + '">' + esc(ago(Store.edited(s))) + '</td></tr>';
+  }
+  const table = list => '<div class="tablewrap"><table><thead><tr><th>#</th><th>Keyword</th><th>Script and chosen hook</th><th>Tags</th><th>Hooks</th><th>Length</th><th>Comments</th><th>Edited</th></tr></thead>' +
+    '<tbody>' + list.map(row).join('') + '</tbody></table></div>';
+
+  function render() {
+    const all = Store.scripts, list = visible(), view = $('view');
+    view.className = SORT === 'mine' && VIEW === 'cards' ? 'mine' : '';
+    view.innerHTML = !all.length ? '<p class="empty">No scripts yet. Press New script to see how your agent adds them.</p>'
+      : !list.length ? '<p class="empty">No script matches. Clear the search or pick All.</p>'
+      : VIEW === 'list' ? table(list)
+      : '<div class="grid" id="grid">' + list.map(card).join('') +
+        (TAG === 'all' && !Q.trim() ? '<button class="addcard" id="addCard" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New script<code>/rubricscripts</code></button>' : '') + '</div>';
+    document.querySelectorAll('[data-view]').forEach(b => { const on = b.dataset.view === VIEW; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    const tags = [...new Set(all.flatMap(s => s.tags))], commented = all.filter(s => Store.openComments(s).length).length;
+    const chip = (k, label, n, extra) => '<button class="chip' + (TAG === k ? ' on' : '') + '" data-tag="' + esc(k) + '">' + (extra || '') + esc(label) + '<span class="n">' + n + '</span></button>';
+    $('chips').innerHTML = chip('all', 'All', all.length) + tags.map(t => chip(t, t, all.filter(s => s.tags.includes(t)).length)).join('') +
+      chip('#comments', 'With comments', commented, '<span class="dot"></span>');
+    $('sort').innerHTML = 'Sort' + SORTS.map(([k, l]) => '<button data-sort="' + k + '" class="' + (SORT === k ? 'on' : '') + '"' + (k === 'mine' ? ' title="Drag cards to change it"' : '') + '>' + l + '</button>').join('');
+    const hooks = all.reduce((a, s) => a + s.hooks.length, 0), cms = all.reduce((a, s) => a + Store.openComments(s).length, 0);
+    $('stats').innerHTML = '<span><b>' + all.length + '</b>' + (all.length === 1 ? 'script' : 'scripts') + '</span><span><b>' + hooks + '</b>hooks</span>' +
+      '<span><i style="background:var(--yellow)"></i><b>' + cms + '</b>' + (cms === 1 ? 'open comment' : 'open comments') + '</span>';
+    const pr = $('problems'); pr.hidden = !Store.problems.length;
+    pr.innerHTML = Store.problems.length ? '<b>Check your scripts file.</b> ' + Store.problems.map(esc).join(' &middot; ') : '';
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('#addCard')) { $('newDlg').hidden = false; $('newCopy').focus(); return; }
+    const vb = e.target.closest('[data-view]'); if (vb) { VIEW = vb.dataset.view; local.set('rubric-scripts:view', VIEW); render(); return; }
+    // a click anywhere on a list row opens that script (the title is a real link too, for keys and new tabs)
+    const tr = e.target.closest('tr.row');
+    if (tr && !e.target.closest('a')) { const href = '/s/' + encodeURIComponent(tr.dataset.id); if (e.ctrlKey || e.metaKey) window.open(href, '_blank'); else location.href = href; return; }
+    const t = e.target.closest('[data-tag]'); if (t) { TAG = t.dataset.tag; render(); return; }
+    const so = e.target.closest('[data-sort]'); if (so) { SORT = so.dataset.sort; local.set('rubric-scripts:sort', SORT); render(); }
+  });
+  $('q').addEventListener('input', e => { Q = e.target.value; render(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && !e.target.matches('input, textarea')) { e.preventDefault(); $('q').focus(); $('q').select(); }
+    if (e.key === 'Escape') { if (!$('newDlg').hidden) { $('newDlg').hidden = true; return; } if (document.activeElement === $('q')) { $('q').value = ''; Q = ''; render(); $('q').blur(); } }
+  });
+
+  // drag a card to change My order; it moves under the pointer so you see where it lands, and the order saves on drop
+  let dragEl = null;
+  document.addEventListener('dragstart', e => { const c = e.target.closest('.card'); if (!c || SORT !== 'mine') return; dragEl = c; c.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.dataset.id); });
+  document.addEventListener('dragover', e => {
+    if (!dragEl) return; e.preventDefault();
+    const grid = $('grid'), cards = [...grid.querySelectorAll('.card')].filter(c => c !== dragEl); if (!cards.length) return;
+    let best = null, bd = Infinity;
+    cards.forEach(c => { const r = c.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (d < bd) { bd = d; best = c; } });
+    const r = best.getBoundingClientRect(), after = e.clientX > r.left + r.width / 2;
+    const ref = after ? best.nextSibling : best; if (ref !== dragEl && dragEl.nextSibling !== ref) grid.insertBefore(dragEl, ref);
+  });
+  document.addEventListener('drop', e => { if (dragEl) e.preventDefault(); });
+  document.addEventListener('dragend', () => {
+    if (!dragEl) return; dragEl.classList.remove('dragging'); dragEl = null;
+    const shown = [...$('grid').querySelectorAll('.card')].map(c => c.dataset.id), order = Store.state.order.slice(), slots = [];
+    order.forEach((id, i) => { if (shown.includes(id)) slots.push(i); });
+    slots.forEach((slot, k) => { order[slot] = shown[k]; });
+    if (order.join() !== Store.state.order.join()) { Store.state.order = order; Store.save(); toast('Order saved.', 1400); }
+    render();
+  });
+
+  $('newBtn').onclick = () => { $('newDlg').hidden = false; $('newCopy').focus(); };
+  $('newClose').onclick = () => { $('newDlg').hidden = true; };
+  $('newDlg').addEventListener('click', e => { if (e.target === $('newDlg')) $('newDlg').hidden = true; });
+  $('newCopy').onclick = async () => { const ok = await copyText($('newCmd').textContent); toast(ok ? 'Copied. Paste it to your agent.' : 'Copy failed. Select the line and copy it.'); $('newDlg').hidden = true; };
+
+  Store.on(render);
+  Store.load().then(render).catch(() => { $('view').innerHTML = '<p class="empty">Couldn\'t reach the app. Is the server running? Start it with: node server.mjs</p>'; });
+  const again = () => { if (!document.hidden && !dragEl) Store.refresh(); };
+  document.addEventListener('visibilitychange', again); window.addEventListener('focus', again);
+})();
+</script>
+</body>
+</html>

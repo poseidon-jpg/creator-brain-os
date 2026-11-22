@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HOROLOGE · Haute Horlogerie Since 1887</title>
+<meta name="description" content="HOROLOGE - Swiss mechanical watchmaker, Vallée de Joux, est. 1887. Manufacture Calibre HG-87, 31 jewels, 28,800 vph, 72-hour power reserve. Precision that ticks, never drifts.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%231b1b1e'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23c9a961' stroke-width='3'/%3E%3Cpath d='M32 32 L32 18 M32 32 L42 36' stroke='%23c9a961' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%236e1f2b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --charcoal:#1b1b1e; --charcoal-2:#232327; --charcoal-3:#2c2c31;
+  --brass:#c9a961; --brass-deep:#a5843c; --brass-hi:#e8d9ae;
+  --silver:#c8cbd1; --silver-dim:#8e9298;
+  --burgundy:#6e1f2b; --burgundy-hi:#9c3444;
+  --ink:#e9e7e0; --ink-dim:#a9a69c;
+  --rule:rgba(201,169,97,.35);
+  --serif:'Cinzel',serif; --sans:'Source Sans 3',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--charcoal);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;overflow-x:hidden}
+::selection{background:var(--burgundy);color:var(--brass-hi)}
+img{max-width:100%;display:block}
+a{color:var(--brass);text-decoration:none}
+
+/* ---------- engraved rules & type ---------- */
+.eyebrow{font-family:var(--serif);font-size:.72rem;letter-spacing:.42em;text-transform:uppercase;color:var(--brass);display:flex;align-items:center;gap:1.1rem;font-weight:500}
+.eyebrow::before,.eyebrow::after{content:"";height:1px;background:linear-gradient(90deg,transparent,var(--rule),transparent);flex:0 0 3.2rem}
+.eyebrow.left{justify-content:flex-start}
+.eyebrow.left::before{display:none}
+.eyebrow.center{justify-content:center}
+h1,h2,h3{font-family:var(--serif);font-weight:500;color:var(--ink)}
+.num{font-family:var(--serif);color:var(--brass-deep);font-size:.85em;letter-spacing:.15em}
+.engraved-rule{height:7px;position:relative;margin:1.6rem 0}
+.engraved-rule::before,.engraved-rule::after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--rule) 18%,var(--rule) 82%,transparent)}
+.engraved-rule::before{top:0}.engraved-rule::after{bottom:0}
+.engraved-rule i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg);width:6px;height:6px;border:1px solid var(--brass-deep);background:var(--charcoal)}
+.section{padding:clamp(5rem,10vw,9rem) clamp(1.25rem,6vw,7rem);position:relative}
+.wrap{max-width:1200px;margin:0 auto}
+p.lead{font-size:clamp(1.05rem,1.6vw,1.3rem);color:var(--ink);max-width:38rem}
+p.body{color:var(--ink-dim);max-width:36rem}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.22,.61,.36,1),transform .9s cubic-bezier(.22,.61,.36,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.12s}.rv.d2{transition-delay:.24s}.rv.d3{transition-delay:.36s}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- header ---------- */
+header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:1.1rem clamp(1.25rem,4vw,3rem);transition:background .5s,border-color .5s;border-bottom:1px solid transparent}
+header.scrolled{background:rgba(27,27,30,.88);backdrop-filter:blur(10px);border-bottom-color:rgba(201,169,97,.18)}
+.brand{font-family:var(--serif);font-size:1.05rem;letter-spacing:.5em;color:var(--ink);font-weight:600}
+.brand em{font-style:normal;color:var(--brass)}
+nav{display:flex;gap:2rem}
+nav a{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-dim);transition:color .3s}
+nav a:hover{color:var(--brass)}
+@media(max-width:820px){nav{display:none}}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:grid;place-items:center;position:relative;overflow:hidden;text-align:center;padding:6rem 1.25rem 4rem}
+.hero-bg{position:absolute;inset:0;background:url('/assets/horologe-1.jpg') center 40%/cover no-repeat;opacity:.35;filter:saturate(.85) contrast(1.05)}
+.hero-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(27,27,30,.15) 0%,rgba(27,27,30,.92) 78%),linear-gradient(180deg,rgba(27,27,30,.6),rgba(27,27,30,.25) 40%,var(--charcoal))}
+.hero-inner{position:relative;z-index:2;max-width:60rem}
+.hero h1{font-size:clamp(2.6rem,9vw,6.4rem);letter-spacing:clamp(.18em,3vw,.34em);margin:.9rem 0 .4rem;text-indent:clamp(.18em,3vw,.34em);font-weight:600;background:linear-gradient(180deg,var(--brass-hi) 0%,var(--brass) 55%,var(--brass-deep) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-family:var(--serif);font-size:clamp(.8rem,1.6vw,1rem);letter-spacing:.3em;color:var(--silver);text-transform:uppercase}
+.hero .tag{margin:1.8rem auto 0;max-width:34rem;color:var(--ink-dim);font-size:1.02rem}
+.hero-dial{margin:2.6rem auto 0;width:118px;height:118px}
+.scroll-cue{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);font-size:.62rem;letter-spacing:.4em;text-transform:uppercase;color:var(--silver-dim);z-index:2}
+.scroll-cue::after{content:"";display:block;width:1px;height:44px;margin:.7rem auto 0;background:linear-gradient(180deg,var(--brass),transparent);animation:cue 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes cue{0%,100%{transform:scaleY(.4);transform-origin:top;opacity:.4}50%{transform:scaleY(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.scroll-cue::after{animation:none}}
+
+/* ---------- gear train (pinned scrub) ---------- */
+.train-scope{height:340vh;position:relative}
+.train-pin{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.train-head{text-align:center;padding:0 1.25rem;margin-bottom:1rem}
+.train-head h2{font-size:clamp(1.5rem,3.4vw,2.6rem);letter-spacing:.16em;margin-top:.7rem}
+.train-svg-wrap{width:min(1280px,96vw);margin:0 auto;position:relative}
+@media(max-width:560px){.train-svg-wrap{width:150vw;margin-left:-25vw}}
+#trainSvg{width:100%;height:auto;display:block}
+.gear-metal{filter:drop-shadow(0 6px 14px rgba(0,0,0,.55))}
+.train-caption{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;padding:1rem 1.25rem 0;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--silver-dim)}
+.train-caption b{color:var(--brass);font-weight:600}
+.train-progress{width:min(420px,70vw);height:2px;background:var(--charcoal-3);margin:1.4rem auto 0;position:relative}
+.train-progress i{position:absolute;inset:0;background:var(--brass);transform-origin:left;transform:scaleX(0)}
+.gear-label{font-family:var(--serif);font-size:13px;letter-spacing:.18em;fill:var(--silver);text-transform:uppercase}
+.gear-sub{font-family:var(--sans);font-size:11.5px;letter-spacing:.14em;fill:var(--silver-dim)}
+.gear-line{stroke:rgba(200,203,209,.35);stroke-width:1}
+
+/* ---------- caliber / exploded ---------- */
+.caliber{background:linear-gradient(180deg,var(--charcoal) 0%,#17171a 22%,#17171a 78%,var(--charcoal) 100%)}
+.exp-scope{height:380vh;position:relative}
+.exp-pin{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:clamp(1rem,4vw,4rem);max-width:1280px;margin:0 auto;padding:5rem clamp(1.25rem,4vw,3rem) 2rem}
+#expSvg{width:100%;height:auto;max-height:82svh;display:block}
+.exp-copy h2{font-size:clamp(1.6rem,3vw,2.5rem);letter-spacing:.12em;margin:.7rem 0 1.2rem}
+.exp-copy .body{margin-bottom:1.6rem}
+.specs{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)}
+.spec{padding:.9rem .2rem;border-bottom:1px solid rgba(201,169,97,.16)}
+.spec dt{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--silver-dim)}
+.spec dd{font-family:var(--serif);color:var(--brass);font-size:1.06rem;letter-spacing:.06em;margin-top:.2rem}
+.exp-layer-name{font-family:var(--serif);font-size:12.5px;letter-spacing:.22em;fill:var(--silver);text-transform:uppercase;opacity:0;transition:opacity .4s}
+.exp-hair{stroke:rgba(200,203,209,.3);stroke-width:1;opacity:0;transition:opacity .4s}
+.exp-on .exp-layer-name,.exp-on .exp-hair{opacity:1}
+@media(max-width:900px){.exp-pin{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:.5rem;padding-top:4.5rem}.specs{grid-template-columns:1fr 1fr}.exp-copy .body{display:none}#expSvg{max-height:48svh}}
+
+/* ---------- craft ---------- */
+.craft-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(2rem,5vw,5rem);align-items:start;margin-top:3rem}
+.craft-img{position:relative}
+.craft-img img{border:1px solid rgba(201,169,97,.25);filter:saturate(.9)}
+.craft-img::after{content:"";position:absolute;inset:14px;border:1px solid rgba(201,169,97,.28);pointer-events:none}
+.craft-img figcaption{font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--silver-dim);margin-top:.9rem;text-align:right}
+.steps{counter-reset:step;display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:4.2rem 1fr;gap:1.2rem;padding:1.6rem 0;border-bottom:1px solid rgba(201,169,97,.16);position:relative}
+.step:first-child{border-top:1px solid var(--rule)}
+.step .roman{font-family:var(--serif);font-size:1.5rem;color:var(--brass-deep);letter-spacing:.1em;line-height:1.2;transition:color .4s}
+.step h3{font-size:1.02rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.35rem}
+.step p{color:var(--ink-dim);font-size:.95rem;max-width:32rem}
+.step::before{content:"";position:absolute;left:-1.2rem;top:0;bottom:0;width:2px;background:var(--burgundy);transform:scaleY(0);transform-origin:top;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+.step:hover::before{transform:scaleY(1)}
+.step:hover .roman{color:var(--brass-hi)}
+.macro-band{margin-top:clamp(3rem,7vw,6rem);position:relative;overflow:hidden;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.macro-band img{width:100%;height:clamp(260px,46vw,540px);object-fit:cover;transform:scale(1.12);will-change:transform}
+.macro-band figcaption{position:absolute;bottom:1.2rem;left:1.4rem;font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--silver);background:rgba(27,27,30,.66);padding:.5rem .9rem;backdrop-filter:blur(4px)}
+@media(max-width:900px){.craft-grid{grid-template-columns:1fr}}
+
+/* ---------- collection ---------- */
+.collection{background:#17171a}
+.coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(201,169,97,.18);border:1px solid rgba(201,169,97,.18);margin-top:3rem}
+.watch{background:#1d1d21;padding:2.2rem 1.6rem 2rem;position:relative;transition:background .5s;overflow:hidden}
+.watch:hover{background:#212126}
+.watch::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--brass-deep),var(--brass-hi),var(--brass-deep));transform:scaleX(0);transition:transform .6s cubic-bezier(.22,.61,.36,1)}
+.watch:hover::after{transform:scaleX(1)}
+.watch-dial{width:120px;height:120px;margin:0 auto 1.6rem;transition:transform .7s cubic-bezier(.22,.61,.36,1)}
+.watch:hover .watch-dial{transform:rotate(6deg) scale(1.05)}
+.watch h3{font-size:.98rem;letter-spacing:.2em;text-transform:uppercase;text-align:center}
+.watch .ref{font-size:.64rem;letter-spacing:.26em;color:var(--silver-dim);text-align:center;text-transform:uppercase;margin:.3rem 0 .9rem}
+.watch p{font-size:.88rem;color:var(--ink-dim);min-height:5.2em}
+.watch .price{font-family:var(--serif);color:var(--brass);letter-spacing:.12em;margin-top:1.1rem;text-align:center;border-top:1px solid rgba(201,169,97,.18);padding-top:1rem}
+@media(max-width:1100px){.coll-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.coll-grid{grid-template-columns:1fr}.watch p{min-height:0}}
+
+/* ---------- heritage timeline ---------- */
+.timeline{margin-top:3rem;border-left:1px solid var(--rule);padding-left:clamp(1.4rem,4vw,3rem);max-width:46rem}
+.tl{position:relative;padding:0 0 2.4rem}
+.tl::before{content:"";position:absolute;left:calc(-1 * clamp(1.4rem,4vw,3rem) - 5px);top:.5rem;width:9px;height:9px;transform:rotate(45deg);background:var(--charcoal);border:1px solid var(--brass)}
+.tl .year{font-family:var(--serif);color:var(--brass);font-size:1.25rem;letter-spacing:.14em}
+.tl p{color:var(--ink-dim);max-width:34rem;margin-top:.3rem}
+
+/* ---------- boutique ---------- */
+.boutique{background:linear-gradient(180deg,var(--charcoal),#141416)}
+.bout-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(2rem,6vw,6rem);align-items:center;margin-top:3rem}
+.clock-card{display:grid;place-items:center;padding:2rem 0}
+#liveClock{width:min(300px,72vw);height:auto;cursor:pointer;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6))}
+.clock-note{margin-top:1.4rem;font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--silver-dim);text-align:center}
+.clock-note b{color:var(--brass);font-weight:600}
+.addr{border-top:1px solid var(--rule);padding:1.3rem 0;display:grid;grid-template-columns:8rem 1fr;gap:1rem}
+.addr:last-child{border-bottom:1px solid var(--rule)}
+.addr .city{font-family:var(--serif);letter-spacing:.2em;text-transform:uppercase;color:var(--brass);font-size:.9rem}
+.addr p{color:var(--ink-dim);font-size:.92rem}
+@media(max-width:900px){.bout-grid{grid-template-columns:1fr}}
+
+/* ---------- footer ---------- */
+footer{padding:3.5rem clamp(1.25rem,6vw,7rem) 2.5rem;border-top:1px solid rgba(201,169,97,.18);text-align:center}
+footer .brand{display:block;margin-bottom:.8rem}
+footer .fine{font-size:.72rem;letter-spacing:.2em;color:var(--silver-dim);text-transform:uppercase}
+footer .credit{margin-top:2rem;font-size:.72rem;color:var(--silver-dim)}
+footer .credit a{color:var(--brass)}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="brand">HOROLO<em>G</em>E</div>
+  <nav>
+    <a href="#train">Going Train</a>
+    <a href="#caliber">Calibre HG-87</a>
+    <a href="#craft">Craft</a>
+    <a href="#collection">Collection</a>
+    <a href="#boutique">Boutique</a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="eyebrow center rv in">Manufacture d'Horlogerie · Vallée de Joux</div>
+    <h1>HOROLOGE</h1>
+    <div class="sub">Haute Horlogerie · Est. 1887</div>
+    <p class="tag rv in d1">One hundred and thirty-nine years of the same obsession: a movement that ticks, and never drifts. Every wheel cut, every jewel set, every screw blued in-house.</p>
+    <svg class="hero-dial rv in d2" id="heroDial" viewBox="0 0 120 120" aria-label="Small seconds dial ticking in real time"></svg>
+  </div>
+  <div class="scroll-cue">Wind the page</div>
+</section>
+
+<!-- ============ GOING TRAIN ============ -->
+<div class="train-scope" id="train">
+  <section class="train-pin">
+    <div class="train-head">
+      <div class="eyebrow center"><span class="num">I.</span>&nbsp;The Going Train</div>
+      <h2 class="rv">Five Wheels, One Truth</h2>
+    </div>
+    <div class="train-svg-wrap">
+      <svg id="trainSvg" viewBox="0 0 1400 640" role="img" aria-label="Animated gear train of Calibre HG-87, scrubbed by scrolling"></svg>
+    </div>
+    <div class="train-caption">
+      <span>Barrel <b>84t</b></span><span>Centre <b>30t</b></span><span>Third <b>64t</b></span><span>Fourth <b>24t</b></span><span>Escape <b>20t</b></span>
+    </div>
+    <div class="train-progress"><i id="trainBar"></i></div>
+  </section>
+</div>
+
+<!-- ============ CALIBRE / EXPLODED ============ -->
+<div class="caliber" id="caliber">
+  <div class="exp-scope">
+    <section class="exp-pin" id="expPin">
+      <svg id="expSvg" viewBox="0 0 760 760" role="img" aria-label="Exploded view of Calibre HG-87: layers separate as you scroll"></svg>
+      <div class="exp-copy">
+        <div class="eyebrow left"><span class="num">II.</span>&nbsp;Manufacture Calibre</div>
+        <h2>Calibre HG-87</h2>
+        <p class="body">Two hundred and eleven components, assembled twice: once to run, then fully disassembled, cleaned, oiled and assembled again for keeps. Keep scrolling - the movement opens layer by layer.</p>
+        <dl class="specs">
+          <div class="spec"><dt>Jewels</dt><dd>31 rubies</dd></div>
+          <div class="spec"><dt>Frequency</dt><dd>28,800 vph · 4 Hz</dd></div>
+          <div class="spec"><dt>Power reserve</dt><dd>72 hours</dd></div>
+          <div class="spec"><dt>Components</dt><dd>211</dd></div>
+          <div class="spec"><dt>Rate tolerance</dt><dd>−1 / +3 s per day</dd></div>
+          <div class="spec"><dt>Finishing</dt><dd>Côtes de Genève</dd></div>
+        </dl>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ CRAFT ============ -->
+<section class="section" id="craft">
+  <div class="wrap">
+    <div class="eyebrow left rv"><span class="num">III.</span>&nbsp;The Craft</div>
+    <h2 class="rv d1" style="font-size:clamp(1.6rem,3.4vw,2.6rem);letter-spacing:.14em;margin-top:.7rem">Eleven Months on the Bench</h2>
+    <div class="craft-grid">
+      <figure class="craft-img rv">
+        <img src="/assets/horologe-2.jpg" alt="A watchmaker's bench at HOROLOGE, tweezers holding a brass wheel" loading="lazy">
+        <figcaption>Atelier № 3 · Le Sentier</figcaption>
+      </figure>
+      <div class="steps">
+        <div class="step rv"><div class="roman">I</div><div><h3>Wheel Cutting</h3><p>Each brass wheel is hobbed, then recut by hand to a tooth-profile tolerance of two microns. A wheel that hums on the tester is rejected; a wheel must be silent.</p></div></div>
+        <div class="step rv d1"><div class="roman">II</div><div><h3>Anglage</h3><p>Every bridge edge is bevelled at 45 degrees with a boxwood peg and diamantine paste. Forty hours per movement, none of it visible to anyone but the owner and us.</p></div></div>
+        <div class="step rv d2"><div class="roman">III</div><div><h3>Jewelling</h3><p>Thirty-one synthetic rubies are pressed to a depth of five microns. The pivot must float on oil, never touch stone - that is the whole secret of a 72-hour reserve.</p></div></div>
+        <div class="step rv d3"><div class="roman">IV</div><div><h3>Réglage</h3><p>The balance is poised, sprung and adjusted in five positions over three weeks of observation. We certify −1/+3 seconds per day. Then we watch it for another month.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <figure class="macro-band rv">
+    <img id="macroImg" src="/assets/horologe-1.jpg" alt="Extreme macro photograph of the HG-87 movement: brass gears and ruby jewels" loading="lazy">
+    <figcaption>HG-87 · Third wheel and jewel, ×40</figcaption>
+  </figure>
+</section>
+
+<!-- ============ COLLECTION ============ -->
+<section class="section collection" id="collection">
+  <div class="wrap">
+    <div class="eyebrow left rv"><span class="num">IV.</span>&nbsp;The Collection</div>
+    <h2 class="rv d1" style="font-size:clamp(1.6rem,3.4vw,2.6rem);letter-spacing:.14em;margin-top:.7rem">Four References, No More</h2>
+    <p class="body rv d2" style="margin-top:1rem">Sixty movements leave Le Sentier each year. We do not take waiting lists; we take letters.</p>
+    <div class="coll-grid">
+      <article class="watch rv">
+        <svg class="watch-dial" viewBox="0 0 120 120" data-dial="silver" data-time="10:09:34"></svg>
+        <h3>Souscription</h3><div class="ref">Ref. 1887-S · 38.5 mm</div>
+        <p>The founder's layout: small seconds at six, engraved minute track, grand feu enamel dial in silver-white. Platinum case.</p>
+        <div class="price">CHF 68,000</div>
+      </article>
+      <article class="watch rv d1">
+        <svg class="watch-dial" viewBox="0 0 120 120" data-dial="burgundy" data-time="10:09:34"></svg>
+        <h3>Grand Vin</h3><div class="ref">Ref. 1921-B · 40 mm</div>
+        <p>Burgundy grand feu enamel, brass-gilt numerals fired at 820 °C. Rose gold case, HG-87 with hand-engraved barrel bridge.</p>
+        <div class="price">CHF 84,500</div>
+      </article>
+      <article class="watch rv d2">
+        <svg class="watch-dial" viewBox="0 0 120 120" data-dial="charcoal" data-time="10:09:34"></svg>
+        <h3>Observatoire</h3><div class="ref">Ref. 1954-O · 39 mm</div>
+        <p>Charcoal dial, silvered chapter ring, deadbeat seconds - the hand jumps once per second, as an observatory regulator must.</p>
+        <div class="price">CHF 121,000</div>
+      </article>
+      <article class="watch rv d3">
+        <svg class="watch-dial" viewBox="0 0 120 120" data-dial="skeleton" data-time="10:09:34"></svg>
+        <h3>Squelette 87</h3><div class="ref">Ref. 2019-Q · 40 mm</div>
+        <p>The HG-87 opened to the light: bridges reduced to hairlines, gear train visible from both sides. Eight made per year.</p>
+        <div class="price">CHF 196,000</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HERITAGE ============ -->
+<section class="section" id="heritage">
+  <div class="wrap">
+    <div class="eyebrow left rv"><span class="num">V.</span>&nbsp;The Maison</div>
+    <h2 class="rv d1" style="font-size:clamp(1.6rem,3.4vw,2.6rem);letter-spacing:.14em;margin-top:.7rem">Since 1887, One Address</h2>
+    <div class="timeline">
+      <div class="tl rv"><div class="year">1887</div><p>Elias Vaucher, a wheel-cutter dismissed for working too slowly, opens a two-bench atelier at 14 Rue de l'Orbe, Le Sentier. His ledger's first line: "Precision is not speed."</p></div>
+      <div class="tl rv"><div class="year">1904</div><p>The Observatoire de Neuchâtel awards Vaucher's calibre 11-B a first-class rating: 0.8 seconds mean daily variation. The certificate still hangs above bench three.</p></div>
+      <div class="tl rv"><div class="year">1931</div><p>HOROLOGE declines an offer to produce 10,000 movements a year for an American retailer. Annual production remains at forty-one.</p></div>
+      <div class="tl rv"><div class="year">1978</div><p>The quartz years. The maison survives by restoring marine chronometers and refuses, in writing, to fit a battery to anything.</p></div>
+      <div class="tl rv"><div class="year">2019</div><p>Calibre HG-87 is introduced after nine years of development - our first new base movement in half a century, and the reason this page exists.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOUTIQUE ============ -->
+<section class="section boutique" id="boutique">
+  <div class="wrap">
+    <div class="eyebrow left rv"><span class="num">VI.</span>&nbsp;Boutique</div>
+    <h2 class="rv d1" style="font-size:clamp(1.6rem,3.4vw,2.6rem);letter-spacing:.14em;margin-top:.7rem">Set Your Watch to Ours</h2>
+    <div class="bout-grid">
+      <div class="clock-card rv">
+        <svg id="liveClock" viewBox="0 0 300 300" role="img" aria-label="A working HOROLOGE regulator clock showing your local time with a deadbeat seconds hand. Click to hack the seconds."></svg>
+        <div class="clock-note">Your local time · deadbeat seconds<br><b id="hackNote">click the dial to hack the seconds</b></div>
+      </div>
+      <div>
+        <div class="addr rv"><div class="city">Le Sentier</div><p>14 Rue de l'Orbe, 1347 Le Sentier, Vallée de Joux<br>Manufacture visits by written request · Tue–Fri</p></div>
+        <div class="addr rv d1"><div class="city">Genève</div><p>7 Quai des Bergues, 1201 Genève<br>Mon–Sat, 10h–18h30 · +41 22 908 18 87</p></div>
+        <div class="addr rv d2"><div class="city">London</div><p>23 Burlington Arcade, Mayfair W1J 0QJ<br>Mon–Sat, 10h–18h · +44 20 7493 1887</p></div>
+        <div class="addr rv d3"><div class="city">Letters</div><p>maison@horologe.ch · Letters preferred.<br>Servicing intervals: seven years, or when the tick tells you.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="brand">HOROLO<em>G</em>E</span>
+  <div class="fine">Manufacture d'Horlogerie · Le Sentier, Suisse · Est. 1887</div>
+  <div class="engraved-rule" style="max-width:280px;margin:1.6rem auto"><i></i></div>
+  <div class="credit">Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU = Math.PI*2;
+const NS = 'http://www.w3.org/2000/svg';
+function el(name, attrs, parent){
+  const n = document.createElementNS(NS, name);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+
+/* ================= GEAR GEOMETRY =================
+   module m: pitch radius r = m*N/2. Trapezoid teeth with arc root/tip.
+*/
+function gearPath(N, m, style){
+  const r = m*N/2, tip = r + m*0.95, root = r - m*1.2;
+  const p = TAU/N;
+  let wRoot = p*0.27, wTip = p*0.13;
+  if (style==='escape'){ wRoot = p*0.20; wTip = p*0.035; }
+  const pt = (rad,a)=> (rad*Math.cos(a)).toFixed(2)+','+(rad*Math.sin(a)).toFixed(2);
+  let d = '';
+  for (let k=0;k<N;k++){
+    const A = k*p;
+    const a1=A-wRoot, a2=A-wTip, a3=A+wTip, a4=A+wRoot, a5=A+p-wRoot;
+    if (k===0) d += 'M'+pt(root,a1);
+    else d += 'A'+root.toFixed(2)+' '+root.toFixed(2)+' 0 0 1 '+pt(root,a1);
+    d += 'L'+pt(tip,a2);
+    d += 'A'+tip.toFixed(2)+' '+tip.toFixed(2)+' 0 0 1 '+pt(tip,a3);
+    d += 'L'+pt(root,a4);
+    if (k===N-1) d += 'A'+root.toFixed(2)+' '+root.toFixed(2)+' 0 0 1 '+pt(root, -wRoot)+'Z';
+    else void a5;
+  }
+  return d;
+}
+function buildGear(svg, g, defsId){
+  const grp = el('g', {class:'gear-metal'}, svg);
+  const rot = el('g', {}, grp);
+  el('path', {d: gearPath(g.N, g.m, g.style), fill:'url(#'+defsId+')', stroke:'rgba(0,0,0,.5)', 'stroke-width':'1'}, rot);
+  const r = g.m*g.N/2;
+  /* rim + hub */
+  el('circle', {r:(r-g.m*1.7).toFixed(1), fill:'none', stroke:'rgba(0,0,0,.35)','stroke-width':g.m*0.5}, rot);
+  const hubR = Math.max(g.m*2.2, r*0.16);
+  el('circle', {r:hubR.toFixed(1), fill:'url(#'+defsId+')', stroke:'rgba(0,0,0,.5)','stroke-width':'1'}, rot);
+  el('circle', {r:(hubR*0.42).toFixed(1), fill:'#141416', stroke:'rgba(232,217,174,.5)','stroke-width':'1'}, rot);
+  /* ruby jewel bearing */
+  el('circle', {r:Math.max(2.6, hubR*0.2).toFixed(1), fill:'#8d2b3a', stroke:'#3d0e16','stroke-width':'.8'}, rot);
+  el('circle', {cx:(-hubR*0.06).toFixed(1), cy:(-hubR*0.06).toFixed(1), r:Math.max(0.9, hubR*0.06).toFixed(1), fill:'rgba(255,255,255,.55)'}, rot);
+  /* spokes: cut-out look via dark wedge holes */
+  if (g.spokes){
+    const holes = g.spokes, midR = (hubR + r - g.m*2.2)/2, holeR = (r - g.m*2.2 - hubR)*0.38;
+    if (holeR > 4){
+      for (let i=0;i<holes;i++){
+        const a = i*TAU/holes;
+        el('circle', {cx:(midR*Math.cos(a)).toFixed(1), cy:(midR*Math.sin(a)).toFixed(1), r:holeR.toFixed(1), fill:'#151517', stroke:'rgba(0,0,0,.55)','stroke-width':'1'}, rot);
+      }
+    }
+  }
+  g.grp = grp; g.rot = rot;
+  grp.setAttribute('transform','translate('+g.x+' '+g.y+')');
+  return grp;
+}
+
+/* ================ GOING TRAIN ================ */
+const trainSvg = document.getElementById('trainSvg');
+if (trainSvg){
+  const defs = el('defs', {}, trainSvg);
+  function metal(id, stops){
+    const gr = el('radialGradient', {id, cx:'35%', cy:'32%', r:'80%'}, defs);
+    stops.forEach(s=> el('stop', {offset:s[0], 'stop-color':s[1]}, gr));
+  }
+  metal('brassG', [['0%','#e8d9ae'],['45%','#c9a961'],['80%','#a5843c'],['100%','#7d6128']]);
+  metal('silverG', [['0%','#eceef2'],['45%','#c8cbd1'],['80%','#8e9298'],['100%','#5d6066']]);
+  metal('deepBrassG', [['0%','#d9c07f'],['50%','#b08d3e'],['100%','#6d5320']]);
+
+  const m = 4;
+  /* chain: N teeth, angle (deg) of the line from previous gear centre */
+  const chain = [
+    {N:84, m, spokes:5, fill:'brassG',     name:'Barrel',       sub:'84 teeth · 1.00×'},
+    {N:30, m, spokes:0, fill:'silverG',    ang:-14, name:'Centre wheel', sub:'30 teeth · 2.80×'},
+    {N:64, m, spokes:5, fill:'brassG',     ang:22,  name:'Third wheel',  sub:'64 teeth · 1.31×'},
+    {N:24, m, spokes:0, fill:'silverG',    ang:-20, name:'Fourth wheel', sub:'24 teeth · 3.50×'},
+    {N:20, m, spokes:3, fill:'deepBrassG', ang:14,  name:'Escape wheel', sub:'20 teeth · 4.20×', style:'escape'}
+  ];
+  /* positions: exact centre distances so teeth mesh */
+  chain[0].x = 0; chain[0].y = 330;
+  for (let i=1;i<chain.length;i++){
+    const a = chain[i].ang*Math.PI/180;
+    const d = (chain[i-1].N + chain[i].N)*m/2;
+    chain[i].x = chain[i-1].x + d*Math.cos(a);
+    chain[i].y = chain[i-1].y + d*Math.sin(a);
+  }
+  /* centre the whole train horizontally in the 1400 viewBox */
+  const minX = Math.min(...chain.map(g=>g.x - (g.m*g.N/2 + g.m)));
+  const maxX = Math.max(...chain.map(g=>g.x + (g.m*g.N/2 + g.m)));
+  const shiftX = (1400 - (maxX - minX))/2 - minX;
+  chain.forEach(g=> g.x += shiftX);
+  const trainTop = Math.min(...chain.map(g=>g.y - (g.m*g.N/2 + g.m)));
+  const trainBot = Math.max(...chain.map(g=>g.y + (g.m*g.N/2 + g.m)));
+  /* centre-line hairline (engraved constructor's line) */
+  let cl = 'M'+chain.map(g=>g.x.toFixed(1)+' '+g.y.toFixed(1)).join('L');
+  el('path', {d:cl, stroke:'rgba(201,169,97,.18)','stroke-width':'1','stroke-dasharray':'2 6', fill:'none'}, trainSvg);
+  chain.forEach(g=> buildGear(trainSvg, g, g.fill));
+
+  /* engraved arc inscription on the barrel, rotates with it */
+  (function(){
+    const b = chain[0], rArc = b.m*b.N/2 - 34;
+    const arc = el('path', {id:'barrelArc', fill:'none',
+      d:'M '+(-rArc)+' 0 A '+rArc+' '+rArc+' 0 1 1 '+rArc+' 0 A '+rArc+' '+rArc+' 0 1 1 '+(-rArc)+' 0'}, b.rot);
+    void arc;
+    const t = el('text', {'font-family':'Cinzel,serif','font-size':'15','letter-spacing':'6','fill':'rgba(20,20,22,.85)'}, b.rot);
+    const tp = el('textPath', {href:'#barrelArc', startOffset:'2%'}, t);
+    tp.textContent = 'MANUFACTURE HOROLOGE · LE SENTIER · ANNO 1887 · CAL. HG-87 ·';
+  })();
+
+  /* labels in two clean engraving rows: above the train / below the train */
+  const rowTop = trainTop - 52, rowBot = trainBot + 48;
+  chain.forEach((g,i)=>{
+    const above = (i%2===0);
+    const r = g.m*g.N/2 + g.m;
+    const ly = above ? rowTop : rowBot;
+    el('line', {x1:g.x, y1: above? g.y - r - 6 : g.y + r + 6, x2:g.x, y2: above? ly+26 : ly-14, class:'gear-line'}, trainSvg);
+    el('circle', {cx:g.x, cy: above? g.y-r-6 : g.y+r+6, r:2, fill:'#c8cbd1'}, trainSvg);
+    const t1 = el('text', {x:g.x, y:ly, 'text-anchor':'middle', class:'gear-label'}, trainSvg);
+    t1.textContent = g.name;
+    const t2 = el('text', {x:g.x, y:ly+18, 'text-anchor':'middle', class:'gear-sub'}, trainSvg);
+    t2.textContent = g.sub;
+  });
+
+  /* mesh-correct rotation:
+     rot[i] = -(N[i-1]/N[i])·rot[i-1] + φ, φ = αBA + (NA/NB)·αAB + π/NB  */
+  function setTrain(theta0){
+    chain[0].theta = theta0;
+    for (let i=1;i<chain.length;i++){
+      const A = chain[i-1], B = chain[i];
+      const aAB = Math.atan2(B.y-A.y, B.x-A.x);
+      const aBA = aAB + Math.PI;
+      const phi = aBA + (A.N/B.N)*aAB + Math.PI/B.N;
+      B.theta = -(A.N/B.N)*A.theta + phi;
+    }
+    chain.forEach(g=>{
+      g.grp.setAttribute('transform','translate('+g.x.toFixed(1)+' '+g.y.toFixed(1)+') rotate('+(g.theta*180/Math.PI).toFixed(3)+')');
+    });
+  }
+  setTrain(0);
+
+  /* scroll scrub */
+  const scope = document.querySelector('.train-scope');
+  const bar = document.getElementById('trainBar');
+  let target = 0, current = 0, raf = null;
+  function progress(){
+    const rect = scope.getBoundingClientRect();
+    const total = scope.offsetHeight - innerHeight;
+    return clamp(-rect.top/Math.max(1,total), 0, 1);
+  }
+  /* deadbeat scrub: the whole train advances in escapement steps
+     (one escape-wheel tooth = 18°, i.e. 18/4.2 = 4.29° at the barrel)
+     so the animation ticks - it never drifts. */
+  const escStep = (TAU/chain[chain.length-1].N) / (chain[0].N/chain[chain.length-1].N);
+  function frame(){
+    raf = null;
+    current += (target-current) * (REDUCED ? 1 : 0.14);
+    if (Math.abs(target-current) > 0.0004) raf = requestAnimationFrame(frame);
+    else current = target;
+    const raw = current * TAU * 1.15;    /* barrel makes ~1.15 turns over the section */
+    setTrain(Math.round(raw/escStep)*escStep);
+    bar.style.transform = 'scaleX('+current+')';
+  }
+  function onScroll(){ target = progress(); if(!raf) raf = requestAnimationFrame(frame); }
+  addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+}
+
+/* ================ EXPLODED CALIBRE ================ */
+const expSvg = document.getElementById('expSvg');
+if (expSvg){
+  const defs = el('defs', {}, expSvg);
+  function lin(id, stops, rot){
+    const gr = el('linearGradient', {id, x1:'0%',y1:'0%',x2:'100%',y2: rot?'100%':'0%'}, defs);
+    stops.forEach(s=> el('stop',{offset:s[0],'stop-color':s[1]},gr));
+  }
+  lin('xBrass', [['0%','#e2cf96'],['50%','#b8934a'],['100%','#8a6c2c']], true);
+  lin('xSilver', [['0%','#e8eaee'],['50%','#b9bcc2'],['100%','#787c82']], true);
+  lin('xChar', [['0%','#3a3a40'],['100%','#202024']], true);
+  lin('xBurg', [['0%','#8d2b3a'],['100%','#521721']], true);
+
+  const CX = 350, RY = 0.34;
+  function disc(parent, rx, fill, stroke, extra){
+    const g = el('g', extra||{}, parent);
+    el('ellipse', {cx:0, cy:0, rx, ry:(rx*RY).toFixed(1), fill, stroke: stroke||'rgba(0,0,0,.5)', 'stroke-width':'1'}, g);
+    return g;
+  }
+  /* Layers, back (bottom of svg) to front. baseY: resting stack. openY: exploded position. */
+  const layers = [
+    {name:'Case back · sapphire', build(g){ const d=disc(g,150,'rgba(200,203,209,.10)','rgba(200,203,209,.5)'); el('ellipse',{cx:0,cy:0,rx:128,ry:(128*RY).toFixed(1),fill:'none',stroke:'rgba(200,203,209,.35)','stroke-width':'1'},d);} , side:'r'},
+    {name:'Mainplate', build(g){ const d=disc(g,140,'url(#xChar)','rgba(201,169,97,.4)'); for(let i=0;i<8;i++){const a=i*TAU/8+0.35; el('circle',{cx:(105*Math.cos(a)).toFixed(1),cy:(105*Math.sin(a)*RY).toFixed(1),r:3,fill:'#b8934a'},d);} }, side:'l'},
+    {name:'Barrel & mainspring', build(g){ const d=disc(g,72,'url(#xBrass)'); el('ellipse',{cx:0,cy:0,rx:52,ry:(52*RY).toFixed(1),fill:'none',stroke:'rgba(0,0,0,.4)','stroke-width':'6','stroke-dasharray':'3 3'},d); el('circle',{r:7,fill:'#141416',stroke:'#e8d9ae','stroke-width':'1'},d); d.setAttribute('transform','translate(-42 0)'); const w=disc(g,44,'url(#xBrass)'); w.setAttribute('transform','translate(74 6)'); el('circle',{r:5,fill:'#141416',stroke:'#e8d9ae','stroke-width':'1'},w);} , side:'r'},
+    {name:'Going train', build(g){ [[ -58,-4,34,'xBrass'],[6,10,26,'xSilver'],[58,-6,30,'xBrass'],[104,6,20,'xSilver']].forEach(w=>{ const d=disc(g,w[2],'url(#'+w[3]+')'); d.setAttribute('transform','translate('+w[0]+' '+w[1]+')'); el('circle',{r:3.4,fill:'#6e1f2b',stroke:'#e8d9ae','stroke-width':'.8'},d); }); }, side:'l'},
+    {name:'Côtes de Genève bridge', build(g){ const d=el('g',{},g); const path=el('path',{d:'M-118 6 Q-60 -34 10 -26 Q92 -18 122 14 Q70 40 -10 34 Q-84 30 -118 6 Z', fill:'url(#xBrass)', stroke:'rgba(0,0,0,.45)','stroke-width':'1'},d); void path; for(let i=-100;i<=110;i+=17){ el('line',{x1:i,y1:-30,x2:i+8,y2:38,stroke:'rgba(255,255,255,.14)','stroke-width':'5'},d);} [[ -96,4],[4,-14],[104,10]].forEach(p=> el('circle',{cx:p[0],cy:p[1],r:4.4,fill:'#6e1f2b',stroke:'#e8d9ae','stroke-width':'1'},d)); }, side:'r'},
+    {name:'Balance · 28,800 vph', build(g){ const wr=el('g',{},g); const bal=el('g',{class:'balance'},wr); el('ellipse',{cx:0,cy:0,rx:56,ry:(56*RY).toFixed(1),fill:'none',stroke:'url(#xBrass)','stroke-width':'7'},bal); el('line',{x1:-52,y1:0,x2:52,y2:0,stroke:'url(#xBrass)','stroke-width':'5'},bal); el('circle',{r:6,fill:'#6e1f2b',stroke:'#e8d9ae','stroke-width':'1'},bal); el('ellipse',{cx:0,cy:0,rx:30,ry:(30*RY).toFixed(1),fill:'none',stroke:'rgba(200,203,209,.55)','stroke-width':'1.2','stroke-dasharray':'5 3'},wr); wr.setAttribute('transform','translate(-52 2)'); const co=el('g',{},g); el('path',{d:'M20 10 L120 -8 L126 6 L26 22 Z',fill:'url(#xChar)',stroke:'rgba(201,169,97,.5)','stroke-width':'1'},co); el('circle',{cx:118,cy:0,r:4,fill:'#6e1f2b',stroke:'#e8d9ae','stroke-width':'1'},co); this.bal=bal; }, side:'l'},
+    {name:'Dial · grand feu enamel', build(g){ const d=disc(g,140,'url(#xSilver)','rgba(0,0,0,.55)'); for(let i=0;i<12;i++){ const a=i*TAU/12; el('line',{x1:(122*Math.cos(a)).toFixed(1),y1:(122*Math.sin(a)*RY).toFixed(1),x2:(134*Math.cos(a)).toFixed(1),y2:(134*Math.sin(a)*RY).toFixed(1),stroke:'#26262a','stroke-width':'3'},d);} el('ellipse',{cx:0,cy:16,rx:34,ry:(34*RY).toFixed(1),fill:'none',stroke:'#26262a','stroke-width':'1'},d);} , side:'r'},
+    {name:'Hands · blued steel', build(g){ el('path',{d:'M0 2 L-8 -2 L-66 -13 L-70 -9 Z', fill:'#2c4a72', stroke:'#5d84b8','stroke-width':'.6'},g); el('path',{d:'M0 -2 L8 2 L96 16 L100 11 Z', fill:'#2c4a72', stroke:'#5d84b8','stroke-width':'.6'},g); el('circle',{r:5,fill:'url(#xBrass)',stroke:'#141416','stroke-width':'1'},g);} , side:'l'}
+  ];
+  const N = layers.length;
+  const stackY = 560, spread = 585;
+  layers.forEach((L,i)=>{
+    L.g = el('g', {}, expSvg);
+    L.inner = el('g', {}, L.g);
+    L.build.call(L, L.inner);
+    L.baseY = stackY - i*7;
+    L.openY = 90 + (N-1-i)*(spread/(N-1));
+    L.g.setAttribute('transform','translate('+CX+' '+L.baseY+')');
+    /* label */
+    const lx = L.side==='l' ? 8 : 752;
+    L.hair = el('line', {x1:0, y1:0, x2:0, y2:0, class:'exp-hair'}, expSvg);
+    L.label = el('text', {x:lx, y:0, 'text-anchor': L.side==='l'?'start':'end', class:'exp-layer-name'}, expSvg);
+    L.label.textContent = L.name;
+  });
+  const balanceLayer = layers[5];
+
+  const expScope = document.querySelector('.exp-scope');
+  const expPin = document.getElementById('expPin');
+  let eT = 0, eC = REDUCED ? 1 : 0, eRaf = null;
+  const easeInOut = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  function setExploded(p){
+    const e = easeInOut(p);
+    layers.forEach(L=>{
+      const y = L.baseY + (L.openY - L.baseY)*e;
+      L.g.setAttribute('transform','translate('+CX+' '+y.toFixed(1)+')');
+      L.hair.setAttribute('y1', y.toFixed(1)); L.hair.setAttribute('y2', y.toFixed(1));
+      L.hair.setAttribute('x1', L.side==='l'? 168 : 508);
+      L.hair.setAttribute('x2', L.side==='l'? 192 : 560);
+      L.label.setAttribute('y', (y+4).toFixed(1));
+    });
+    expPin.classList.toggle('exp-on', p > 0.45);
+  }
+  function eFrame(){
+    eRaf = null;
+    eC += (eT-eC)*(REDUCED?1:0.12);
+    if (Math.abs(eT-eC)>0.0005) eRaf = requestAnimationFrame(eFrame); else eC = eT;
+    setExploded(eC);
+  }
+  function eScroll(){
+    const total = expScope.offsetHeight - innerHeight;
+    const rect = expScope.getBoundingClientRect();
+    eT = clamp(-rect.top/Math.max(1,total), 0, 1);
+    if (REDUCED) eT = 1;
+    if(!eRaf) eRaf = requestAnimationFrame(eFrame);
+  }
+  addEventListener('scroll', eScroll, {passive:true});
+  setExploded(REDUCED?1:0); eScroll();
+
+  /* balance oscillation - 4 Hz feel, gentle amplitude */
+  if (!REDUCED && balanceLayer.bal){
+    let t0 = performance.now();
+    (function osc(now){
+      const t = (now-t0)/1000;
+      const a = Math.sin(t*TAU*2)*24;  /* 2 Hz visible beat */
+      balanceLayer.bal.setAttribute('transform','rotate('+a.toFixed(2)+')');
+      requestAnimationFrame(osc);
+    })(t0);
+  }
+}
+
+/* ================ DIALS (hero, collection, live clock) ================ */
+function drawDial(svg, opts){
+  const o = Object.assign({r:56, cx:60, cy:60, face:'#26262a', ring:'#c9a961', marks:'#c9a961', hands:'#e9e7e0', accent:'#6e1f2b'}, opts);
+  el('circle',{cx:o.cx,cy:o.cy,r:o.r,fill:o.face,stroke:o.ring,'stroke-width':'1.5'},svg);
+  el('circle',{cx:o.cx,cy:o.cy,r:o.r-4,fill:'none',stroke:o.ring,'stroke-width':'.5',opacity:'.6'},svg);
+  for(let i=0;i<60;i++){
+    const a=i*TAU/60 - Math.PI/2, big=i%5===0;
+    const r1=o.r-(big?11:7), r2=o.r-3.5;
+    el('line',{x1:o.cx+r1*Math.cos(a),y1:o.cy+r1*Math.sin(a),x2:o.cx+r2*Math.cos(a),y2:o.cy+r2*Math.sin(a),stroke:o.marks,'stroke-width':big?1.6:0.6,opacity:big?1:.55},svg);
+  }
+  const hands = {
+    h: el('line',{x1:o.cx,y1:o.cy,x2:o.cx,y2:o.cy-o.r*0.5,stroke:o.hands,'stroke-width':'3','stroke-linecap':'round'},svg),
+    m: el('line',{x1:o.cx,y1:o.cy,x2:o.cx,y2:o.cy-o.r*0.78,stroke:o.hands,'stroke-width':'2','stroke-linecap':'round'},svg),
+    s: el('line',{x1:o.cx,y1:o.cy+o.r*0.16,x2:o.cx,y2:o.cy-o.r*0.86,stroke:o.accent,'stroke-width':'1','stroke-linecap':'round'},svg)
+  };
+  el('circle',{cx:o.cx,cy:o.cy,r:2.6,fill:o.accent,stroke:o.hands,'stroke-width':'.8'},svg);
+  return {set(h,m,s){
+    const c=o.cx, cy=o.cy;
+    hands.h.setAttribute('transform','rotate('+((h%12)*30+m*0.5)+' '+c+' '+cy+')');
+    hands.m.setAttribute('transform','rotate('+(m*6+s*0.1)+' '+c+' '+cy+')');
+    hands.s.setAttribute('transform','rotate('+(s*6)+' '+c+' '+cy+')');
+  }};
+}
+/* hero small dial - live deadbeat seconds */
+const heroDial = document.getElementById('heroDial');
+if (heroDial){
+  const d = drawDial(heroDial, {face:'rgba(27,27,30,.7)'});
+  function tick(){ const n=new Date(); d.set(n.getHours(), n.getMinutes(), n.getSeconds()); }
+  tick(); setInterval(tick, 1000);
+}
+/* collection dials - static, showing 10:09:34 */
+document.querySelectorAll('.watch-dial').forEach(svg=>{
+  const kind = svg.dataset.dial;
+  const map = {
+    silver:{face:'#c8cbd1',marks:'#26262a',hands:'#26262a',ring:'#a5843c',accent:'#6e1f2b'},
+    burgundy:{face:'#571822',marks:'#c9a961',hands:'#e8d9ae',ring:'#c9a961',accent:'#e8d9ae'},
+    charcoal:{face:'#232327',marks:'#c8cbd1',hands:'#c8cbd1',ring:'#8e9298',accent:'#9c3444'},
+    skeleton:{face:'rgba(35,35,39,.35)',marks:'#c9a961',hands:'#e8d9ae',ring:'#c9a961',accent:'#9c3444'}
+  }[kind]||{};
+  const d = drawDial(svg, map);
+  d.set(10,9,34);
+});
+/* live boutique clock with deadbeat seconds + hack easter egg */
+const lc = document.getElementById('liveClock');
+if (lc){
+  el('circle',{cx:150,cy:150,r:148,fill:'#1d1d21',stroke:'#c9a961','stroke-width':'2'},lc);
+  el('circle',{cx:150,cy:150,r:140,fill:'none',stroke:'rgba(201,169,97,.4)','stroke-width':'1'},lc);
+  const romans=['XII','I','II','III','IIII','V','VI','VII','VIII','IX','X','XI'];
+  romans.forEach((r,i)=>{
+    const a=i*TAU/12 - Math.PI/2;
+    const t=el('text',{x:150+112*Math.cos(a),y:150+112*Math.sin(a)+6,'text-anchor':'middle','font-family':'Cinzel,serif','font-size':'17','letter-spacing':'1','fill':'#c9a961'},lc);
+    t.textContent=r;
+  });
+  const d = drawDial(lc, {cx:150,cy:150,r:96,face:'#232327',accent:'#b8455a'});
+  const brandT = el('text',{x:150,y:118,'text-anchor':'middle','font-family':'Cinzel,serif','font-size':'10','letter-spacing':'4','fill':'#c8cbd1'},lc);
+  brandT.textContent='HOROLOGE';
+  let hacked=false;
+  const note=document.getElementById('hackNote');
+  function tick(){
+    const n=new Date();
+    d.set(n.getHours(), n.getMinutes(), hacked ? 0 : n.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+  lc.addEventListener('click',()=>{
+    hacked=!hacked; tick();
+    note.textContent = hacked ? 'seconds hacked at zero - as when setting to a time signal' : 'click the dial to hack the seconds';
+  });
+}
+
+/* ================ header + reveals + parallax ================ */
+const hdr=document.getElementById('hdr');
+const heroBg=document.querySelector('.hero-bg');
+addEventListener('scroll',()=>{
+  hdr.classList.toggle('scrolled', scrollY>40);
+  if (heroBg && !REDUCED && scrollY < innerHeight*1.2){
+    heroBg.style.transform='translateY('+(scrollY*0.28).toFixed(1)+'px) scale('+(1+scrollY*0.00012).toFixed(4)+')';
+  }
+},{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.18});
+document.querySelectorAll('.rv').forEach(n=>io.observe(n));
+const macro=document.getElementById('macroImg');
+if (macro && !REDUCED){
+  addEventListener('scroll',()=>{
+    const r=macro.parentElement.getBoundingClientRect();
+    if (r.bottom<0||r.top>innerHeight) return;
+    const p=(r.top+r.height/2-innerHeight/2)/innerHeight;
+    macro.style.transform='scale(1.12) translateY('+(p*-26).toFixed(1)+'px)';
+  },{passive:true});
+}
+})();
+</script>
+</body>
+</html>

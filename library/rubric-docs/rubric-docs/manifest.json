@@ -1,0 +1,8 @@
+{
+  "name": "docs",
+  "label": "Docs",
+  "port": 5055,
+  "apiPrefixes": ["/api/docs", "/api/doc-comments"],
+  "panelSelector": ".docs-container",
+  "stripSelectors": [".header"]
+}

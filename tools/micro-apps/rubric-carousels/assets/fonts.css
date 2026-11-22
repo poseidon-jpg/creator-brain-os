@@ -1,0 +1,4 @@
+/* The two fonts the app pages use, served from this folder so the app makes no outside requests.
+   Outfit and Doto are under the SIL Open Font License 1.1 (assets/fonts/OFL.txt). */
+@font-face { font-family:'Outfit'; src:url('/assets/fonts/outfit.woff2') format('woff2'); font-weight:100 900; font-style:normal; font-display:swap; }
+@font-face { font-family:'Doto'; src:url('/assets/fonts/doto.woff2') format('woff2'); font-weight:900; font-style:normal; font-display:swap; }

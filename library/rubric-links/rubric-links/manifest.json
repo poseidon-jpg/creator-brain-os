@@ -1,0 +1,8 @@
+{
+  "name": "links",
+  "label": "Links",
+  "port": 5058,
+  "apiPrefixes": ["/api/links"],
+  "panelSelector": ".placeholder-tab",
+  "stripSelectors": [".gen-rubric-brand"]
+}

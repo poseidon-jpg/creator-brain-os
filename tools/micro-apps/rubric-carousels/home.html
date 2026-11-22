@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUBRIC Carousels</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='6' y='14' width='22' height='52' rx='5' fill='%23ff6b1a' opacity='.45'/%3E%3Crect x='29' y='8' width='26' height='64' rx='6' fill='%23ff6b1a'/%3E%3Crect x='56' y='14' width='18' height='52' rx='5' fill='%23ff6b1a' opacity='.45'/%3E%3C/svg%3E">
+<link href="/assets/fonts.css" rel="stylesheet">
+<!-- RUBRIC Carousels homepage: one card per carousel (cover, status on Instagram, keyword, comments), click to review it.
+     Data: GET /api/carousels (server.mjs). Drag order: GET/PUT /api/home-order. The review rows live at /review (?c=<slug> for one). -->
+<style>
+html { color-scheme:dark; } html[data-theme="light"] { color-scheme:light; }
+:root, html[data-theme="dark"] { --bg:#131311; --card:#24221c; --text:#e8e2d2; --muted:#8d8775; --accent:#ff6b1a; --line:#3a372f; --shadow:#000; --well:#1a1915;
+  --live:#5fbf6e; --sched:#5b9be0; --draft:#f5a623; --ready:#b58cf0; }
+html[data-theme="light"] { --bg:#f2efe8; --card:#faf8f2; --text:#1c1a16; --muted:#6f6a5c; --accent:#ff6b1a; --line:#1c1a16; --shadow:rgba(28,26,22,.9); --well:#ece8de;
+  --live:#3f9a5b; --sched:#3b78c4; --draft:#d9940f; --ready:#7d55c7; }
+:root {
+  --cur-hex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z' fill='%23131311' stroke='%23e8e2d2' stroke-width='2'/%3E%3C/svg%3E") 12 12;
+  --cur-hex-fill:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z' fill='%23ff6b1a' stroke='%23ff6b1a' stroke-width='2'/%3E%3C/svg%3E") 12 12;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.5 'Outfit',system-ui,sans-serif; cursor:var(--cur-hex),auto; }
+a, button, .ccard { cursor:var(--cur-hex-fill),pointer; }
+::selection { background:#ff6b1a; color:#fff; }
+.wrap { max-width:1500px; margin:0 auto; padding:0 28px 80px; }
+header { display:flex; align-items:center; gap:12px 14px; flex-wrap:wrap; padding:40px 0 10px; }
+h1 { margin:0; font-weight:500; font-size:clamp(34px,5vw,56px); letter-spacing:-1.5px; line-height:1; }
+h1 .doto { font-family:'Doto',monospace; font-weight:900; color:var(--accent); margin-left:.22em; }
+.sp { flex:1; }
+.chip { font:500 13px 'Outfit'; padding:8px 13px; border-radius:8px; border:2px solid var(--card); background:var(--card); color:var(--text); text-decoration:none; transition:transform .15s, box-shadow .15s; display:inline-flex; align-items:center; gap:6px; }
+.chip:hover { transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--shadow); }
+.chip:active { transform:translate(1px,1px); box-shadow:none; transition-duration:.06s; }
+.chip.go { background:var(--accent); border-color:var(--accent); color:#fff; }
+html[data-theme="light"] .chip { border-color:var(--line); }
+html[data-theme="light"] .chip.go { border-color:var(--accent); }
+input[type=search] { font:400 15px 'Outfit'; padding:8px 12px; border-radius:8px; border:2px solid var(--line); background:var(--well); color:var(--text); width:260px; outline:none;
+  box-shadow:4px 4px 0 rgba(255,107,26,0); transition:box-shadow .3s; }
+input[type=search]:focus { border-color:var(--accent); box-shadow:4px 4px 0 rgba(255,107,26,1); }
+
+/* the one-line count under the name, like RUBRIC Scripts */
+.stats { display:flex; gap:6px 18px; flex-wrap:wrap; align-items:baseline; color:var(--muted); font-size:16px; margin:2px 0 22px; }
+.stats b { font-weight:600; font-size:20px; letter-spacing:-.01em; color:var(--text); margin-right:3px; }
+.stats .d { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; transform:translateY(-2px); }
+.stats .cm b { color:var(--accent); }
+.bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 22px; }
+.filters { display:flex; gap:8px; flex-wrap:wrap; }
+.filters .chip b { font-weight:600; opacity:.75; }
+.filters .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+.sort { display:flex; gap:14px; align-items:center; color:var(--muted); font-size:14px; }
+.sort button { border:0; background:none; padding:0; font:500 14px 'Outfit'; color:var(--muted); }
+.sort button.on { color:var(--text); text-decoration:underline; text-underline-offset:4px; }
+.sort button:hover { color:var(--text); }
+
+/* one card per carousel: Ink Well Soft surface, the chosen cover on top */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:26px 24px; }
+.ccard { position:relative; display:flex; flex-direction:column; background:var(--card); border-radius:8px; box-shadow:6px 6px 0 var(--shadow); overflow:hidden; outline:none;
+  transition:transform .18s ease, box-shadow .18s ease; animation:up .35s ease both; }
+html[data-theme="light"] .ccard { border:2px solid var(--line); }
+.ccard:hover, .ccard:focus-visible { transform:translate(-2px,-4px); box-shadow:9px 9px 0 var(--shadow); }
+.ccard:focus-visible { box-shadow:9px 9px 0 var(--accent); }
+.ccard.drag { opacity:.35; }
+@keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+.cv { position:relative; aspect-ratio:4/5; background:var(--well); overflow:hidden; }
+.cv img { width:100%; height:100%; display:block; object-fit:cover; pointer-events:none; }
+/* hover the cover to flick through the cards; the strip shows where you are */
+.seg { position:absolute; left:10px; right:10px; bottom:10px; display:flex; gap:4px; opacity:0; transition:opacity .15s; pointer-events:none; }
+.ccard:hover .seg { opacity:1; }
+.seg i { flex:1; height:4px; border-radius:2px; background:rgba(232,226,210,.45); box-shadow:0 0 0 1px rgba(19,19,17,.35); }
+.seg i.on { background:#fff; }
+.cardno { position:absolute; right:10px; top:10px; font:600 12px 'Outfit'; padding:2px 8px; border-radius:6px; background:rgba(19,19,17,.85); color:#e8e2d2; opacity:0; transition:opacity .15s; pointer-events:none; }
+.ccard:hover .cardno { opacity:1; }
+.cb { padding:14px 16px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.kick { font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+.cb h2 { margin:0; font-weight:500; font-size:21px; letter-spacing:-.4px; line-height:1.2; transition:color .18s; }
+.ccard:hover h2 { color:var(--accent); }
+.meta { color:var(--muted); font-size:14px; display:flex; gap:4px 12px; flex-wrap:wrap; }
+.meta b { color:var(--text); font-weight:600; }
+.state { display:flex; align-items:center; gap:7px; font-size:14px; font-weight:500; }
+.state .d { width:8px; height:8px; border-radius:50%; flex:none; }
+.d.live { background:var(--live); } .d.scheduled { background:var(--sched); } .d.draft { background:var(--draft); } .d.ready { background:var(--ready); }
+.foot { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:8px; color:var(--muted); font-size:13px; }
+.foot .cm { color:var(--accent); font-weight:600; }
+.foot .links { margin-left:auto; display:flex; gap:6px; }
+.lk { font:600 12px 'Outfit'; padding:5px 9px; border-radius:6px; border:1.5px solid var(--line); color:var(--text); text-decoration:none; background:transparent; transition:border-color .15s, color .15s; }
+.lk:hover { border-color:var(--accent); color:var(--accent); }
+.nosnap { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; height:100%; color:var(--muted); font-size:14px; padding:20px; text-align:center; }
+.empty { color:var(--muted); background:var(--well); border-radius:10px; padding:18px 20px; max-width:640px; }
+.keys { color:var(--muted); font-size:13px; margin-top:34px; }
+.keys kbd { font:600 12px 'Outfit'; padding:1px 6px; border-radius:5px; background:var(--card); color:var(--text); }
+.toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:9800; background:var(--accent); color:#fff; font:600 14px 'Outfit'; padding:9px 16px; border-radius:8px; opacity:0; transition:opacity .2s; pointer-events:none; }
+.toast.show { opacity:1; }
+@media (max-width:700px) { .wrap { padding:0 16px 60px; } input[type=search] { width:100%; order:5; } header { padding-top:24px; } .grid { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; } }
+@media (prefers-reduced-motion:reduce) { .ccard { animation:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>RUBRIC<span class="doto">carousels</span></h1>
+  <div class="sp"></div>
+  <input type="search" id="q" placeholder="Search carousels  ( / )" aria-label="Search carousels">
+  <a class="chip go" href="/review" title="Every carousel in rows, to review several at once">Review all</a>
+  <button class="chip" id="theme" aria-label="Dark or light">◐</button>
+</header>
+<div class="stats" id="stats"></div>
+<div class="bar">
+  <div class="filters" id="filters"></div>
+  <div class="sp"></div>
+  <div class="sort" id="sort">Sort <button data-sort="mine">My order</button><button data-sort="edited">Last edited</button><button data-sort="created">Created</button></div>
+</div>
+<div class="grid" id="grid"></div>
+<div class="keys">Hover a cover to flick through its cards · click to review it · drag cards to reorder · <kbd>/</kbd> search · <kbd>Esc</kbd> clear</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// optional RUBRIC_TOKEN: the server hands it to this page, and every /api call carries it
+(() => { const f = window.fetch.bind(window); window.fetch = (u, o = {}) => { if (window.RUBRIC_TOKEN && String(u).startsWith('/api/')) o = Object.assign({}, o, { headers:Object.assign({}, o.headers, { 'x-rubric-token':window.RUBRIC_TOKEN }) }); return f(u, o); }; })();
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const store = { get(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+let DATA = [], ORDER = [], FILTER = store.get('rubric-carousels-filter', 'all'), SORT = store.get('rubric-carousels-sort', 'edited'), toastT;
+function toast(m) { $('toast').textContent = m; $('toast').classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 1600); }
+
+// where each carousel stands on Instagram, from status.json in its folder (no file = Draft)
+const STATE = { draft:'Draft', ready:'Ready to post', scheduled:'Scheduled', live:'Live' };
+const group = d => STATE[d.post.state] ? d.post.state : 'draft';   // filters: Draft / Ready / Scheduled / Live
+const when = iso => { const t = new Date(iso); return isNaN(t) ? '' : t.toLocaleString('en-AU', { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }).replace(/\s?([ap])\.?m\.?$/i, (m, a) => a.toLowerCase() + 'm'); };
+const ago = ms => { const s = (Date.now() - ms) / 1000; if (s < 90) return 'just now'; const m = s / 60; if (m < 60) return Math.round(m) + ' min ago'; const h = m / 60; if (h < 36) return Math.round(h) + ' h ago'; return Math.round(h / 24) + ' d ago'; };
+const title = d => d.manifest ? d.manifest.title.replace(/\s+carousel$/i, '') : d.slug;
+const openComments = d => (d.review.comments || []).filter(c => c.status !== 'applied').length;
+const approved = d => Object.values(d.review.approved || {}).filter(Boolean).length;
+const bust = d => '?v=' + Date.parse(d.exportedAt || 0);
+const src = (d, f) => '/c/' + encodeURIComponent(d.slug) + '/' + f + bust(d);
+const coverThumb = d => { const m = d.manifest, k = (m.covers || []).find(x => x.key === (d.review.cover || m.coverKey)); return k ? k.thumb : m.cards[0].thumb; };
+const thumbs = d => d.manifest.cards.map((c, i) => i === 0 ? coverThumb(d) : c.thumb);   // the order the review file saved is ignored here: this is the deck as built
+const reviewUrl = d => '/review?c=' + encodeURIComponent(d.slug);
+
+function stateLine(d) {
+  const p = d.post;
+  if (p.state === 'live') return `<div class="state"><span class="d live"></span>Live${p.at ? ' · ' + esc(when(p.at)) : ''}</div>`;
+  if (p.state === 'scheduled') return `<div class="state"><span class="d scheduled"></span>Scheduled${p.at ? ' · ' + esc(when(p.at)) : ''}</div>`;
+  const g = group(d);
+  return `<div class="state"><span class="d ${g}"></span>${STATE[g]}</div>`;
+}
+function card(d, k) {
+  if (!d.manifest) return `<article class="ccard" tabindex="0" draggable="true" data-slug="${esc(d.slug)}" data-href="${esc(reviewUrl(d))}" style="animation-delay:${k * 40}ms">
+    <div class="cv"><div class="nosnap">No snapshots yet<br>Open it to make them</div></div>
+    <div class="cb"><h2>${esc(d.slug)}</h2>${stateLine(d)}</div></article>`;
+  const m = d.manifest, n = m.cards.length, vids = m.cards.filter(c => c.kind === 'video').length, oc = openComments(d), ok = approved(d);
+  return `<article class="ccard" tabindex="0" draggable="true" data-slug="${esc(d.slug)}" data-href="${esc(reviewUrl(d))}" style="animation-delay:${k * 40}ms" aria-label="${esc(title(d))}">
+    <div class="cv"><img src="${esc(src(d, coverThumb(d)))}" alt="" loading="lazy"><span class="cardno">Cover</span><div class="seg">${m.cards.map((c, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div></div>
+    <div class="cb">
+      <h2>${esc(title(d))}</h2>
+      <div class="meta"><span><b>${n}</b> cards</span>${vids ? `<span><b>${vids}</b> videos</span>` : ''}${d.keyword ? `<span>comment <b>${esc(d.keyword)}</b></span>` : ''}</div>
+      ${stateLine(d)}
+      <div class="foot">
+        <span>${oc ? `<span class="cm">${oc} open comment${oc > 1 ? 's' : ''}</span> · ` : ''}${ok}/${n} approved · edited ${esc(ago(d.updated))}</span>
+        <span class="links">${d.post.url ? `<a class="lk" href="${esc(d.post.url)}" target="_blank" rel="noopener" title="Open the live post">Instagram ↗</a>` : ''}<a class="lk" href="/c/${encodeURIComponent(d.slug)}/index.html" target="_blank" rel="noopener" title="The storyboard page with the phone mock">Storyboard ↗</a></span>
+      </div>
+    </div></article>`;
+}
+
+function sorted(list) {
+  if (SORT === 'created') return list.slice().sort((a, b) => b.created - a.created);
+  if (SORT === 'mine') { const pos = s => { const i = ORDER.indexOf(s); return i < 0 ? -1 : i; };   // carousels not in the saved order yet go first, newest first
+    return list.slice().sort((a, b) => (pos(a.slug) - pos(b.slug)) || (b.updated - a.updated)); }
+  return list.slice().sort((a, b) => b.updated - a.updated);
+}
+function render() {
+  const q = $('q').value.trim().toLowerCase();
+  const count = g => DATA.filter(d => g === 'all' || group(d) === g).length;
+  const live = count('live'), sch = count('scheduled'), rd = count('ready'), dr = count('draft'), oc = DATA.reduce((s, d) => s + openComments(d), 0);
+  $('stats').innerHTML = `<span><b>${DATA.length}</b> carousel${DATA.length === 1 ? '' : 's'}</span>
+    <span><i class="d" style="background:var(--live)"></i><b>${live}</b> live</span>
+    <span><i class="d" style="background:var(--sched)"></i><b>${sch}</b> scheduled</span>
+    <span><i class="d" style="background:var(--ready)"></i><b>${rd}</b> ready</span>
+    <span><i class="d" style="background:var(--draft)"></i><b>${dr}</b> draft</span>
+    ${oc ? `<span class="cm"><b>${oc}</b> open comment${oc > 1 ? 's' : ''}</span>` : ''}`;
+  $('filters').innerHTML = [['all', 'All'], ['draft', 'Draft'], ['ready', 'Ready'], ['scheduled', 'Scheduled'], ['live', 'Live']]
+    .map(([k, l]) => `<button class="chip${FILTER === k ? ' on' : ''}" data-filter="${k}">${l} <b>${count(k)}</b></button>`).join('');
+  document.querySelectorAll('#sort button').forEach(b => b.classList.toggle('on', b.dataset.sort === SORT));
+  const list = sorted(DATA.filter(d => (FILTER === 'all' || group(d) === FILTER) &&
+    (!q || [title(d), d.slug, d.keyword].join(' ').toLowerCase().includes(q))));
+  $('grid').innerHTML = list.length ? list.map(card).join('')
+    : `<div class="empty">${DATA.length ? 'Nothing matches. Clear the search or pick All.' : 'No carousels yet. Ask your agent to make one in the carousels folder (the README shows the folder format), then refresh.'}</div>`;
+}
+
+// hover a cover to flick through the deck: the pointer's x picks the card
+const preloaded = new Set();
+document.addEventListener('mousemove', e => {
+  const cv = e.target.closest && e.target.closest('.cv'); if (!cv) return;
+  const d = DATA.find(x => x.slug === cv.closest('.ccard').dataset.slug); if (!d || !d.manifest) return;
+  const t = thumbs(d), r = cv.getBoundingClientRect(), i = Math.max(0, Math.min(t.length - 1, Math.floor((e.clientX - r.left) / r.width * t.length)));
+  if (!preloaded.has(d.slug)) { preloaded.add(d.slug); t.forEach(f => { new Image().src = src(d, f); }); }
+  if (cv.dataset.i == i) return;
+  cv.dataset.i = i;
+  cv.querySelector('img').src = src(d, t[i]);
+  cv.querySelectorAll('.seg i').forEach((s, k) => s.classList.toggle('on', k === i));
+  const c = d.manifest.cards[i]; cv.querySelector('.cardno').textContent = i === 0 ? 'Cover' : (c.num || i + 1) + ' · ' + c.name;
+});
+document.addEventListener('mouseout', e => {
+  const cv = e.target.closest && e.target.closest('.cv'); if (!cv || cv.contains(e.relatedTarget)) return;
+  const d = DATA.find(x => x.slug === cv.closest('.ccard').dataset.slug); if (!d || !d.manifest || cv.dataset.i == null || cv.dataset.i == 0) return;
+  cv.dataset.i = 0; cv.querySelector('img').src = src(d, coverThumb(d));
+  cv.querySelectorAll('.seg i').forEach((s, k) => s.classList.toggle('on', k === 0)); cv.querySelector('.cardno').textContent = 'Cover';
+});
+
+// clicks and keys
+document.addEventListener('click', e => {
+  const f = e.target.closest('[data-filter]'); if (f) { FILTER = f.dataset.filter; store.set('rubric-carousels-filter', FILTER); render(); return; }
+  const s = e.target.closest('[data-sort]'); if (s) { SORT = s.dataset.sort; store.set('rubric-carousels-sort', SORT); render(); return; }
+  if (e.target.closest('a')) return;   // Instagram and Storyboard open in their own tab
+  const c = e.target.closest('.ccard'); if (c) location.href = c.dataset.href;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); return; }
+  if (e.key === 'Escape' && document.activeElement === $('q')) { $('q').value = ''; $('q').blur(); render(); return; }
+  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('ccard')) location.href = e.target.dataset.href;
+});
+$('q').oninput = render;
+
+// drag to reorder: the card moves live under the pointer, drops where it sits, and the order saves (sort switches to My order)
+let drag = null;
+document.addEventListener('dragstart', e => {
+  const c = e.target.closest && e.target.closest('.ccard'); if (!c) return;
+  if (SORT !== 'mine') { ORDER = [...document.querySelectorAll('.ccard')].map(n => n.dataset.slug); SORT = 'mine'; store.set('rubric-carousels-sort', SORT);
+    document.querySelectorAll('#sort button').forEach(b => b.classList.toggle('on', b.dataset.sort === SORT)); }
+  drag = c; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.dataset.slug);
+  requestAnimationFrame(() => c.classList.add('drag'));
+});
+document.addEventListener('dragover', e => {
+  if (!drag) return; e.preventDefault();
+  const cards = [...document.querySelectorAll('.ccard')].filter(n => n !== drag);
+  let best = null, bd = Infinity;   // the nearest card to the pointer, then before or after it by which half the pointer is in
+  for (const n of cards) { const r = n.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = { n, after: dx > 0 }; } }
+  if (!best) return;
+  const ref = best.after ? best.n.nextSibling : best.n;
+  if (ref !== drag && drag.nextSibling !== ref) $('grid').insertBefore(drag, ref);
+});
+document.addEventListener('drop', e => { if (drag) e.preventDefault(); });
+document.addEventListener('dragend', async () => {
+  if (!drag) return; drag.classList.remove('drag'); drag = null;
+  const shownOrder = [...document.querySelectorAll('.ccard')].map(n => n.dataset.slug);
+  ORDER = shownOrder.concat(ORDER.filter(s => !shownOrder.includes(s)));   // hidden carousels (filtered out) keep their place after
+  const r = await fetch('/api/home-order', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ order:ORDER }) });
+  toast(r.ok ? 'Order saved' : 'Could not save the order');
+});
+
+async function load() {
+  const [list, ord] = await Promise.all([fetch('/api/carousels').then(r => r.json()), fetch('/api/home-order').then(r => r.json()).catch(() => ({ order:[] }))]);
+  DATA = list; ORDER = ord.order || [];
+  render();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !drag) load(); });   // back from a review tab, or a post went live: fresh numbers
+(function () {
+  const root = document.documentElement, apply = t => { root.setAttribute('data-theme', t); root.style.colorScheme = t; };
+  apply(store.get('robo-theme', 'dark'));
+  $('theme').onclick = () => { const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; store.set('robo-theme', n); apply(n); };
+})();
+load();
+</script>
+</body>
+</html>

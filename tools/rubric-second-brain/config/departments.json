@@ -1,0 +1,135 @@
+{
+  "_note": "Departments for a TikTok Shop affiliate creator hub. Add your own: a key, a label, a color, an icon, then a pathRule.",
+  "departments": [
+    {
+      "key": "shop",
+      "label": "Shop & Products",
+      "color": "#00e676",
+      "icon": "coin"
+    },
+    {
+      "key": "studio",
+      "label": "Video Studio",
+      "color": "#ff1744",
+      "icon": "visual"
+    },
+    {
+      "key": "creative",
+      "label": "Creative Lab",
+      "color": "#ffd600",
+      "icon": "build"
+    },
+    {
+      "key": "analytics",
+      "label": "Analytics",
+      "color": "#00e5ff",
+      "icon": "data"
+    },
+    {
+      "key": "hq",
+      "label": "HQ",
+      "color": "#eceff1",
+      "icon": "book"
+    }
+  ],
+  "layers": [
+    {
+      "key": "A",
+      "label": "Applications",
+      "color": "#3f8fd4",
+      "shape": "hex",
+      "blurb": "MCP servers, CLIs and APIs the agents can reach"
+    },
+    {
+      "key": "R",
+      "label": "Routines",
+      "color": "#d99a1f",
+      "shape": "ringdot",
+      "blurb": "Scheduled automations that run without being asked"
+    },
+    {
+      "key": "M",
+      "label": "Memory",
+      "color": "#9a66e0",
+      "shape": "chip",
+      "blurb": "Every file of context, clustered by department"
+    },
+    {
+      "key": "S",
+      "label": "Skills",
+      "color": "#ff6b1a",
+      "shape": "diamond",
+      "blurb": "Capabilities the agents can run on demand"
+    }
+  ],
+  "projectPrefixes": {},
+  "pathRules": [
+    {
+      "prefix": "shop/",
+      "dept": "shop"
+    },
+    {
+      "prefix": "studio/",
+      "dept": "studio"
+    },
+    {
+      "prefix": "creative/",
+      "dept": "creative"
+    },
+    {
+      "prefix": "analytics/",
+      "dept": "analytics"
+    }
+  ],
+  "memoryKeywords": [
+    {
+      "match": [
+        "product",
+        "sample",
+        "commission",
+        "gmv",
+        "shop",
+        "basket",
+        "seller"
+      ],
+      "dept": "shop"
+    },
+    {
+      "match": [
+        "clip",
+        "edit",
+        "render",
+        "caption",
+        "b-roll",
+        "broll",
+        "shoot",
+        "footage",
+        "hyperframes"
+      ],
+      "dept": "studio"
+    },
+    {
+      "match": [
+        "hook",
+        "angle",
+        "script",
+        "swipe",
+        "idea",
+        "creative"
+      ],
+      "dept": "creative"
+    },
+    {
+      "match": [
+        "views",
+        "ctr",
+        "retention",
+        "analytics",
+        "performance",
+        "winner"
+      ],
+      "dept": "analytics"
+    }
+  ],
+  "default": "hq"
+}

@@ -1,0 +1,1189 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sonnet - Liquid Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@144,900,100,0&family=Outfit:wght@300;400;500&display=block" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #14041c; }
+  #c { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(() => {
+'use strict';
+const W = 1920, H = 1080;
+const CAPTURE = location.search.includes('capture');
+window.DURATION = 5;
+
+// ============================================================== helpers
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const sat = x => clamp(x, 0, 1);
+const smooth = (a, b, x) => { const t = sat((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const mix3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const eOutCubic = t => 1 - Math.pow(1 - sat(t), 3);
+const eInCubic = t => { t = sat(t); return t * t * t; };
+const eInOutCubic = t => { t = sat(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const lin = hex => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => Math.pow(v / 255, 2.2)); };
+// damped spring that goes 0 -> 1 with overshoot (zero start velocity)
+const spring = (u, w = 8, z = 6) => u <= 0 ? 0 : 1 - Math.exp(-z * u) * (Math.cos(w * u) + (z / w) * Math.sin(w * u));
+
+// ============================================================== palette
+const COL = { drop: lin('#ff5326') };
+const LCOL = [lin('#ff6a10'), lin('#ff4a1c'), lin('#ff2c46'), lin('#ff2a80'), lin('#c42cee'), lin('#7a30ff'), lin('#ffb41e')];
+const NL = 7;
+
+// ============================================================== text SDF (the word "Sonnet" + the "5.5" tag)
+const WORD_W = 3.55;       // world width of the ink of "Sonnet"
+const BASE_Y = 0.30;       // world height of the baseline
+const MARG = 70;           // crop margin in texels
+const FAR = 1.0;
+let TW = 0, TH = 0;
+let TEX = null;
+let SDFA = null, SDFB = null;
+let YH = 0.55;
+const LET = [];
+
+function dt1d(f, n, d, v, z) {
+  let k = 0; v[0] = 0; z[0] = -1e20; z[1] = 1e20;
+  for (let q = 1; q < n; q++) {
+    let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+    k++; v[k] = q; z[k] = s; z[k + 1] = 1e20;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) { while (z[k + 1] < q) k++; const dq = q - v[k]; d[q] = dq * dq + f[v[k]]; }
+}
+function edt(feature, w, h) {
+  const grid = new Float64Array(w * h);
+  for (let i = 0; i < w * h; i++) grid[i] = feature[i] ? 0 : 1e20;
+  const n = Math.max(w, h);
+  const f = new Float64Array(n), d = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n + 1);
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) f[y] = grid[y * w + x];
+    dt1d(f, h, d, v, z);
+    for (let y = 0; y < h; y++) grid[y * w + x] = d[y];
+  }
+  for (let y = 0; y < h; y++) {
+    const o = y * w;
+    for (let x = 0; x < w; x++) f[x] = grid[o + x];
+    dt1d(f, w, d, v, z);
+    for (let x = 0; x < w; x++) grid[o + x] = d[x];
+  }
+  const out = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) out[i] = Math.sqrt(grid[i]);
+  return out;
+}
+function boxBlur(src, w, h, r) {
+  const tmp = new Float32Array(w * h), out = new Float32Array(w * h);
+  const inv = 1 / (2 * r + 1);
+  for (let y = 0; y < h; y++) {
+    const o = y * w; let acc = 0;
+    for (let x = -r; x <= r; x++) acc += src[o + clamp(x, 0, w - 1)];
+    for (let x = 0; x < w; x++) { tmp[o + x] = acc * inv; acc += src[o + Math.min(x + r + 1, w - 1)] - src[o + Math.max(x - r, 0)]; }
+  }
+  for (let x = 0; x < w; x++) {
+    let acc = 0;
+    for (let y = -r; y <= r; y++) acc += tmp[clamp(y, 0, h - 1) * w + x];
+    for (let y = 0; y < h; y++) { out[y * w + x] = acc * inv; acc += tmp[Math.min(y + r + 1, h - 1) * w + x] - tmp[Math.max(y - r, 0) * w + x]; }
+  }
+  return out;
+}
+function sdfOf(mask, w, h) {
+  const inv = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) inv[i] = mask[i] ? 0 : 1;
+  const dOut = edt(mask, w, h), dIn = edt(inv, w, h);
+  const s = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) s[i] = mask[i] ? -(dIn[i] - 0.5) : (dOut[i] - 0.5);
+  return s;
+}
+
+async function buildWord() {
+  await document.fonts.load('900 200px "Fraunces"');
+  const FS = 470, FS2 = 270;
+  const items = ['S', 'o', 'n', 'n', 'e', 't', '5.5'].map((t, i) => ({ t, fs: i < 6 ? FS : FS2 }));
+  const c0 = document.createElement('canvas').getContext('2d');
+  items.forEach(it => {
+    c0.font = `900 ${it.fs}px "Fraunces"`;
+    const m = c0.measureText(it.t);
+    it.adv = m.width; it.L = m.actualBoundingBoxLeft; it.R = m.actualBoundingBoxRight;
+    it.A = m.actualBoundingBoxAscent; it.D = m.actualBoundingBoxDescent;
+  });
+  const track = FS * 0.034;
+  const xs = []; let x = MARG + items[0].L + 6;
+  items.forEach((it, i) => { xs.push(x); x += it.adv + track + (i === 5 ? FS * 0.085 : 0); });
+  const inkL = xs[0] - items[0].L, inkR5 = xs[5] + items[5].R, inkR = xs[6] + items[6].R;
+  const upp = WORD_W / (inkR5 - inkL);
+  const inkC = (inkL + inkR) / 2;
+  const maxA = Math.ceil(Math.max(...items.map(i => i.A))), maxD = Math.ceil(Math.max(...items.map(i => i.D)));
+  const basePx = maxA + MARG;
+  TH = basePx + maxD + MARG + 4;
+  TW = Math.ceil(inkR + MARG + 8);
+  const wx = cx => (cx + 0.5 - inkC) * upp;
+  const wy = cy => BASE_Y + (basePx - (cy + 0.5)) * upp;
+  TEX = { x0: (0 - inkC) * upp, y0: BASE_Y + (basePx - TH) * upp, sx: TW * upp, sy: TH * upp, upp };
+  SDFA = new Float32Array(TW * TH * 4).fill(FAR);
+  SDFB = new Float32Array(TW * TH * 4).fill(FAR);
+  const rng = mulberry32(99);
+  const anchors = [[.5, .46], [.10, .5], [.27, .5], [.73, .5], [.28, .5], [.5, .44], [.12, .56]];
+  const dripWin = [[.3, .7], [.4, .6], [.68, .92], [.08, .32], [.3, .7], [.25, .65], [.3, .7]];
+  const cv = document.createElement('canvas');
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  for (let i = 0; i < NL; i++) {
+    const it = items[i];
+    const R = Math.max(5, Math.round(15 * it.fs / FS)), Rc = Math.max(4, Math.round(11 * it.fs / FS));
+    const cw = Math.ceil(it.L + it.R) + 2 * MARG + 2, ch = Math.ceil(it.A) + Math.ceil(it.D) + 2 * MARG + 2;
+    const gx0 = Math.floor(xs[i] - it.L) - MARG, gy0 = basePx - Math.ceil(it.A) - MARG;
+    cv.width = cw; cv.height = ch;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.font = `900 ${it.fs}px "Fraunces"`; ctx.fillStyle = '#fff'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(it.t, xs[i] - gx0, basePx - gy0);
+    const px = ctx.getImageData(0, 0, cw, ch).data;
+    const m0 = new Uint8Array(cw * ch);
+    for (let k = 0; k < cw * ch; k++) m0[k] = px[k * 4 + 3] > 127 ? 1 : 0;
+    const s0 = sdfOf(m0, cw, ch);
+    const mE = new Uint8Array(cw * ch);
+    for (let k = 0; k < cw * ch; k++) mE[k] = s0[k] < -R ? 1 : 0;
+    const s1 = sdfOf(mE, cw, ch);
+    const mD = new Uint8Array(cw * ch);
+    for (let k = 0; k < cw * ch; k++) mD[k] = (s1[k] - R) < Rc ? 1 : 0;
+    // smooth the distance field a little so pixel stair-steps never show up in the highlights
+    const br = it.fs < FS ? 2 : 3;
+    const s2 = boxBlur(boxBlur(sdfOf(mD, cw, ch), cw, ch, br), cw, ch, br);
+    const data = i < 4 ? SDFA : SDFB, chn = i & 3;
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    const inside = [];
+    for (let cy = 0; cy < ch; cy++) {
+      const gy = gy0 + cy; if (gy < 0 || gy >= TH) continue;
+      const row = TH - 1 - gy;
+      for (let cx = 0; cx < cw; cx++) {
+        const gx = gx0 + cx; if (gx < 0 || gx >= TW) continue;
+        const v = s2[cy * cw + cx] + Rc;
+        data[(row * TW + gx) * 4 + chn] = v * upp;
+        if (v < 0) {
+          if (gx < minX) minX = gx; if (gx > maxX) maxX = gx; if (gy < minY) minY = gy; if (gy > maxY) maxY = gy;
+          if (v < -10) inside.push(gx, gy);
+        }
+      }
+    }
+    // reveal / bead anchor: nearest deep-inside texel to a chosen point of the box
+    const tgx = lerp(minX, maxX, anchors[i][0]), tgy = lerp(maxY, minY, anchors[i][1]);
+    let best = 1e18, bx = 0, by = 0;
+    for (let k = 0; k < inside.length; k += 2) { const dx = inside[k] - tgx, dy = inside[k + 1] - tgy, dd = dx * dx + dy * dy; if (dd < best) { best = dd; bx = inside[k]; by = inside[k + 1]; } }
+    // drip: lowest inside column inside a window
+    const colBottom = col => { for (let gy = maxY; gy >= minY; gy--) { const lx = col - gx0, ly = gy - gy0; if (lx < 0 || lx >= cw || ly < 0 || ly >= ch) continue; if (s2[ly * cw + lx] + Rc < -4) return gy; } return -1; };
+    let dcol = Math.round((minX + maxX) / 2), dbot = -1;
+    for (let col = Math.round(lerp(minX, maxX, dripWin[i][0])); col <= Math.round(lerp(minX, maxX, dripWin[i][1])); col += 2) {
+      const b = colBottom(col); if (b > dbot + 1) { dbot = b; dcol = col; }
+    }
+    // bubbles deep inside
+    const bubbles = []; let guard = 0;
+    while (bubbles.length < 5 && guard++ < 4000 && inside.length) {
+      const k = Math.floor(rng() * inside.length / 2) * 2;
+      const gx = inside[k], gy = inside[k + 1];
+      const lx = gx - gx0, ly = gy - gy0;
+      if (s2[ly * cw + lx] + Rc < -17) bubbles.push([wx(gx), wy(gy), (rng() - 0.5) * 0.12, 0.011 + rng() * 0.014, rng() * 6.28]);
+    }
+    LET.push({
+      ax: wx((minX + maxX) / 2), ay: BASE_Y,
+      box: [wx((minX + maxX) / 2), wy((minY + maxY) / 2), (maxX - minX) * upp / 2 + 0.03, (maxY - minY) * upp / 2 + 0.03],
+      tx: wx(bx), ty: wy(by), drip: [wx(dcol), wy(dbot)], bubbles
+    });
+  }
+  YH = LET.reduce((s, l) => s + l.ty, 0) / NL;
+  window.__LET = LET;
+}
+
+// text drawn into a texture for the flipped "Sonnet" seen through the falling drop
+function buildDropText() {
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 320;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, 1024, 320);
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '900 190px "Fraunces"';
+  ctx.fillText('Sonnet', 512, 170);
+  return cv;
+}
+// tagline texture: streams in like tokens
+function buildTagline() {
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  ctx.textBaseline = 'middle';
+  const y = TAG_Y;
+  const parts = [['every token starts with a ', '300 34px Outfit', 'rgb(255,232,246)'], ['drop', '500 34px Outfit', 'rgb(255,255,255)']];
+  ctx.letterSpacing = '9px';
+  let total = 0;
+  parts.forEach(p => { ctx.font = p[1]; total += ctx.measureText(p[0]).width; });
+  let x = (W - total) / 2 + 4;
+  ctx.textAlign = 'left';
+  parts.forEach(p => { ctx.font = p[1]; ctx.fillStyle = p[2]; ctx.fillText(p[0], x, y); x += ctx.measureText(p[0]).width; });
+  TAG_X0 = (W - total) / 2 / W; TAG_X1 = ((W - total) / 2 + total) / W;
+  return cv;
+}
+const TAG_Y = 742;
+let TAG_X0 = 0.3, TAG_X1 = 0.7;
+
+// ============================================================== WebGL
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false, alpha: false, depth: false, stencil: false });
+gl.getExtension('EXT_color_buffer_float');
+gl.getExtension('OES_texture_float_linear');
+
+const VS = `#version 300 es
+void main(){ vec2 p = vec2(float((gl_VertexID<<1)&2), float(gl_VertexID&2)); gl_Position = vec4(p*2.0-1.0, 0.0, 1.0); }`;
+
+const SCENE_FS = `#version 300 es
+precision highp float;
+precision highp sampler2D;
+#define MAXP 64
+#define MAXB 28
+#define NL 7
+uniform vec2 uRes, uJit, uLens;
+uniform vec3 uCamPos, uCamTgt;
+uniform float uTanHalf, uFocus, uWeight, uT;
+uniform sampler2D uSdfA, uSdfB, uTxt;
+uniform vec4 uTex;
+uniform vec4 uLP[NL];
+uniform vec4 uLT[NL];
+uniform vec4 uLR[NL];
+uniform vec4 uLB[NL];
+uniform vec3 uLCol[NL];
+uniform float uWob, uLetGlow, uMarble;
+uniform vec4 uA[MAXP];
+uniform vec4 uB[MAXP];
+uniform vec4 uC[MAXP];
+uniform vec4 uD[MAXP];
+uniform int uN;
+uniform vec4 uBub[MAXB];
+uniform int uNB;
+uniform float uBubA;
+uniform vec4 uRip[4];
+uniform vec3 uBMin, uBMax;
+uniform float uEnvRot;
+uniform vec4 uAtmo;     // glow amount, shaft amount, glint pos, glint amount
+uniform vec4 uTxtP;     // text-in-drop: center x, y, size x, alpha
+uniform float uFlash;
+
+out vec4 frag;
+
+float gSharp = 1.0;   // 1 when the surface is in focus, small when it is blurred by depth of field
+
+const float H_EX = 0.14;
+const float R_EX = 0.09;
+const float ZB = -3.6;   // backdrop plane
+
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*0.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+  return mix(mix(hash12(i), hash12(i+vec2(1,0)), f.x), mix(hash12(i+vec2(0,1)), hash12(i+vec2(1,1)), f.x), f.y); }
+float fbm(vec2 p){ float a = 0.5, s = 0.0; for(int i=0;i<4;i++){ s += a*vnoise(p); p = p*2.03 + 7.1; a *= 0.5; } return s; }
+
+float smin(float a, float b, float k){ float h = max(k-abs(a-b),0.0)/k; return min(a,b) - h*h*k*0.25; }
+float smax(float a, float b, float k){ return -smin(-a, -b, k); }
+
+float sdRoundCone(vec3 p, vec3 a, vec3 b, float r1, float r2){
+  vec3 ba = b - a; float l2 = dot(ba,ba); float rr = r1 - r2;
+  if (l2 < 1e-8 || rr*rr >= l2*0.999) return min(length(p-a)-r1, length(p-b)-r2);
+  float a2 = l2 - rr*rr; float il2 = 1.0/l2;
+  vec3 pa = p - a; float y = dot(pa,ba); float z = y - l2;
+  vec3 xv = pa*l2 - ba*y; float x2 = dot(xv,xv);
+  float y2 = y*y*l2; float z2 = z*z*l2;
+  float k = sign(rr)*rr*rr*x2;
+  if (sign(z)*a2*z2 > k) return sqrt(x2+z2)*il2 - r2;
+  if (sign(y)*a2*y2 < k) return sqrt(x2+y2)*il2 - r1;
+  return (sqrt(x2*a2*il2) + y*rr)*il2 - r1;
+}
+float sdEllipsoid(vec3 p, vec3 r){ float k0 = length(p/r); float k1 = length(p/(r*r)); return k0*(k0-1.0)/max(k1,1e-6); }
+
+float prim(int i, vec3 p){
+  vec4 A = uA[i], B = uB[i];
+  if (B.w < 0.0) return sdEllipsoid(p - A.xyz, B.xyz);
+  return sdRoundCone(p, A.xyz, B.xyz, A.w, B.w);
+}
+
+float sdfCh(int i, vec2 uv){
+  vec4 s;
+  if (i < 4) s = textureLod(uSdfA, uv, 0.0); else s = textureLod(uSdfB, uv, 0.0);
+  int c = i & 3;
+  return c == 0 ? s.x : (c == 1 ? s.y : (c == 2 ? s.z : s.w));
+}
+float let2D(int i, vec2 xy){
+  vec4 P = uLP[i], T = uLT[i], R = uLR[i], B = uLB[i];
+  vec2 q = (xy - P.xy - P.zw) / T.xy + P.xy;
+  vec2 dq = abs(q - B.xy) - B.zw;
+  float ob = length(max(dq, vec2(0.0)));
+  float d;
+  if (ob > 0.11) { d = ob * min(T.x, T.y); }
+  else {
+    vec2 uv = (q - uTex.xy) / uTex.zw;
+    vec2 cuv = clamp(uv, vec2(0.0), vec2(1.0));
+    d = sdfCh(i, cuv) + length((uv - cuv) * uTex.zw);
+    d = d * min(T.x, T.y);
+  }
+  d += T.z;
+  if (R.z < 6.0) d = smax(d, length(xy - R.xy) - R.z, 0.09);
+  return d;
+}
+float extrude(float d2, float z, float bs){
+  float re = R_EX*bs, he = H_EX*bs;
+  vec2 w = vec2(d2 + re, abs(z) - he + re);
+  return min(max(w.x,w.y),0.0) + length(max(w,0.0)) - re;
+}
+float lettersD(vec3 p){
+  float dz = abs(p.z) - H_EX;
+  if (dz > 0.3) return dz;
+  float d = 1e5;
+  for (int i=0;i<NL;i++){ if (uLR[i].z > 0.0) d = min(d, extrude(let2D(i, p.xy), p.z, uLT[i].w)); }
+  if (d < 0.1) d += uWob * 0.0034 * sin(p.x*17.0 + uT*2.7) * sin(p.y*15.0 - uT*2.1 + p.z*6.0);
+  return d;
+}
+float map(vec3 p){
+  float d = lettersD(p);
+  for (int i=0;i<MAXP;i++){
+    if (i>=uN) break;
+    vec4 D = uD[i];
+    if (length(p - D.xyz) - D.w > d + uC[i].w) continue;
+    d = smin(d, prim(i,p), uC[i].w);
+  }
+  return d;
+}
+vec3 mapCol(vec3 p){
+  vec3 c = vec3(0.0); float ws = 1e-5;
+  for (int i=0;i<NL;i++){
+    if (uLR[i].z <= 0.0) continue;
+    float d = extrude(let2D(i, p.xy), p.z, uLT[i].w);
+    float w = exp(-max(d,0.0)*45.0);
+    c += uLCol[i]*w; ws += w;
+  }
+  for (int i=0;i<MAXP;i++){ if (i>=uN) break;
+    float d = prim(i,p); float w = exp(-max(d,0.0)*45.0);
+    c += uC[i].rgb*w; ws += w; }
+  return c/ws;
+}
+vec3 calcN(vec3 p){
+  const vec2 e = vec2(1.0,-1.0)*0.0011;
+  return normalize(e.xyy*map(p+e.xyy) + e.yyx*map(p+e.yyx) + e.yxy*map(p+e.yxy) + e.xxx*map(p+e.xxx));
+}
+vec2 boxHit(vec3 ro, vec3 rd, vec3 bmin, vec3 bmax){
+  vec3 inv = 1.0/rd; vec3 t0 = (bmin-ro)*inv, t1 = (bmax-ro)*inv;
+  vec3 tmn = min(t0,t1), tmx = max(t0,t1);
+  return vec2(max(max(tmn.x,tmn.y),max(tmn.z,0.0)), min(min(tmx.x,tmx.y),tmx.z));
+}
+float march(vec3 ro, vec3 rd, float tlim, int steps){
+  vec2 b = boxHit(ro, rd, uBMin, uBMax);
+  if (b.x > b.y) return -1.0;
+  float t = b.x; float tmax = min(b.y, tlim);
+  for (int i=0;i<200;i++){
+    if (i>=steps) break;
+    float d = map(ro+rd*t);
+    if (d < 0.0005 + 0.0005*t) return t;
+    t += d*0.92;
+    if (t > tmax) break;
+  }
+  return -1.0;
+}
+
+// ------------------------------------------------------------ studio light (reflections)
+float rectLight(vec3 d, vec3 dir, vec2 hs, float soft){
+  float cd = dot(d, dir); if (cd <= 0.0) return 0.0;
+  vec3 up0 = abs(dir.y) > 0.9 ? vec3(0.0,0.0,1.0) : vec3(0.0,1.0,0.0);
+  vec3 r = normalize(cross(up0, dir)); vec3 u = cross(dir, r);
+  vec2 q = vec2(dot(d,r), dot(d,u))/cd;
+  vec2 e = smoothstep(hs + soft, hs - soft, abs(q));
+  return e.x*e.y;
+}
+vec3 env(vec3 d){
+  float cs = cos(uEnvRot), sn = sin(uEnvRot);
+  d.xz = mat2(cs,-sn,sn,cs)*d.xz;
+  vec3 c = mix(vec3(0.006,0.0010,0.012), vec3(0.052,0.009,0.080), smoothstep(-0.5,0.7,d.y));
+  c += rectLight(d, normalize(vec3(-0.55,0.62,0.62)), vec2(0.5,0.15), 0.06) * vec3(3.1,2.8,3.0);
+  c += rectLight(d, normalize(vec3(-0.72,0.18,0.68)), vec2(0.06,0.36), 0.04) * vec3(2.5,2.3,2.6);
+  c += rectLight(d, normalize(vec3(0.15,1.0,0.35)), vec2(0.55,0.22), 0.12) * vec3(0.42,0.30,0.55);
+  c += rectLight(d, normalize(vec3(0.9,0.28,0.4)), vec2(0.045,0.42), 0.035) * vec3(2.2,1.5,2.7);
+  c += rectLight(d, normalize(vec3(-0.95,0.15,0.25)), vec2(0.03,0.35), 0.03) * vec3(1.3,0.8,1.6);
+  c += rectLight(d, normalize(vec3(-0.1,0.28,-1.0)), vec2(0.55,0.10), 0.10) * vec3(0.40,0.08,0.46);
+  // travelling glint strip: slides across every glossy surface
+  float ga = uAtmo.z;
+  vec3 gd = normalize(vec3(sin(ga)*0.95, 0.2, 0.35 + 0.65*cos(ga)));
+  c += rectLight(d, gd, vec2(0.06, 0.55), 0.045) * vec3(4.6,3.4,4.4) * uAtmo.w;
+  return c;
+}
+
+// ------------------------------------------------------------ backdrop wall behind everything (z = ZB)
+vec3 backdrop(vec3 ro, vec3 rd){
+  vec2 q;
+  if (rd.z < -0.03) { float t = (ZB - ro.z)/rd.z; q = ro.xy + rd.xy*t; }
+  else q = ro.xy + rd.xy*(0.0 - (ZB - ro.z)/0.03);
+  // deep purple studio falloff, brightest around the subject
+  vec2 g0 = (q - vec2(0.0, 0.55)) * vec2(0.15, 0.36);
+  float spot = exp(-dot(g0,g0));
+  vec3 c = mix(vec3(0.005,0.0009,0.011), vec3(0.047,0.0030,0.074), spot);
+  c = mix(c, vec3(0.004,0.0007,0.009), smoothstep(1.4, 4.8, q.y));
+  // word glow: pink/violet halo behind the lockup
+  vec2 g1 = (q - vec2(0.0, 0.62)) * vec2(0.22, 0.46);
+  c += vec3(0.42,0.05,0.30) * exp(-dot(g1,g1)*1.2) * uAtmo.x * 0.30;
+  // faint bokeh discs
+  for (int i=0;i<7;i++){
+    float fi = float(i);
+    vec2 h = vec2(hash12(vec2(fi*3.1,1.7)), hash12(vec2(fi*7.7,4.1)));
+    vec2 cc = vec2(mix(-5.8,5.8,h.x), mix(0.2,3.4,h.y)) + 0.14*vec2(sin(uT*0.45+fi*2.0), cos(uT*0.37+fi*1.3));
+    float r = mix(0.30, 0.75, hash12(vec2(fi*5.3,2.2)));
+    float d = length(q - cc);
+    float m = smoothstep(r, r*0.55, d);
+    vec3 bc = mix(vec3(0.9,0.25,0.55), vec3(0.45,0.2,1.0), hash12(vec2(fi*9.1,0.3)));
+    c += bc * m * 0.011 * (0.6 + uAtmo.x*0.5);
+  }
+  // soft vertical shafts of light
+  float sx = q.x + q.y*0.28;
+  float sh = pow(max(sin(sx*1.9+0.9)*0.5+0.5, 0.0), 5.0) * 0.55 + pow(max(sin(sx*3.7+2.2)*0.5+0.5, 0.0), 8.0) * 0.45;
+  sh *= smoothstep(-0.3, 1.6, q.y) * smoothstep(4.6, 1.6, q.y);
+  c += vec3(0.85,0.18,0.5) * sh * uAtmo.y * 0.06;
+  return c;
+}
+
+// ------------------------------------------------------------ floor
+vec3 floorBase(vec3 q, float gk){
+  float dist = length(q.xz - vec2(0.0, 0.1));
+  vec3 base = mix(vec3(0.026,0.0045,0.042), vec3(0.006,0.0010,0.012), smoothstep(0.4, 5.5, dist));
+  vec3 gl = vec3(0.0);
+  for (int i=0;i<MAXP;i++){
+    if (i>=uN) break;
+    vec4 D = uD[i];
+    vec2 dx = q.xz - D.xz;
+    float rad = D.w*1.5 + 0.07;
+    float e = exp(-dot(dx,dx)/(rad*rad)) * exp(-D.y*1.5);
+    gl += uC[i].rgb * e * D.w * 0.5;
+  }
+  for (int i=0;i<NL;i++){
+    float cx = uLB[i].x;
+    float e = exp(-pow((q.x - cx)/0.34, 2.0) - pow((q.z + 0.05)/0.85, 2.0));
+    gl += uLCol[i] * e * uLetGlow * 0.16;
+  }
+  return base + gl*gk;
+}
+vec3 floorTex(vec3 q, vec3 d){
+  float tf = -q.y/d.y;
+  vec3 fp = q + d*tf;
+  vec3 f = floorBase(fp, 0.35);
+  vec3 far = backdrop(uCamPos, vec3(d.x*0.8, 0.0, -1.0));
+  return mix(f, far, smoothstep(2.5, 11.0, tf));
+}
+vec3 behindColor(vec3 q, vec3 d){
+  vec3 c;
+  if (d.y < -0.03) c = floorTex(q, d);
+  else c = backdrop(q, d);
+  return c;
+}
+// the flipped name "Sonnet" seen through the falling drop
+float dropText(vec3 q, vec3 d){
+  if (uTxtP.w < 0.001 || d.z > -0.05) return 0.0;
+  float t = (-0.85 - q.z)/d.z;
+  vec2 fp = q.xy + d.xy*t;
+  // keep the text centred in the drop as the camera moves: centre it on the camera-to-drop line
+  vec3 dc = vec3(uTxtP.x, uTxtP.y, 0.35);
+  vec2 pc = dc.xy + (dc.xy - uCamPos.xy) * ((-0.85 - dc.z) / (dc.z - uCamPos.z));
+  vec2 uv = (fp - pc)/vec2(uTxtP.z, uTxtP.z*0.3125) + 0.5;
+  if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) return 0.0;
+  return textureLod(uTxt, vec2(uv.x, 1.0 - uv.y), 0.0).a * uTxtP.w;
+}
+vec3 reflEnv(vec3 p, vec3 R){
+  vec3 e = env(R);
+  if (R.y < 0.05){
+    vec3 fc = floorTex(p, vec3(R.x, min(R.y,-0.05), R.z)) * 1.4 + vec3(0.02,0.004,0.035);
+    e = mix(e, fc, smoothstep(0.05, -0.2, R.y));
+  }
+  return e;
+}
+
+vec3 shadeLiquid(vec3 p, vec3 rd, vec3 n, bool full){
+  vec3 col = mapCol(p);
+  vec3 v = -rd;
+  float ndv = clamp(dot(n,v), 0.0, 1.0);
+  float F = 0.045 + 0.955*pow(1.0-ndv, 5.0);
+  const float IOR = 1.40;
+  vec3 rr = refract(rd, n, 1.0/IOR);
+  float th = 0.16;
+  vec3 q = p + rr*th;
+  vec3 qn = -n;
+  // liquid resting on the floor: a refracted ray that heads down ends on the floor, not outside the puddle
+  float sF = rr.y < -1e-4 ? -p.y/rr.y : 1e9;
+  bool onFloor = false;
+  if (full){
+    float s = 0.012; bool exited = false;
+    for (int i=0;i<40;i++){
+      float d = -map(p + rr*s);
+      if (d < 0.0012) { exited = true; break; }
+      s += max(d*0.95, 0.004 + 0.03*s);     // fine steps for tiny droplets, coarse only on long puddle paths
+      if (s >= sF) break;
+    }
+    if (!exited && s >= sF) { onFloor = true; th = max(sF, 0.008); q = p + rr*th; }
+    else { th = s; q = p + rr*s; qn = calcN(q); }
+  } else {
+    onFloor = sF < th;
+    if (onFloor){ th = max(sF, 0.008); q = p + rr*th; }
+  }
+  vec3 behind = vec3(0.0);
+  float txtM = 0.0;
+  if (onFloor){
+    behind = floorBase(q, 0.0)*1.5 + vec3(0.018,0.003,0.03);
+  } else {
+    for (int c=0;c<3;c++){
+      float ior = IOR + (float(c)-1.0)*0.02;
+      vec3 ex = refract(rr, -qn, ior);
+      if (dot(ex,ex) < 0.5) ex = reflect(rr, -qn);
+      ex = normalize(ex);
+      vec3 b = behindColor(q, ex);
+      behind[c] = b[c];
+      if (c == 1) txtM = dropText(q, ex);
+    }
+  }
+  float thick = smoothstep(0.015, 0.26, th);
+  // a puddle is thin even when the grazing ray inside it is long: judge its glow by its real height
+  if (onFloor) thick = smoothstep(0.015, 0.26, p.y*1.3);
+  vec3 tcol = pow(clamp(col, 0.0, 1.0), vec3(0.62)); // softer colour for what light does inside
+  vec3 tint = pow(tcol, vec3(0.30 + th*5.0));        // thin = pale, thick = saturated
+  vec3 L = normalize(vec3(-0.45, 0.75, 0.55));
+  float wrap = clamp(dot(n, L)*0.5 + 0.5, 0.0, 1.0);
+  float up = clamp(n.y*0.5 + 0.5, 0.0, 1.0);
+  // light that scatters inside the jelly (brighter toward the top, deeper toward the bottom)
+  vec3 sss = (col*0.95 + tcol*0.22) * (0.16 + 0.55*up + 0.30*wrap) * (0.30 + 0.70*thick);
+  sss *= 0.50 + 0.50*pow(ndv, 0.6);
+  // light focused to the lower inside, the way a water drop acts as a lens
+  float low = pow(clamp(-qn.y*0.85 + 0.15, 0.0, 1.0), 1.5) * thick;
+  vec3 inner = (tcol*1.15 + col*0.55) * low * 0.85;
+  if (onFloor) inner *= 0.30;
+  vec3 body = behind*tint*1.45 + sss + inner;
+  body += vec3(1.5, 1.0, 0.55) * txtM * 0.85;
+  // light coming through from behind (rim glow)
+  body += tcol * pow(1.0-ndv, 4.0) * 0.50;
+  // marbled magenta / violet swirls inside the jelly, like the iridescent drop in the reference
+  float mb = fbm(q.xy*2.4 + vec2(q.z*1.9, 0.0) + vec2(uT*0.22, -uT*0.15));
+  float mb2 = fbm(q.yz*3.1 - vec2(q.x*1.4, 0.0) + 5.0 - uT*0.18);
+  float mm = smoothstep(0.38, 0.70, mb) * thick * uMarble;
+  vec3 mcast = mix(vec3(1.05,0.30,1.0), vec3(0.65,0.45,1.35), mb2);
+  body = mix(body, body*mcast*1.25 + vec3(0.14,0.0,0.18)*mm, 0.55*mm);
+  vec3 R = reflect(rd, n);
+  vec3 refl = reflEnv(p, R);
+  vec3 c = body*(1.0 - F) + refl*F*1.0;
+  c += vec3(1.0,0.96,0.97) * pow(max(dot(R, normalize(vec3(-0.5,0.62,0.6))), 0.0), 1100.0) * 10.0 * gSharp;
+  c += vec3(1.0,0.85,0.95) * pow(max(dot(R, normalize(vec3(0.75,0.35,0.55))), 0.0), 320.0) * 2.6 * mix(0.35, 1.0, gSharp);
+  if (full && uBubA > 0.001){
+    for (int i=0;i<MAXB;i++){
+      if (i>=uNB) break;
+      vec4 b = uBub[i];
+      vec3 bp = b.xyz - p;
+      float s = dot(bp, rr);
+      if (s < 0.0) continue;
+      vec3 cl = bp - rr*s;
+      float dd = length(cl); float r = b.w;
+      float ring = smoothstep(r, r*0.78, dd) * smoothstep(r*0.4, r*0.86, dd);
+      float hl = smoothstep(r*0.32, r*0.05, length(cl - vec3(-0.38*r, 0.38*r, 0.0)));
+      c += (mix(col, vec3(1.0), 0.6)*ring*0.34 + vec3(1.0)*hl*1.7) * uBubA * (1.0 - F);
+    }
+  }
+  return c;
+}
+
+vec3 shadeFloor(vec3 p, vec3 rd, float tf){
+  vec3 n = vec3(0.0,1.0,0.0);
+  for (int i=0;i<4;i++){
+    vec4 R = uRip[i];
+    if (R.w <= 0.0) continue;
+    vec2 dxz = p.xz - R.xy; float r = length(dxz) + 1e-4; float age = R.z;
+    float front = 0.05 + age*0.8;
+    float en = exp(-pow((r - front)/(0.10 + age*0.12), 2.0)) * R.w * exp(-age*1.2);
+    n.xz += (dxz/r) * sin((r - front)*70.0) * en * 0.22;
+  }
+  float sw = fbm(p.xz*vec2(0.9,1.8) + vec2(3.0,1.0));
+  n.xz += vec2(sin(sw*14.0), cos(sw*12.0))*0.004;
+  n = normalize(n);
+  vec3 base = floorBase(p, 0.75);
+  base *= 0.85 + 0.3*sw;
+  float occ = clamp(map(p + vec3(0.0,0.14,0.0))/0.14, 0.0, 1.0);
+  float occ2 = clamp(map(p + vec3(0.0,0.04,0.0))/0.04, 0.0, 1.0);
+  base *= mix(0.40, 1.0, occ) * mix(0.65, 1.0, occ2);
+  vec3 r = reflect(rd, n);
+  float F = 0.16 + 0.62*pow(1.0 - max(dot(n,-rd),0.0), 3.0);
+  vec3 refl = backdrop(p, r)*0.75;
+  refl *= mix(0.30, 1.0, exp(-length(p.xz)*0.30));
+  float th = march(p + n*0.002, r, 5.0, 90);
+  if (th > 0.0){
+    vec3 q = p + r*th; vec3 qn = calcN(q);
+    vec3 lc = shadeLiquid(q, r, qn, false);
+    refl = mix(refl, lc*0.85, exp(-q.y*2.1) * exp(-th*0.22));
+  }
+  vec3 c = base + refl*F*1.2;
+  float fog = smoothstep(3.0, 14.0, tf);
+  return mix(c, backdrop(uCamPos, vec3(rd.x*0.8, 0.0, -1.0)), fog);
+}
+
+void main(){
+  vec2 fc = gl_FragCoord.xy + uJit;
+  vec2 uv = (2.0*fc - uRes)/uRes.y;
+  vec3 ww = normalize(uCamTgt - uCamPos);
+  vec3 uu = normalize(cross(ww, vec3(0.0,1.0,0.0)));
+  vec3 vv = cross(uu, ww);
+  vec3 rd0 = normalize(uv.x*uTanHalf*uu + uv.y*uTanHalf*vv + ww);
+  vec3 pf = uCamPos + rd0*(uFocus/dot(rd0, ww));
+  vec3 ro = uCamPos + uu*uLens.x + vv*uLens.y;
+  vec3 rd = normalize(pf - ro);
+  float tf = rd.y < 0.0 ? -ro.y/rd.y : 1e9;
+  float t = march(ro, rd, min(tf, 40.0), 160);
+  vec3 col;
+  if (t > 0.0){
+    gSharp = 1.0/(1.0 + 200.0*max(abs(t - uFocus)/uFocus - 0.025, 0.0));
+    vec3 p = ro + rd*t; vec3 n = calcN(p); col = shadeLiquid(p, rd, n, true);
+    col = min(col, vec3(mix(3.5, 14.0, gSharp)));     // keep blurred fireflies in check
+  }
+  else if (tf < 1e8){
+    gSharp = 1.0/(1.0 + 200.0*max(abs(tf - uFocus)/uFocus - 0.025, 0.0));
+    col = shadeFloor(ro + rd*tf, rd, tf);
+    col = min(col, vec3(mix(3.5, 14.0, gSharp)));
+  }
+  else col = backdrop(ro, rd);
+  col += vec3(1.0,0.55,0.8) * uFlash * 0.02;
+  frag = vec4(max(col, 0.0)*uWeight, 1.0);
+}`;
+
+const BRIGHT_FS = `#version 300 es
+precision highp float;
+uniform sampler2D uSrc; uniform vec2 uTexel; uniform vec2 uRes; out vec4 frag;
+void main(){ vec2 uv = gl_FragCoord.xy/uRes; vec3 c = vec3(0.0);
+  c += texture(uSrc, uv + uTexel*vec2(-1.0,-1.0)).rgb; c += texture(uSrc, uv + uTexel*vec2(1.0,-1.0)).rgb;
+  c += texture(uSrc, uv + uTexel*vec2(-1.0,1.0)).rgb; c += texture(uSrc, uv + uTexel*vec2(1.0,1.0)).rgb; c *= 0.25;
+  float l = max(max(c.r,c.g),c.b); float k = max(l - 0.85, 0.0); k = k*k/(k + 0.7);
+  frag = vec4(c * (k/max(l,1e-4)), 1.0); }`;
+
+const BLUR_FS = `#version 300 es
+precision highp float;
+uniform sampler2D uSrc; uniform vec2 uDir; uniform vec2 uRes; out vec4 frag;
+void main(){ vec2 uv = gl_FragCoord.xy/uRes;
+  vec3 c = texture(uSrc, uv).rgb*0.2270;
+  c += texture(uSrc, uv + uDir*1.3846).rgb*0.3162; c += texture(uSrc, uv - uDir*1.3846).rgb*0.3162;
+  c += texture(uSrc, uv + uDir*3.2308).rgb*0.0703; c += texture(uSrc, uv - uDir*3.2308).rgb*0.0703;
+  frag = vec4(c, 1.0); }`;
+
+const FINAL_FS = `#version 300 es
+precision highp float;
+uniform sampler2D uScene, uB1, uB2, uB3, uTag; uniform vec2 uRes; uniform float uTime, uTagA, uTagX, uTagW; out vec4 frag;
+vec3 aces(vec3 x){ const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14; return clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0); }
+float hash(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*0.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+void main(){ vec2 uv = gl_FragCoord.xy/uRes;
+  vec2 cc = uv - 0.5; vec2 ca2 = cc*vec2(1.78,1.0);
+  vec2 ca = cc * (0.0006 + 0.0026*dot(ca2,ca2));
+  vec3 s = vec3(texture(uScene, uv + ca).r, texture(uScene, uv).g, texture(uScene, uv - ca).b);
+  vec3 c = s + texture(uB1, uv).rgb*0.26 + texture(uB2, uv).rgb*0.34 + texture(uB3, uv).rgb*0.50;
+  c *= mix(1.0, smoothstep(1.40, 0.18, length(cc*vec2(1.65,1.0))), 0.62);
+  c = aces(c*1.08);
+  float lum = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = max(mix(vec3(lum), c, 1.14), 0.0);
+  c = pow(c, vec3(1.0/2.2));
+  vec4 tg = texture(uTag, uv);
+  float a = tg.a * uTagA * (1.0 - smoothstep(uTagX - uTagW, uTagX + 0.0001, uv.x));
+  c = mix(c, tg.rgb/max(tg.a,1e-4), clamp(a,0.0,1.0));
+  c += (hash(gl_FragCoord.xy + fract(uTime*7.13)*917.0) - 0.5)*0.022;
+  frag = vec4(c, 1.0); }`;
+
+function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+function program(fs) {
+  const p = gl.createProgram(); gl.attachShader(p, compile(gl.VERTEX_SHADER, VS)); gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) { const info = gl.getActiveUniform(p, i); const name = info.name.replace(/\[0\]$/, ''); u[name] = gl.getUniformLocation(p, info.name); }
+  return { p, u };
+}
+function target(w, h) {
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  return { tex, fb, w, h };
+}
+function dataTex(data, w, h) {
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, w, h, 0, gl.RGBA, gl.FLOAT, data);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return t;
+}
+function canvasTex(cv, flip) {
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip ? 1 : 0);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+  return t;
+}
+
+let P = {}, RT = {}, TX = {};
+function initGL() {
+  P.scene = program(SCENE_FS); P.bright = program(BRIGHT_FS); P.blur = program(BLUR_FS); P.final = program(FINAL_FS);
+  RT.acc = target(W, H);
+  RT.b1a = target(W / 4, H / 4); RT.b1b = target(W / 4, H / 4);
+  RT.b2a = target(W / 8, H / 8); RT.b2b = target(W / 8, H / 8);
+  RT.b3a = target(W / 16, H / 16); RT.b3b = target(W / 16, H / 16);
+  TX.a = dataTex(SDFA, TW, TH); TX.b = dataTex(SDFB, TW, TH);
+  TX.txt = canvasTex(buildDropText(), false);
+  TX.tag = canvasTex(buildTagline(), true);
+  gl.bindVertexArray(gl.createVertexArray());
+  window.__maxU = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+}
+
+// ============================================================== choreography
+const G = 9.0, R0 = 0.215, TI = 0.5, V0 = 0.35;
+const P0Z = 0.35;
+const Y0 = R0 + V0 * TI + 0.5 * G * TI * TI;
+const APEX = 1.12, TAU_APEX = 0.62;
+const RBEAD = [0.168, 0.148, 0.160, 0.160, 0.150, 0.126, 0.120];
+const T_NECK = 1.30;                 // necklace stretch starts
+const T_PINCH = [1.66, 1.62, 1.70, 1.64, 1.60, 1.72];   // threads snap, between bead j and j+1
+const T_LET = 1.88, LET_STEP = 0.095;
+const DRIPS = [ // letter, grow start, max length, detach time (0 = stays)
+  { i: 0, t0: 3.08, len: 0.085, td: 0 }, { i: 1, t0: 3.22, len: 0.10, td: 0 }, { i: 2, t0: 3.14, len: 0.075, td: 0 },
+  { i: 3, t0: 3.00, len: 0.12, td: 3.62 }, { i: 4, t0: 3.34, len: 0.09, td: 0 }, { i: 5, t0: 2.96, len: 0.11, td: 4.18 }
+];
+
+const DROPC = [lin('#ff7a1c'), lin('#ff3c78'), lin('#a64bff'), lin('#ff5a2a'), lin('#ff9a30'), lin('#ff2f9a')];
+const CROWN = (() => {
+  const rng = mulberry32(7); const out = [];
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * Math.PI * 2 + (rng() - 0.5) * 0.22;
+    out.push({ a, hj: 0.62 + rng() * 0.8, td: 0.15 + 0.08 * rng(), wj: 0.75 + 0.5 * rng(), vh: 0.8 + rng() * 0.8, vy: 1.2 + rng() * 1.1, r: 0.024 + rng() * 0.022, bounce: i % 2 === 0, hue: rng() });
+  }
+  return out;
+})();
+
+function yBlob(tau) {
+  if (tau < TAU_APEX) { const u = sat((tau - 0.16) / (TAU_APEX - 0.16)); return 0.07 + (APEX - 0.07) * (1 - (1 - u) * (1 - u)); }
+  const w = tau - TAU_APEX;
+  return YH + (APEX - YH) * Math.exp(-4.2 * w) * (Math.cos(9 * w) + (4.2 / 9) * Math.sin(9 * w));
+}
+
+function sceneAt(t) {
+  const prims = [];
+  const add = (a, r1, b, r2, col, k) => prims.push([a, r1, b, r2, col, k, false]);
+  const addS = (c, r, col, k) => add(c, r, c, r, col, k);
+  const addE = (c, rad, col, k) => prims.push([c, 0, rad, -1, col, k, true]);
+  const bead = i => [LET[i].tx, LET[i].ty];
+
+  // ---------------------------------------------------- A: the hanging drop pinches off and falls
+  if (t < TI + 0.02) {
+    const tt = Math.max(t, 0);
+    const y = Y0 - V0 * tt - 0.5 * G * tt * tt;
+    const tail = 0.60 * Math.pow(1 - smooth(0.0, 0.34, tt), 1.5);
+    const wob = Math.sin(tt * 26 + 0.8) * Math.exp(-tt * 4.5) * 0.06 + 0.05 * smooth(0.3, 0.5, tt);
+    const sy = 1 + wob, sx = 1 / Math.sqrt(sy);
+    addE([0, y, P0Z], [R0 * sx, R0 * sy, R0 * sx], COL.drop, 0.09);
+    if (tail > 0.012) add([0, y + R0 * 0.45 * sy, P0Z], R0 * 0.66 * sx, [0, y + R0 * 0.45 + tail, P0Z], 0.016 + 0.01 * (1 - tail), COL.drop, 0.12);
+    if (tt < 0.17) {
+      const rth = 0.028 * (1 - smooth(0.0, 0.17, tt)) + 0.003;
+      const lo = y + R0 * 0.45 + tail + 0.9 * smooth(0.07, 0.17, tt);
+      add([0, lo, P0Z], rth, [0, y + 3.2, P0Z], rth * 0.9, COL.drop, 0.05);
+    }
+  }
+  if (t >= TI) {
+    const tau = t - TI;
+    // ------------------------------------------------ B: puddle, crown, droplets
+    const s = 1 - Math.exp(-tau * 11);
+    const drain = smooth(0.50, 1.05, tau);
+    const rx = (R0 * 0.9 + 0.62 * s) * (1 - 0.92 * drain) * (1 - smooth(1.0, 1.18, tau));
+    const ry = (0.080 + 0.15 * Math.exp(-tau * 18)) * (1 - 0.4 * drain);
+    if (rx > 0.015) addE([0, ry * 0.40, P0Z], [rx, ry, rx * 0.95], COL.drop, 0.16);
+    if (tau < 0.1) addS([0, R0 * (1 - tau / 0.1) * 0.7, P0Z], R0 * (1 - tau / 0.12), COL.drop, 0.14);
+    for (const [ci, c] of CROWN.entries()) {
+      const dcol = DROPC[ci % DROPC.length];
+      const colS = mix3(COL.drop, dcol, 0.30);
+      const col = mix3(COL.drop, dcol, smooth(c.td - 0.06, c.td + 0.05, tau));
+      const life = sat(tau / 0.36);
+      const hAt = tt2 => 0.34 * c.hj * Math.pow(Math.sin(Math.PI * sat(tt2 / 0.36)), 0.8);
+      const baseR = rx * 0.93;
+      const bx = Math.cos(c.a) * baseR, bz = P0Z + Math.sin(c.a) * baseR * 0.95;
+      const LEAN = 0.6;
+      if (tau < 0.36) {
+        const h = hAt(tau);
+        const bw = 0.055 * (1 - 0.65 * life) * c.wj;      // thick at the rim, thin at the tip
+        const tipx = bx + Math.cos(c.a) * h * LEAN, tipz = bz + Math.sin(c.a) * h * LEAN;
+        if (tau < c.td) {
+          if (h > 0.01) {
+            add([bx, 0.02, bz], bw, [tipx, h, tipz], 0.011, colS, 0.05);
+            addS([tipx, h + 0.006, tipz], c.r * 1.1, col, 0.045);
+          }
+        } else {
+          const hh = h * (1 - 0.6 * smooth(c.td, c.td + 0.1, tau));
+          const tr = 0.011 * (1 - smooth(c.td, c.td + 0.08, tau)) + 0.003;
+          if (h > 0.01 && bw > 0.004) add([bx, 0.02, bz], bw, [bx + Math.cos(c.a) * hh * LEAN, hh, bz + Math.sin(c.a) * hh * LEAN], tr, colS, 0.06);
+        }
+      }
+      // ballistic droplet from the tip
+      const tdp = c.td, hd = hAt(tdp);
+      const rdp = rx * 0.93; // approximate ring radius at detach time (recomputed for the exact start)
+      const sD = 1 - Math.exp(-tdp * 11);
+      const rxD = (R0 * 0.9 + 0.62 * sD) * 0.93;
+      const x0 = Math.cos(c.a) * rxD + Math.cos(c.a) * hd * LEAN, z0 = P0Z + Math.sin(c.a) * rxD * 0.95 + Math.sin(c.a) * hd * LEAN, y0 = hd + 0.006;
+      const vx = Math.cos(c.a) * c.vh, vz = Math.sin(c.a) * c.vh * 0.9;
+      const tt = tau - tdp;
+      if (tt < 0) continue;
+      const rr = c.r * 1.1;
+      const tl = (c.vy + Math.sqrt(c.vy * c.vy + 2 * G * (y0 - rr))) / G;
+      if (tt < tl) {
+        const x = x0 + vx * tt, z = z0 + vz * tt, y = y0 + c.vy * tt - 0.5 * G * tt * tt;
+        const vy = c.vy - G * tt; const k = 0.02;
+        add([x, y, z], rr, [x - vx * k, y - vy * k, z - vz * k], rr * 0.6, col, 0.03);
+      } else {
+        const xl = x0 + vx * tl, zl = z0 + vz * tl;
+        const ts = tt - tl;
+        // squash splat on landing
+        const sq = 1 - Math.exp(-ts * 18);
+        // some bounce once
+        let px = xl, pz = zl, py = rr * 0.0, flat = sq;
+        let bouncing = false;
+        if (c.bounce) {
+          const vyb = 0.42 * Math.sqrt(c.vy * c.vy + 2 * G * (y0 - rr)), tb = 2 * vyb / G;
+          const tb0 = 0.05;
+          if (ts > tb0 && ts < tb0 + tb) {
+            const u = ts - tb0; py = vyb * u - 0.5 * G * u * u; px = xl + vx * 0.25 * u; pz = zl + vz * 0.25 * u; bouncing = true; flat = 0.0;
+            const vv = vyb - G * u; const stretch = 1 + 0.4 * Math.min(1, Math.abs(vv) / 1.2);
+            addE([px, py + rr * 0.9, pz], [rr * 0.9 / Math.sqrt(stretch), rr * 0.9 * stretch, rr * 0.9 / Math.sqrt(stretch)], col, 0.03);
+          } else if (ts >= tb0 + tb) { px = xl + vx * 0.25 * tb; pz = zl + vz * 0.25 * tb; flat = 1 - Math.exp(-(ts - tb0 - tb) * 18); }
+        }
+        if (!bouncing) {
+          // after a short rest, creep inward and merge into the puddle
+          const rest = c.bounce ? 0.38 : 0.05;
+          const u = sat((ts - rest) / 0.42);
+          const e = eInCubic(u);
+          const cx = lerp(px, 0, e), cz = lerp(pz, P0Z, e);
+          const rrr = rr * (1 - 0.55 * e);
+          const fl = flat;
+          if (u < 1) addE([cx, 0.0, cz], [rrr * (1 + 1.1 * fl), rrr * (1.0 - 0.5 * fl) + 0.006, rrr * (1 + 1.1 * fl)], col, 0.05);
+        }
+      }
+    }
+    // ------------------------------------------------ C: Worthington jet and the blob it throws
+    const yb = yBlob(tau);
+    const Rb = 0.06 + 0.235 * smooth(0.12, 0.64, tau);
+    const w = Math.max(0, tau - TAU_APEX);
+    const stretchY = 1 + 0.38 * smooth(0.14, 0.34, tau) * (1 - smooth(0.46, 0.68, tau)) + 0.22 * Math.exp(-6.0 * w) * Math.cos(15 * w) * smooth(0.6, 0.68, tau);
+    const zb = P0Z * (1 - eInOutCubic((tau - 0.3) / 0.6));
+    const pinch = smooth(0.57, 0.69, tau);
+    const sNeck = tau > 0.12 && tau < 1.02;
+    if (sNeck) {
+      const retr = eInOutCubic((tau - 0.69) / 0.30);
+      const topY = tau < 0.69 ? yb - Rb * 0.5 : lerp(yBlob(0.69) - Rb * 0.5, 0.03, retr);
+      const rn = (0.075 * (1 - 0.38 * smooth(0.2, 0.55, tau)) * (1 - pinch) + 0.004) * (tau < 0.69 ? 1 : (1 - 0.7 * retr));
+      const baseR = 0.15 * (1 - 0.85 * smooth(0.70, 1.0, tau)) * smooth(0.12, 0.22, tau);
+      const zTop = lerp(P0Z, zb, tau < 0.69 ? 1 : 0);
+      if (topY > 0.02 && baseR > 0.01) add([0, 0.02, P0Z], baseR, [0, topY, tau < 0.69 ? zb : P0Z], rn, COL.drop, 0.10);
+    }
+    // the blob, then the necklace
+    const sN = t - T_NECK;
+    const sp = spring(sN, 7.5, 6.5);
+    if (tau > 0.16 && sN < 0.0) {
+      const rr = Rb;
+      addE([0, yb, zb], [rr / Math.sqrt(stretchY), rr * stretchY, rr / Math.sqrt(stretchY)], COL.drop, 0.2);
+      // small satellite pulled up into the blob after the snap
+      const us = sat((tau - 0.70) / 0.2);
+      if (us > 0 && us < 1) addS([0, lerp(yb - Rb - 0.20, yb, eInCubic(us)), zb], 0.035 * (1 - 0.5 * us), COL.drop, 0.06);
+    }
+    if (sN >= 0) {
+      const blobR = Rb * (1 - smooth(0.0, 0.34, sN));
+      const cxy = [0, yb];
+      const pos = [];
+      for (let i = 0; i < NL; i++) {
+        const b = bead(i);
+        const zig = (i % 2 ? 1 : -1) * 0.04 * smooth(0.1, 0.5, sN);
+        const px = lerp(cxy[0], b[0], sp), py = lerp(cxy[1], b[1], sp) + zig * Math.sin(Math.PI * sat(sp)) + 0.03 * Math.sin(Math.PI * sat(sp));
+        pos.push([px, py, lerp(zb, 0, sp)]);
+      }
+      if (blobR > 0.01) addE([0, yb, zb], [blobR / Math.sqrt(stretchY), blobR * stretchY, blobR / Math.sqrt(stretchY)], COL.drop, 0.2);
+      for (let i = 0; i < NL; i++) {
+        const u = t - (T_LET + LET_STEP * i);
+        const r0 = RBEAD[i];
+        const grow = smooth(0.0, 0.5, sN + 0.02 * i);
+        let r = lerp(Rb * 0.52, r0, grow);
+        // wobble after the beads separate
+        const wb = Math.max(0, t - (1.62 + 0.02 * i));
+        const sq = 1 + 0.16 * Math.exp(-5 * wb) * Math.cos(13 * wb + i) * smooth(1.55, 1.68, t);
+        if (u > 0) r *= (1 + 0.28 * smooth(0, 0.1, u)) * (1 - smooth(0.0, 0.34, u));
+        const col = mix3(COL.drop, LCOL[i], smooth(0.0, 0.5, sN));
+        const k = 0.19 * (1 - smooth(0.35, 0.95, sN)) + 0.035;
+        if (r > 0.006) addE(pos[i], [r / Math.sqrt(sq), r * sq, r / Math.sqrt(sq)], col, k);
+      }
+      // taffy threads that thin and snap
+      for (let j = 0; j < NL - 1; j++) {
+        const a = pos[j], b = pos[j + 1];
+        const tp = T_PINCH[j];
+        const rt = 0.075 * Math.pow(1 - smooth(tp - 0.20, tp, t), 1.2) * smooth(0.0, 0.2, sN);
+        const col = mix3(LCOL[j], LCOL[j + 1], 0.5);
+        if (rt > 0.0035) add(a, rt, b, rt * 0.9, col, 0.09);
+        // satellite droplet born at the snap, pulled into a bead
+        const us = (t - tp) / 0.32;
+        if (us > 0 && us < 1) {
+          const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.02 * Math.sin(Math.PI * us), 0];
+          const tgt = (j % 2) ? b : a;
+          const e = eInCubic(us);
+          addS([lerp(m[0], tgt[0], e), lerp(m[1], tgt[1], e), 0], 0.036 * (1 - 0.6 * e), col, 0.05);
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------- D: letters flow out of the beads
+  const lets = [];
+  let anyOn = false;
+  const lifeAmt = smooth(2.7, 3.3, t);
+  for (let i = 0; i < NL; i++) {
+    const L = LET[i];
+    const u = t - (T_LET + LET_STEP * i);
+    let g = 0, rv = -1, sy = 1, sx = 1, ox = 0, oy = 0;
+    if (u > 0) {
+      g = 0.05 * Math.exp(-6 * u) - 0.018 * Math.exp(-4 * u) * Math.sin(9 * u);
+      rv = u > 0.72 ? 10 : 0.12 + 1.2 * eOutCubic(u / 0.58);
+      const e = Math.exp(-5 * u) * Math.sin(10 * u); sy = 1 + 0.11 * e; sx = 1 - 0.055 * e;
+      anyOn = true;
+    }
+    g += lifeAmt * 0.004 * Math.sin(t * 4.6 + i * 1.7);
+    sy += lifeAmt * 0.009 * Math.sin(t * 3.9 + i * 2.1);
+    oy += lifeAmt * 0.006 * Math.sin(t * 2.3 + i * 0.9);
+    lets.push({ ax: L.ax, ay: L.ay, ox, oy, sx, sy, g, rv });
+  }
+  // drips that grow under the letters; two let go and ripple the floor
+  const ripples = [];
+  for (const d of DRIPS) {
+    if (t < d.t0) continue;
+    const L = LET[d.i], lt = lets[d.i];
+    const x = lt.ax + (L.drip[0] - lt.ax) * lt.sx + lt.ox;
+    const yb = lt.ay + (L.drip[1] - lt.ay) * lt.sy + lt.oy;
+    const grow = eOutCubic((t - d.t0) / 0.8);
+    let len = d.len * grow + 0.005 * Math.sin(t * 5 + d.i);
+    const col = LCOL[d.i];
+    if (d.td && t > d.td) {
+      const lenDet = d.len * eOutCubic((d.td - d.t0) / 0.8);
+      const tt = t - d.td;
+      len = lerp(lenDet, 0.025, eOutCubic(tt / 0.22)) + 0.012 * Math.exp(-6 * tt) * Math.sin(20 * tt);
+      const y0 = yb - lenDet;
+      const y = y0 - 0.5 * G * tt * tt - 0.15 * tt;
+      const v = 0.15 + G * tt;
+      const tf = (-0.15 + Math.sqrt(0.0225 + 2 * G * (y0 - 0.03))) / G;
+      if (tt < tf) add([x, y, 0], 0.028, [x, y + 0.02 + 0.012 * v, 0], 0.016, col, 0.02);
+      else {
+        const ts = tt - tf; const spp = 1 - Math.exp(-ts * 14); const fade = 1 - smooth(0.2, 1.1, ts);
+        if (fade > 0.02) addE([x, 0, 0], [0.03 * (1 + 1.6 * spp) * fade, 0.028 * (1 - 0.65 * spp) * fade, 0.03 * (1 + 1.6 * spp) * fade], col, 0.02);
+        ripples.push([x, 0, ts, 1.0]);
+      }
+    }
+    if (len > 0.004) add([x, yb + 0.03, 0], 0.036, [x, yb - len, 0], 0.025 + 0.004 * smooth(0.04, 0.1, len), col, 0.05);
+  }
+  // tiny droplets hanging in the air around the word (depth + life); in front of and behind the letters
+  if (t > 2.45) {
+    const rs = mulberry32(31);
+    for (let k = 0; k < 11; k++) {
+      const front = k % 2 === 0;
+      let x = lerp(-3.1, 3.1, rs()), y = lerp(0.12, 1.75, rs());
+      const z = front ? lerp(0.45, 1.1, rs()) : lerp(-1.0, -0.4, rs());
+      // keep clear of the word: push anything inside the letter band up or out
+      if (Math.abs(x) < 2.55 && y < 1.5 && y > 0.12) { if (k % 3 === 0) y = lerp(1.55, 1.85, rs()); else x = (x < 0 ? -1 : 1) * lerp(2.7, 3.2, rs()); }
+      const r = 0.020 + 0.026 * rs(), ph = rs() * 6.28, hue = rs();
+      const on = eOutCubic((t - 2.45 - 0.06 * k) / 0.5);
+      const pal = [LCOL[0], LCOL[3], LCOL[4], LCOL[6], LCOL[1]];
+      const col = pal[k % pal.length].map(v => Math.min(1, v * 1.5));
+      if (on > 0.02) addS([x + 0.04 * Math.sin(t * 0.9 + ph), y + 0.05 * Math.sin(t * 0.7 + ph * 1.3) + (t - 2.45) * 0.015, z], r * on, col, 0.02);
+    }
+  }
+  // ripples: impact, word, drips
+  const rip =[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  if (t > TI) { rip[0] = 0; rip[1] = P0Z; rip[2] = t - TI; rip[3] = 1.6 * (1 - smooth(1.4, 2.4, t)); }
+  if (t > 2.35) { rip[4] = 0; rip[5] = 0; rip[6] = t - 2.35; rip[7] = 0.7 * (1 - smooth(2.6, 3.8, t)); }
+  ripples.slice(0, 2).forEach((r, k) => { rip.splice(8 + k * 4, 4, r[0], r[1], r[2], r[3]); });
+  // bubbles trapped in the jelly
+  const bubs = [];
+  for (let i = 0; i < NL; i++) {
+    const lt = lets[i];
+    if (lt.rv <= 0) continue;
+    for (const b of LET[i].bubbles) {
+      const rise = (t - 2.4) * 0.02;
+      const bx = lt.ax + (b[0] - lt.ax) * lt.sx + 0.006 * Math.sin(t * 2 + b[4]) + lt.ox;
+      const by = lt.ay + (b[1] + rise - lt.ay) * lt.sy + lt.oy;
+      bubs.push([bx, by, b[2], b[3]]);
+    }
+  }
+  // tight bounds for the ray marcher
+  const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
+  const grow = (p, r) => { for (let k = 0; k < 3; k++) { const rr = Array.isArray(r) ? r[k] : r; mn[k] = Math.min(mn[k], p[k] - rr); mx[k] = Math.max(mx[k], p[k] + rr); } };
+  for (const [a, r1, b, r2, , , e] of prims) { if (e) grow(a, b); else { grow(a, r1); grow(b, r2); } }
+  if (anyOn) grow([TEX.x0 + TEX.sx / 2, TEX.y0 + TEX.sy / 2, 0], [TEX.sx / 2 + 0.2, TEX.sy / 2 + 0.2, 0.2]);
+  for (let k = 0; k < 3; k++) { mn[k] -= 0.14; mx[k] += 0.14; }
+  mn[1] = Math.max(mn[1], -0.05);
+  return { prims, lets, anyOn, rip, bubs, bmin: mn, bmax: mx };
+}
+
+// ---- camera: Catmull-Rom through keys (time, position, target)
+const KEYS = [
+  [0.00, [0.00, 0.78, 3.95], [0.00, 1.22, 0.1]],
+  [0.50, [0.05, 0.32, 3.95], [0.00, 0.34, 0.25]],
+  [0.92, [0.00, 0.42, 4.45], [0.00, 0.55, 0.2]],
+  [1.14, [-0.10, 0.92, 3.05], [0.00, 1.06, 0.1]],
+  [1.50, [0.00, 0.72, 4.90], [0.00, 0.80, 0.05]],
+  [1.85, [0.00, 0.82, 5.95], [0.00, 0.68, 0.0]],
+  [2.70, [0.00, 0.98, 6.55], [0.00, 0.60, 0.0]],
+  [5.00, [0.30, 1.04, 5.80], [0.00, 0.62, 0.0]]
+];
+function cr(p0, p1, p2, p3, u) { return 0.5 * ((2 * p1) + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u); }
+function camAt(t) {
+  t = clamp(t, 0, 5);
+  let i = 0; while (i < KEYS.length - 2 && t > KEYS[i + 1][0]) i++;
+  const k0 = KEYS[Math.max(i - 1, 0)], k1 = KEYS[i], k2 = KEYS[i + 1], k3 = KEYS[Math.min(i + 2, KEYS.length - 1)];
+  const u = sat((t - k1[0]) / (k2[0] - k1[0]));
+  const pos = [0, 1, 2].map(c => cr(k0[1][c], k1[1][c], k2[1][c], k3[1][c], u));
+  const tgt = [0, 1, 2].map(c => cr(k0[2][c], k1[2][c], k2[2][c], k3[2][c], u));
+  let shake = 0;
+  if (t > TI) { const uu = t - TI; shake = 0.010 * Math.exp(-uu * 10) * Math.sin(uu * 70); }
+  pos[1] += shake; tgt[1] += shake;
+  return { pos, tgt };
+}
+
+const MAXP = 64, MAXB = 28;
+const fA = new Float32Array(MAXP * 4), fB = new Float32Array(MAXP * 4), fC = new Float32Array(MAXP * 4), fD = new Float32Array(MAXP * 4);
+const fBub = new Float32Array(MAXB * 4);
+const fLP = new Float32Array(NL * 4), fLT = new Float32Array(NL * 4), fLR = new Float32Array(NL * 4), fLB = new Float32Array(NL * 4), fLC = new Float32Array(NL * 3);
+LCOL.forEach((c, i) => fLC.set(c, i * 3));
+
+function atmoAt(t) {
+  const burst = Math.exp(-Math.pow((t - 2.75) / 0.30, 2));
+  const flush = Math.exp(-Math.pow((t - 1.16) / 0.24, 2));   // pink flush behind the blob at its apex
+  const glow = 0.10 + 0.14 * smooth(0.4, 1.2, t) + 0.30 * smooth(1.9, 2.9, t) + 0.34 * burst + 0.55 * flush - 0.08 * smooth(3.4, 4.6, t);
+  const shaft = 0.16 + 0.26 * smooth(1.8, 2.8, t) + 0.55 * burst;
+  const gsw = smooth(3.15, 4.15, t);
+  const glintPos = lerp(-0.95, 0.95, gsw);
+  const glintAmt = Math.sin(Math.PI * gsw) * 1.15;
+  return [glow, shaft, glintPos, glintAmt];
+}
+
+function drawScene(t, weight, jx, jy, lens) {
+  const S = sceneAt(t), cam = camAt(t);
+  const u = P.scene.u;
+  gl.useProgram(P.scene.p);
+  gl.uniform2f(u.uRes, W, H); gl.uniform2f(u.uJit, jx, jy); gl.uniform2f(u.uLens, lens[0], lens[1]);
+  gl.uniform3fv(u.uCamPos, cam.pos); gl.uniform3fv(u.uCamTgt, cam.tgt);
+  const dx = cam.tgt[0] - cam.pos[0], dy = cam.tgt[1] - cam.pos[1], dz = cam.tgt[2] - cam.pos[2];
+  gl.uniform1f(u.uFocus, Math.hypot(dx, dy, dz));
+  gl.uniform1f(u.uTanHalf, Math.tan(15 * Math.PI / 180));
+  gl.uniform1f(u.uWeight, weight); gl.uniform1f(u.uT, t);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, TX.a); gl.uniform1i(u.uSdfA, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, TX.b); gl.uniform1i(u.uSdfB, 1);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, TX.txt); gl.uniform1i(u.uTxt, 2);
+  gl.uniform4f(u.uTex, TEX.x0, TEX.y0, TEX.sx, TEX.sy);
+  S.lets.forEach((l, i) => {
+    fLP.set([l.ax, l.ay, l.ox, l.oy], i * 4);
+    fLT.set([l.sx, l.sy, l.g, i < 6 ? 1.0 : 0.72], i * 4);
+    const L = LET[i];
+    fLR.set([l.ax + (L.tx - l.ax) * l.sx + l.ox, l.ay + (L.ty - l.ay) * l.sy + l.oy, l.rv, 0], i * 4);
+    fLB.set([L.box[0], L.box[1], L.box[2], L.box[3]], i * 4);
+  });
+  gl.uniform4fv(u.uLP, fLP); gl.uniform4fv(u.uLT, fLT); gl.uniform4fv(u.uLR, fLR); gl.uniform4fv(u.uLB, fLB);
+  gl.uniform3fv(u.uLCol, fLC);
+  gl.uniform1f(u.uWob, smooth(2.6, 3.4, t));
+  gl.uniform1f(u.uLetGlow, smooth(2.0, 3.0, t));
+  gl.uniform1f(u.uMarble, lerp(1.0, 0.45, smooth(1.8, 2.6, t)));
+  gl.uniform3fv(u.uBMin, S.bmin); gl.uniform3fv(u.uBMax, S.bmax);
+  const n = Math.min(MAXP, S.prims.length);
+  for (let i = 0; i < n; i++) {
+    const [a, r1, b, r2, col, k, e] = S.prims[i];
+    fA.set([a[0], a[1], a[2], r1], i * 4); fB.set([b[0], b[1], b[2], r2], i * 4); fC.set([col[0], col[1], col[2], k], i * 4);
+    if (e) fD.set([a[0], a[1], a[2], Math.max(b[0], b[1], b[2]) + 0.02], i * 4);
+    else fD.set([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) / 2 + Math.max(r1, r2) + 0.02], i * 4);
+  }
+  gl.uniform4fv(u.uA, fA); gl.uniform4fv(u.uB, fB); gl.uniform4fv(u.uC, fC); gl.uniform4fv(u.uD, fD); gl.uniform1i(u.uN, n);
+  const nb = Math.min(MAXB, S.bubs.length);
+  for (let i = 0; i < nb; i++) fBub.set(S.bubs[i], i * 4);
+  gl.uniform4fv(u.uBub, fBub); gl.uniform1i(u.uNB, nb); gl.uniform1f(u.uBubA, smooth(2.35, 2.9, t));
+  gl.uniform4fv(u.uRip, new Float32Array(S.rip));
+  gl.uniform1f(u.uEnvRot, -0.12 + 0.05 * t);
+  gl.uniform4fv(u.uAtmo, atmoAt(t));
+  // the flipped name inside the falling drop (follows the drop, gone after impact)
+  const tt = Math.max(t, 0);
+  const dropY = Y0 - V0 * tt - 0.5 * G * tt * tt;
+  gl.uniform4f(u.uTxtP, 0, dropY, 2.0, (1 - smooth(TI - 0.05, TI + 0.04, t)));
+  gl.uniform1f(u.uFlash, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+
+function pass(prog, rt, setup) {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, rt ? rt.fb : null);
+  gl.viewport(0, 0, rt ? rt.w : W, rt ? rt.h : H);
+  gl.useProgram(prog.p); setup(prog.u);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+function bindTex(unit, tex) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex); }
+
+const halton = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
+const SHUTTER = 0.55 / 30;
+const APERTURE = 0.055;
+const SUBQ = parseInt(new URLSearchParams(location.search).get('sub') || '20', 10);
+// more samples while the camera is close: the shallow focus needs them to stay smooth
+function subCount(t) { return CAPTURE ? Math.round(SUBQ * (t > 0.85 && t < 1.45 ? 3.5 : (t > 0.78 && t < 1.62 ? 2.0 : 1.0))) : 1; }
+
+function renderAt(t) {
+  const SUB = subCount(t);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, RT.acc.fb);
+  gl.viewport(0, 0, W, H);
+  gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+  for (let s = 0; s < SUB; s++) {
+    const ts = SUB > 1 ? t + ((s + 0.5) / SUB - 0.5) * SHUTTER : t;
+    const j = SUB > 1 ? [halton(s + 1, 2) - 0.5, halton(s + 1, 3) - 0.5] : [0, 0];
+    let lens = [0, 0];
+    if (SUB > 1) {
+      const a = halton(s + 1, 5), b = halton(s + 1, 7);
+      const cam = camAt(ts), foc = Math.hypot(cam.tgt[0] - cam.pos[0], cam.tgt[1] - cam.pos[1], cam.tgt[2] - cam.pos[2]);
+      const ap = APERTURE * clamp(4.6 / foc, 1.0, 1.55);       // shallower focus when the camera is close (macro)
+      const r = Math.sqrt(a) * ap, th = b * Math.PI * 2; lens = [r * Math.cos(th), r * Math.sin(th)];
+    }
+    drawScene(ts, 1 / SUB, j[0], j[1], lens);
+  }
+  gl.disable(gl.BLEND);
+  const blurPair = (srcTex, a, b, w, h) => {
+    pass(P.blur, b, u => { bindTex(0, srcTex); gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uDir, 1 / w, 0); gl.uniform2f(u.uRes, b.w, b.h); });
+    pass(P.blur, a, u => { bindTex(0, b.tex); gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uDir, 0, 1 / h); gl.uniform2f(u.uRes, a.w, a.h); });
+  };
+  pass(P.bright, RT.b1a, u => { bindTex(0, RT.acc.tex); gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uTexel, 1 / W, 1 / H); gl.uniform2f(u.uRes, RT.b1a.w, RT.b1a.h); });
+  blurPair(RT.b1a.tex, RT.b1a, RT.b1b, RT.b1a.w, RT.b1a.h);
+  pass(P.blur, RT.b2a, u => { bindTex(0, RT.b1a.tex); gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uDir, 1 / RT.b1a.w, 0); gl.uniform2f(u.uRes, RT.b2a.w, RT.b2a.h); });
+  blurPair(RT.b2a.tex, RT.b2a, RT.b2b, RT.b2a.w, RT.b2a.h);
+  pass(P.blur, RT.b3a, u => { bindTex(0, RT.b2a.tex); gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uDir, 1 / RT.b2a.w, 0); gl.uniform2f(u.uRes, RT.b3a.w, RT.b3a.h); });
+  blurPair(RT.b3a.tex, RT.b3a, RT.b3b, RT.b3a.w, RT.b3a.h);
+  // tagline streams in left to right like tokens
+  const ta = smooth(3.0, 3.25, t);
+  const tx = lerp(TAG_X0 - 0.03, TAG_X1 + 0.04, eOutCubic((t - 3.05) / 0.85));
+  pass(P.final, null, u => {
+    bindTex(0, RT.acc.tex); gl.uniform1i(u.uScene, 0);
+    bindTex(1, RT.b1a.tex); gl.uniform1i(u.uB1, 1);
+    bindTex(2, RT.b2a.tex); gl.uniform1i(u.uB2, 2);
+    bindTex(3, RT.b3a.tex); gl.uniform1i(u.uB3, 3);
+    bindTex(4, TX.tag); gl.uniform1i(u.uTag, 4);
+    gl.uniform2f(u.uRes, W, H); gl.uniform1f(u.uTime, t);
+    gl.uniform1f(u.uTagA, ta); gl.uniform1f(u.uTagX, tx); gl.uniform1f(u.uTagW, 0.05);
+  });
+  gl.finish();
+}
+
+window.ready = (async () => {
+  await document.fonts.load('300 34px Outfit'); await document.fonts.load('500 34px Outfit');
+  await buildWord();
+  initGL();
+  window.renderAt = renderAt;
+  if (!CAPTURE) { const t0 = performance.now(); (function loop() { renderAt(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })(); }
+})();
+window.renderAt = (t) => window.ready.then(() => renderAt(t));
+})();
+</script>
+</body>
+</html>

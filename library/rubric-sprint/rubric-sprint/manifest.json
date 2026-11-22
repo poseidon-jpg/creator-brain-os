@@ -1,0 +1,11 @@
+{
+  "name": "sprint",
+  "port": 5060,
+  "apiPrefixes": ["/api/sprint"],
+  "tabs": [
+    { "id": "sprint", "label": "Sprint", "panelSelector": "#sprint" },
+    { "id": "backlog", "label": "Backlog", "panelSelector": "#backlog" }
+  ],
+  "stripSelectors": [".gen-rubric-brand"],
+  "auxSelectors": ["#new-task-modal", "#toast"]
+}

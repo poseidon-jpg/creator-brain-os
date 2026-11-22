@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TERMINAL_84 · Museum of Personal Computing</title>
+<meta name="description" content="TERMINAL_84 is a working museum of personal computing. Boot up, browse the machine hall, visit the restoration lab, or type commands straight into the site.">
+<meta name="theme-color" content="#020a04">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23020a04'/%3E%3Ctext x='5' y='23' font-family='monospace' font-size='16' fill='%2333ff66'%3E%26gt;_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020a04;
+  --bg-panel:#04120a;
+  --ph:#33ff66;
+  --ph-bright:#7dffa3;
+  --ph-dim:#1d9b45;
+  --ph-faint:rgba(51,255,102,.14);
+  --ph-line:rgba(51,255,102,.28);
+  --glow:rgba(51,255,102,.55);
+  --danger:#ff5555;
+  --sel-bg:#33ff66;
+  --sel-fg:#020a04;
+}
+html[data-mode="amber"]{
+  --bg:#0a0602;
+  --bg-panel:#140c03;
+  --ph:#ffb000;
+  --ph-bright:#ffd876;
+  --ph-dim:#a8720a;
+  --ph-faint:rgba(255,176,0,.14);
+  --ph-line:rgba(255,176,0,.28);
+  --glow:rgba(255,176,0,.55);
+  --sel-bg:#ffb000;
+  --sel-fg:#0a0602;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+::selection{background:var(--sel-bg);color:var(--sel-fg)}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--ph);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+  text-shadow:0 0 6px var(--glow);
+  transition:background .5s,color .5s;
+}
+/* ============ CRT LAYERS ============ */
+.crt-scanlines{
+  pointer-events:none;position:fixed;inset:0;z-index:9000;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.28) 2px 4px);
+  mix-blend-mode:multiply;
+}
+.crt-vignette{
+  pointer-events:none;position:fixed;inset:0;z-index:9001;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);
+}
+.crt-flicker{
+  pointer-events:none;position:fixed;inset:0;z-index:9002;
+  background:var(--ph);opacity:.02;
+  animation:flicker 4s infinite;
+  mix-blend-mode:overlay;
+}
+.crt-glowline{
+  pointer-events:none;position:fixed;left:0;right:0;height:120px;z-index:9003;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.045),rgba(255,255,255,0));
+  animation:sweep 9s linear infinite;
+}
+@keyframes flicker{
+  0%,100%{opacity:.02}3%{opacity:.05}6%{opacity:.02}8%{opacity:.06}
+  9%{opacity:.02}45%{opacity:.03}46%{opacity:.07}47%{opacity:.02}72%{opacity:.045}
+}
+@keyframes sweep{0%{top:-140px}100%{top:110vh}}
+/* ============ TYPO ============ */
+h1,h2,h3,.vt{font-family:'VT323',monospace;font-weight:400;letter-spacing:.02em}
+a{color:var(--ph-bright);text-decoration:none;border-bottom:1px dotted var(--ph-dim)}
+a:hover,a:focus-visible{background:var(--ph);color:var(--bg);text-shadow:none;outline:none;border-bottom-color:transparent}
+main{max-width:960px;margin:0 auto;padding:0 24px}
+section{padding:72px 0 24px;border-bottom:1px dashed var(--ph-line)}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:28px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(30px,5vw,44px);text-transform:uppercase}
+.sec-head .path{color:var(--ph-dim);font-size:13px}
+.dim{color:var(--ph-dim)}
+.bright{color:var(--ph-bright)}
+kbd{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;
+  border:1px solid var(--ph-dim);border-bottom-width:2px;border-radius:3px;
+  padding:1px 6px;color:var(--ph-bright);
+}
+pre{font-family:'IBM Plex Mono',monospace;line-height:1.25}
+/* ============ BOOT OVERLAY ============ */
+#boot{
+  position:fixed;inset:0;z-index:9500;background:var(--bg);
+  padding:6vh 6vw;font-size:15px;overflow:hidden;
+}
+#boot.done{display:none}
+#boot .bootline{white-space:pre-wrap}
+#boot .skip{position:absolute;bottom:4vh;right:6vw;color:var(--ph-dim);font-size:13px;animation:blinkslow 1.4s step-end infinite}
+@keyframes blinkslow{50%{opacity:.25}}
+/* ============ HEADER ============ */
+header{
+  position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(3px);border-bottom:1px solid var(--ph-line);
+}
+.hbar{max-width:960px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hbar .logo{font-family:'VT323',monospace;font-size:24px;border:none;line-height:1}
+.hbar nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.hbar nav a{border:none;padding:2px 8px;font-size:13px;color:var(--ph)}
+.hbar nav a .k{color:var(--ph-dim)}
+.hbar nav a:hover .k,.hbar nav a:focus-visible .k{color:inherit}
+#modeBtn{
+  margin-left:6px;background:none;border:1px solid var(--ph-dim);color:var(--ph);
+  font-family:inherit;font-size:12px;padding:3px 10px;cursor:pointer;border-radius:3px;
+  text-shadow:inherit;
+}
+#modeBtn:hover,#modeBtn:focus-visible{background:var(--ph);color:var(--bg);text-shadow:none;outline:none}
+/* ============ HERO ============ */
+#hero{border-bottom:1px dashed var(--ph-line);padding:64px 0 48px;min-height:72vh;display:flex;flex-direction:column;justify-content:center}
+#hero pre.logo-art{
+  font-size:clamp(6px,1.5vw,14px);line-height:1.15;color:var(--ph-bright);
+  text-shadow:0 0 12px var(--glow),0 0 32px var(--ph-faint);
+  overflow-x:auto;margin-bottom:26px;
+}
+#typeline{font-family:'VT323',monospace;font-size:clamp(20px,3.4vw,32px);min-height:1.4em}
+.cursor{
+  display:inline-block;width:.55em;height:1.05em;vertical-align:-.15em;
+  background:var(--ph);animation:blink 1.06s step-end infinite;
+  box-shadow:0 0 10px var(--glow);
+}
+@keyframes blink{50%{opacity:0}}
+.hero-meta{margin-top:26px;display:flex;gap:26px;flex-wrap:wrap;color:var(--ph-dim);font-size:13px}
+.hero-meta b{color:var(--ph);font-weight:500}
+.hero-hint{margin-top:34px;font-size:13px;color:var(--ph-dim)}
+/* ============ STAT STRIP ============ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ph-line);border:1px solid var(--ph-line);margin:44px 0 10px}
+.stat{background:var(--bg-panel);padding:18px 16px}
+.stat .n{font-family:'VT323',monospace;font-size:34px;color:var(--ph-bright);line-height:1}
+.stat .l{font-size:11px;color:var(--ph-dim);text-transform:uppercase;letter-spacing:.12em;margin-top:6px}
+/* ============ EXHIBITS ============ */
+.exgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.excard{
+  border:1px solid var(--ph-line);background:var(--bg-panel);
+  padding:18px 18px 20px;position:relative;overflow:hidden;
+  transition:border-color .25s,box-shadow .25s,transform .25s;
+}
+.excard:hover,.excard:focus-within{
+  border-color:var(--ph);box-shadow:0 0 22px var(--ph-faint),inset 0 0 30px rgba(0,0,0,.4);
+  transform:translateY(-3px);
+}
+.excard pre{
+  font-size:12px;color:var(--ph-bright);margin:4px 0 14px;
+  text-shadow:0 0 8px var(--glow);min-height:9.5em;overflow-x:auto;
+}
+.excard h3{font-size:26px;line-height:1.1}
+.excard .tag{font-size:11px;color:var(--ph-dim);letter-spacing:.1em;text-transform:uppercase}
+.excard p{font-size:13.5px;margin-top:10px;color:color-mix(in srgb,var(--ph) 82%,white 4%)}
+.excard .cat{position:absolute;top:12px;right:14px;font-size:10px;color:var(--ph-dim);letter-spacing:.15em}
+.excard .status{margin-top:12px;font-size:11px;letter-spacing:.1em}
+.status .ok{color:var(--ph-bright)}
+.status .down{color:var(--danger);text-shadow:0 0 6px rgba(255,85,85,.5)}
+/* ============ LAB LOG ============ */
+.loglines{border:1px solid var(--ph-line);background:var(--bg-panel);padding:22px 20px;font-size:13.5px}
+.loglines .row{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:9px 0;border-bottom:1px dotted var(--ph-line)}
+.loglines .row:last-child{border-bottom:none}
+.loglines .d{color:var(--ph-dim)}
+.lab-note{margin-top:20px;font-size:13.5px;max-width:640px}
+/* ============ VISIT ============ */
+.visit-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{border:1px solid var(--ph-line);background:var(--bg-panel);padding:20px}
+.panel h3{font-size:24px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td,th{padding:7px 4px;text-align:left;border-bottom:1px dotted var(--ph-line)}
+th{color:var(--ph-dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+tr:last-child td{border-bottom:none}
+.price{color:var(--ph-bright)}
+.addr{font-size:13.5px;line-height:1.8}
+/* ============ TERMINAL ============ */
+#terminal-sec{padding-bottom:64px}
+#term{
+  border:1px solid var(--ph);background:#000;
+  box-shadow:0 0 34px var(--ph-faint),inset 0 0 60px rgba(0,0,0,.7);
+  border-radius:6px;overflow:hidden;
+}
+#term .tbar{
+  display:flex;justify-content:space-between;padding:7px 14px;font-size:12px;
+  border-bottom:1px solid var(--ph-line);color:var(--ph-dim);background:var(--bg-panel);
+}
+#termout{
+  padding:16px 16px 4px;height:340px;overflow-y:auto;font-size:14px;
+  white-space:pre-wrap;word-break:break-word;scrollbar-width:thin;scrollbar-color:var(--ph-dim) transparent;
+}
+#termout .in{color:var(--ph-bright)}
+#termout .err{color:var(--danger);text-shadow:0 0 6px rgba(255,85,85,.5)}
+.tline{display:flex;align-items:center;padding:4px 16px 14px;gap:8px}
+.tline .prompt{color:var(--ph-bright);white-space:nowrap}
+#cmd{
+  flex:1;background:none;border:none;outline:none;color:var(--ph);
+  font-family:'IBM Plex Mono',monospace;font-size:14px;text-shadow:inherit;caret-color:transparent;
+}
+#fakecaret{width:9px;height:18px;background:var(--ph);animation:blink 1.06s step-end infinite;flex:none;box-shadow:0 0 8px var(--glow)}
+.term-hint{margin-top:14px;font-size:13px;color:var(--ph-dim)}
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--ph-line);margin-top:0}
+.fwrap{max-width:960px;margin:0 auto;padding:34px 24px 44px;font-size:12.5px;color:var(--ph-dim)}
+.fwrap .cols{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:26px}
+.fwrap a{color:var(--ph-dim)}
+.credit{border-top:1px dotted var(--ph-line);padding-top:16px;font-size:11.5px}
+/* ============ REVEAL ============ */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+.rv.on{opacity:1;transform:none}
+.exgrid .excard:nth-child(2),.stats .stat:nth-child(2){transition-delay:.09s}
+.exgrid .excard:nth-child(3),.stats .stat:nth-child(3){transition-delay:.18s}
+.exgrid .excard:nth-child(4),.stats .stat:nth-child(4){transition-delay:.27s}
+.exgrid .excard:nth-child(5){transition-delay:.09s}
+.exgrid .excard:nth-child(6){transition-delay:.18s}
+.excard.rv{transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1),border-color .25s,box-shadow .25s}
+.excard.rv.on{transition:transform .3s cubic-bezier(.16,1,.3,1),border-color .25s,box-shadow .25s,opacity .7s ease}
+/* glitch hover on card titles */
+.excard h3{position:relative}
+.excard:hover h3{animation:glitch .32s steps(2,end) 1}
+@keyframes glitch{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-2px);text-shadow:2px 0 var(--danger),-2px 0 var(--ph-bright)}
+  50%{transform:translateX(2px);text-shadow:-2px 0 var(--danger),2px 0 var(--ph-bright)}
+  100%{transform:none}
+}
+/* ============ TICKER ============ */
+.ticker{
+  border-top:1px solid var(--ph-line);border-bottom:1px solid var(--ph-line);
+  background:var(--bg-panel);overflow:hidden;white-space:nowrap;
+  font-size:13px;padding:8px 0;position:relative;margin:0 calc(50% - 50vw);
+}
+.ticker .track{display:inline-block;padding-left:100%;animation:ticker 38s linear infinite}
+.ticker:hover .track{animation-play-state:paused}
+@keyframes ticker{100%{transform:translateX(-100%)}}
+.ticker b{color:var(--ph-bright);font-weight:500}
+/* ============ POWER OFF ============ */
+body.poweroff{animation:poweroff .5s cubic-bezier(.7,0,1,1) forwards}
+@keyframes poweroff{
+  0%{transform:scaleY(1);filter:brightness(1)}
+  60%{transform:scaleY(.006);filter:brightness(3)}
+  100%{transform:scaleY(.002) scaleX(0);filter:brightness(6)}
+}
+/* ============ RESPONSIVE ============ */
+@media(max-width:900px){
+  #typeline{min-height:2.9em}
+}
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .visit-grid{grid-template-columns:1fr}
+  #termout{height:300px}
+  #hero{min-height:0;padding-top:48px}
+}
+@media(max-width:600px){
+  #typeline{min-height:4.3em}
+  .hero-meta{gap:10px 22px}
+}
+@media(max-width:480px){
+  body{font-size:15px}
+  .hbar{padding:10px 16px}
+  main{padding:0 16px}
+  section{padding:56px 0 20px}
+  .hbar nav a{font-size:12px;padding:2px 5px}
+}
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .crt-flicker,.crt-glowline{display:none}
+  .cursor,#fakecaret,#boot .skip{animation:none}
+  .rv{opacity:1;transform:none;transition:none}
+  .excard,.excard.rv,.excard.rv.on{transition:none;animation:none}
+  .excard:hover h3{animation:none}
+  .ticker .track{animation:none;padding-left:0}
+  body.poweroff{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="crt-scanlines" aria-hidden="true"></div>
+<div class="crt-vignette" aria-hidden="true"></div>
+<div class="crt-flicker" aria-hidden="true"></div>
+<div class="crt-glowline" aria-hidden="true"></div>
+
+<div id="boot" aria-hidden="true">
+  <div id="bootlog"></div>
+  <div class="skip">PRESS ANY KEY TO SKIP ▮</div>
+</div>
+
+<header>
+  <div class="hbar">
+    <a class="logo" href="#hero">TERMINAL_84<span class="dim">:~$</span></a>
+    <nav aria-label="Site">
+      <a href="#exhibits"><span class="k">[1]</span> EXHIBITS</a>
+      <a href="#lab"><span class="k">[2]</span> LAB</a>
+      <a href="#visit"><span class="k">[3]</span> VISIT</a>
+      <a href="#terminal-sec"><span class="k">[T]</span> TERMINAL</a>
+    </nav>
+    <button id="modeBtn" title="Toggle phosphor color">AMBER MODE</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+<pre class="logo-art" aria-label="TERMINAL 84 ASCII logo">
+ ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗          █████╗ ██╗  ██╗
+ ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║         ██╔══██╗██║  ██║
+    ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║         ╚█████╔╝███████║
+    ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██╔══██║██║         ██╔══██╗╚════██║
+    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██║  ██║███████╗    ╚█████╔╝     ██║
+    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝     ╚════╝      ╚═╝
+</pre>
+  <div id="typeline"><span id="typed"></span><span class="cursor" aria-hidden="true"></span></div>
+  <div class="hero-meta">
+    <span><b>EST.</b> 1997</span>
+    <span><b>MACHINES</b> 212 catalogued</span>
+    <span><b>LOCATION</b> 84 Relay Street, Ferngate</span>
+    <span><b>UPTIME</b> <span id="uptime">10,592</span> days</span>
+  </div>
+  <p class="hero-hint">Every machine on this floor still boots. So does this website - scroll like a normal person, or press <kbd>T</kbd> and type <span class="bright">help</span> like it's 1984.</p>
+
+  <div class="stats">
+    <div class="stat rv"><div class="n" data-count="212">212</div><div class="l">Working machines</div></div>
+    <div class="stat rv"><div class="n" data-count="41">41</div><div class="l">In restoration</div></div>
+    <div class="stat rv"><div class="n" data-count="9340" data-comma="1">9,340</div><div class="l">Floppies archived</div></div>
+    <div class="stat rv"><div class="n">64KB</div><div class="l">Of pure ambition</div></div>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div class="track">
+  <b>NOW SHOWING</b> · KILL THE BIT on the Altair, daily 11:00 &nbsp;★&nbsp; OREGON TRAIL open play, Apple II corner, all day &nbsp;★&nbsp; UNIX v6 TAPE BOOT on the PDP-11/70, first Saturday monthly &nbsp;★&nbsp; <b>OPEN BENCH NIGHT</b> Wednesdays 18:00–21:00 &nbsp;★&nbsp; SID CHIP LISTENING HOUR, C64 corner, Sundays 15:00 &nbsp;★&nbsp; gift shop restocked: floppy-disk coasters are back &nbsp;★&nbsp; please stop asking Gerald about Betamax &nbsp;★&nbsp;
+</div></div>
+
+<!-- ============ EXHIBITS ============ -->
+<section id="exhibits">
+  <div class="sec-head rv"><h2>The Machine Hall</h2><span class="path">/exhibits · 6 of 212 shown</span></div>
+  <div class="exgrid">
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-001</span>
+      <pre aria-hidden="true">
+ ┌────────────────────────┐
+ │ ALTAIR 8800            │
+ │ ● ● ● ● ● ● ● ●  ○ ○ ○ │
+ │ ▐▌▐▌▐▌▐▌▐▌▐▌▐▌▐▌ ▐▌▐▌▐▌│
+ │ ▂▂ ▂▂ ▂▂ ▂▂ ▂▂ ▂▂ ▂▂   │
+ └────────────────────────┘</pre>
+      <h3>MITS Altair 8800</h3>
+      <div class="tag">1975 · Albuquerque, NM · Intel 8080</div>
+      <p>The kit that started the fire. No screen, no keyboard · you talk to it in toggle switches and it answers in blinking LEDs. Ours runs a hand-keyed Kill the Bit, daily at 11:00.</p>
+      <div class="status">STATUS: <span class="ok">● OPERATIONAL</span></div>
+    </article>
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-014</span>
+      <pre aria-hidden="true">
+    ┌───────────────┐
+    │ ┌───────────┐ │
+    │ │ ]LOAD     │ │
+    │ │ ]RUN█     │ │
+    │ └───────────┘ │
+   ┌┴───────────────┴┐
+   │ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ │
+   └─────────────────┘</pre>
+      <h3>Apple II</h3>
+      <div class="tag">1977 · Cupertino, CA · MOS 6502</div>
+      <p>The first computer that looked like it belonged in a house instead of a lab. This unit shipped to a dentist in Fresno who used it for a single spreadsheet for eleven years. It plays Oregon Trail now.</p>
+      <div class="status">STATUS: <span class="ok">● OPERATIONAL</span></div>
+    </article>
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-027</span>
+      <pre aria-hidden="true">
+   ┌─────────────┐
+   │ ▄▄▄▄▄▄▄▄▄▄▄ │
+   │ █ C:\>_   █ │
+   │ ▀▀▀▀▀▀▀▀▀▀▀ │
+   └──┬───────┬──┘
+ ┌────┴───────┴────┐
+ │ ▪ IBM  [░░░░] ▪ │
+ └─────────────────┘</pre>
+      <h3>IBM 5150 PC</h3>
+      <div class="tag">1981 · Boca Raton, FL · Intel 8088</div>
+      <p>Big Blue's reluctant classic. Beige, serious, built like office furniture. The clone wars it accidentally triggered defined the next forty years of computing. Runs VisiCalc and Flight Simulator 1.0.</p>
+      <div class="status">STATUS: <span class="ok">● OPERATIONAL</span></div>
+    </article>
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-042</span>
+      <pre aria-hidden="true">
+ ┌───────────────────┐
+ │  ▛▀▀▀▀▀▀▀▀▀▀▀▀▀▜  │
+ │  ▌ READY.      ▐  │
+ │  ▌ █           ▐  │
+ │  ▙▄▄▄▄▄▄▄▄▄▄▄▄▄▟  │
+ ├───────────────────┤
+ │ ▤▤▤▤▤▤▤▤▤▤ C=64  │
+ └───────────────────┘</pre>
+      <h3>Commodore 64</h3>
+      <div class="tag">1982 · West Chester, PA · MOS 6510</div>
+      <p>Still the best-selling single computer model ever made · roughly 17 million bread bins. The SID chip inside is why every synth nerd in the building keeps drifting to this corner. Try the joystick.</p>
+      <div class="status">STATUS: <span class="ok">● OPERATIONAL</span></div>
+    </article>
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-063</span>
+      <pre aria-hidden="true">
+    ┌───────────┐
+    │ ┌───────┐ │
+    │ │ hello │ │
+    │ └───────┘ │
+    │  ▁▁▁▁▁▁▁  │
+    │ ┌───────┐ │
+    └─┤ ▒▒▒▒▒ ├─┘
+      └───────┘</pre>
+      <h3>Macintosh 128K</h3>
+      <div class="tag">1984 · Cupertino, CA · Motorola 68000</div>
+      <p>The machine this museum is named after a year of. A computer with a face, a mouse, and opinions. Our unit still has the original owner's MacPaint doodles on the internal disk. We kept every one.</p>
+      <div class="status">STATUS: <span class="ok">● OPERATIONAL</span></div>
+    </article>
+
+    <article class="excard rv" tabindex="0">
+      <span class="cat">CAT №T84-777</span>
+      <pre aria-hidden="true">
+ ┌──┬──────────────┬──┐
+ │▓▓│ pdp-11/70    │▓▓│
+ │▓▓│ ●●○●○●●○●●○● │▓▓│
+ │▓▓│ ▐▌▐▌▐▌▐▌▐▌▐▌ │▓▓│
+ │▓▓│ ○●●○●○○●●○●○ │▓▓│
+ │▓▓│ ▐▌▐▌▐▌▐▌▐▌▐▌ │▓▓│
+ └──┴──────────────┴──┘</pre>
+      <h3>DEC PDP-11/70</h3>
+      <div class="tag">1975 · Maynard, MA · The room-heater</div>
+      <p>Not personal, not sorry. Our largest resident, on loan from Ferngate Polytechnic, where it computed payroll until 1993. UNIX v6 boots from tape on the first Saturday of each month. Bring earplugs.</p>
+      <div class="status">STATUS: <span class="down">■ RESTORATION · PSU RECAP</span></div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ LAB ============ -->
+<section id="lab">
+  <div class="sec-head rv"><h2>Restoration Lab</h2><span class="path">/lab/worklog · live feed</span></div>
+  <div class="loglines rv">
+    <div class="row"><span class="d">2026-07-06</span><span>TRS-80 Model III <span class="dim">№T84-118</span> · replaced 14 electrolytic caps, CRT recapped. First clean boot since 1994. Whole lab applauded a beep.</span></div>
+    <div class="row"><span class="d">2026-07-02</span><span>Osborne 1 <span class="dim">№T84-090</span> · keyboard membrane rebuilt from donor unit. The 5" screen remains, as ever, adorably useless.</span></div>
+    <div class="row"><span class="d">2026-06-25</span><span>Floppy archive batch 47 · 212 disks imaged, 9 unreadable, 1 containing somebody's 1988 divorce letter. Sealed, unread, archived.</span></div>
+    <div class="row"><span class="d">2026-06-19</span><span>PDP-11/70 <span class="dim">№T84-777</span> · power supply recap continues. 38 of 61 capacitors done. Volunteer Priya can now identify caps by smell. Concerning.</span></div>
+    <div class="row"><span class="d">2026-06-11</span><span>Apple Lisa <span class="dim">№T84-201</span> · Twiggy drive alignment. Success rate now 7 reads in 10. We celebrate small victories here.</span></div>
+  </div>
+  <p class="lab-note rv">The lab runs on volunteers, donated machines, and an unhealthy quantity of DeoxIT. Watch restorations through the glass wall on Level 1, or join the crew: open bench night every Wednesday, 18:00–21:00. No experience needed · only patience and steady hands.</p>
+</section>
+
+<!-- ============ VISIT ============ -->
+<section id="visit">
+  <div class="sec-head rv"><h2>Visiting Info</h2><span class="path">/visit · hours · tickets · address</span></div>
+  <div class="visit-grid">
+    <div class="panel rv">
+      <h3>&gt; HOURS</h3>
+      <table>
+        <tr><th>Day</th><th>Open</th></tr>
+        <tr><td>Tue – Fri</td><td>10:00 – 18:00</td></tr>
+        <tr><td>Saturday</td><td>09:00 – 20:00</td></tr>
+        <tr><td>Sunday</td><td>11:00 – 17:00</td></tr>
+        <tr><td>Monday</td><td class="dim">CLOSED · maintenance & tape backups</td></tr>
+      </table>
+    </div>
+    <div class="panel rv">
+      <h3>&gt; TICKETS</h3>
+      <table>
+        <tr><th>Type</th><th>Price</th></tr>
+        <tr><td>Adult</td><td class="price">$14.00</td></tr>
+        <tr><td>Student / Senior</td><td class="price">$9.00</td></tr>
+        <tr><td>Under 12</td><td class="price">FREE</td></tr>
+        <tr><td>Annual pass <span class="dim">(incl. bench nights)</span></td><td class="price">$48.00</td></tr>
+        <tr><td>Arrive on a machine older than 1990</td><td class="price">FREE, obviously</td></tr>
+      </table>
+    </div>
+    <div class="panel rv">
+      <h3>&gt; ADDRESS</h3>
+      <p class="addr">
+        TERMINAL_84<br>
+        84 Relay Street, Old Mill Quarter<br>
+        Ferngate FG2 4TP<br>
+        <span class="dim">2 min from Ferngate Central · bike racks out front</span><br>
+        <a href="#terminal-sec">tickets@terminal84.museum</a> · (0)84 8080 8088
+      </p>
+    </div>
+    <div class="panel rv">
+      <h3>&gt; HOUSE RULES</h3>
+      <p class="addr">
+        Touch everything with a green tag.<br>
+        Touch nothing with a red tag.<br>
+        Saving your game is permitted.<br>
+        Blowing into cartridges is encouraged.<br>
+        <span class="dim">Flash photography upsets the CRTs. And Gerald.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TERMINAL ============ -->
+<section id="terminal-sec">
+  <div class="sec-head rv"><h2>Public Terminal</h2><span class="path">tty84 · guest session</span></div>
+  <div id="term" class="rv">
+    <div class="tbar"><span>guest@terminal84 · tty84</span><span id="clock">--:--:--</span></div>
+    <div id="termout" role="log" aria-live="polite" aria-label="Terminal output"></div>
+    <div class="tline">
+      <label class="prompt" for="cmd">guest@t84:~$</label>
+      <input id="cmd" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type a command. Try help.">
+      <span id="fakecaret" aria-hidden="true"></span>
+    </div>
+  </div>
+  <p class="term-hint">This is a real prompt. Type <span class="bright">help</span> to see commands · <span class="bright">exhibits</span>, <span class="bright">hours</span>, <span class="bright">tickets</span>, <span class="bright">amber</span>… and a few we don't list. <kbd>↑</kbd>/<kbd>↓</kbd> for history.</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="fwrap">
+    <div class="cols">
+      <span>TERMINAL_84 · Museum of Personal Computing · est. 1997</span>
+      <span>84 Relay Street, Ferngate · <a href="#visit">plan a visit</a></span>
+      <span>No machines were harmed. Several were lovingly recapped.</span>
+    </div>
+    <div class="credit">Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- MODE ---------- */
+var modeBtn = document.getElementById("modeBtn");
+function setMode(m){
+  document.documentElement.setAttribute("data-mode", m);
+  modeBtn.textContent = m === "green" ? "AMBER MODE" : "GREEN MODE";
+  try{ localStorage.setItem("t84-mode", m); }catch(e){}
+}
+try{ var saved = localStorage.getItem("t84-mode"); if(saved==="amber") setMode("amber"); }catch(e){}
+modeBtn.addEventListener("click", function(){
+  setMode(document.documentElement.getAttribute("data-mode")==="green" ? "amber" : "green");
+});
+
+/* ---------- HERO TYPEWRITER ---------- */
+var typed = document.getElementById("typed");
+var heroText = "THE MUSEUM OF PERSONAL COMPUTING. EVERY MACHINE STILL BOOTS.";
+var typeStarted = false;
+function startHeroTypeInstant(){ typed.textContent = heroText; typeStarted = true; }
+function startHeroType(){
+  if(typeStarted) return; typeStarted = true;
+  if(reduced){ startHeroTypeInstant(); return; }
+  var i = 0;
+  (function t(){
+    if(i <= heroText.length){
+      typed.textContent = heroText.slice(0, i++);
+      setTimeout(t, 34 + Math.random()*40);
+    }
+  })();
+}
+
+/* ---------- BOOT SEQUENCE ---------- */
+var boot = document.getElementById("boot");
+var bootlog = document.getElementById("bootlog");
+var bootDone = false;
+var bootLines = [
+  "TERMINAL_84 BIOS v8.4  (C) 1984-2026 Ferngate Heritage Computing",
+  "MEMORY TEST: 65536 KB ............................ OK",
+  "PHOSPHOR: GREEN P1 · DEGAUSSING ................. OK",
+  "MOUNTING /exhibits (212 machines) ............... OK",
+  "MOUNTING /lab (41 restorations in progress) ..... OK",
+  "LOADING VISITOR SHELL v2.6 ...................... OK",
+  "CHECKING FOR Y2K COMPLIANCE ..................... EVENTUALLY",
+  " ",
+  "BOOT COMPLETE. WELCOME, VISITOR."
+];
+function endBoot(){
+  if(bootDone) return;
+  bootDone = true;
+  boot.classList.add("done");
+  document.removeEventListener("keydown", skipBoot);
+  boot.removeEventListener("click", skipBoot);
+  startHeroType();
+}
+function skipBoot(){ endBoot(); }
+if(reduced || sessionStorage.getItem("t84-booted")){
+  boot.classList.add("done");
+  bootDone = true;
+  startHeroTypeInstant();
+}else{
+  document.addEventListener("keydown", skipBoot);
+  boot.addEventListener("click", skipBoot);
+  var li = 0;
+  (function nextLine(){
+    if(bootDone) return;
+    if(li >= bootLines.length){ setTimeout(endBoot, 550); return; }
+    var div = document.createElement("div");
+    div.className = "bootline";
+    div.textContent = "> " + bootLines[li++];
+    bootlog.appendChild(div);
+    setTimeout(nextLine, li===8 ? 300 : 170 + Math.random()*160);
+  })();
+  try{ sessionStorage.setItem("t84-booted","1"); }catch(e){}
+}
+
+/* ---------- SCROLL REVEAL ---------- */
+var rvs = document.querySelectorAll(".rv");
+if("IntersectionObserver" in window && !reduced){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add("on"); io.unobserve(e.target); }
+    });
+  },{threshold:.12});
+  rvs.forEach(function(el){ io.observe(el); });
+}else{
+  rvs.forEach(function(el){ el.classList.add("on"); });
+}
+
+/* ---------- STAT COUNT-UP ---------- */
+document.querySelectorAll(".stat .n[data-count]").forEach(function(el){
+  if(reduced || !("IntersectionObserver" in window)) return;
+  var target = parseInt(el.getAttribute("data-count"),10);
+  var comma = el.hasAttribute("data-comma");
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      cio.unobserve(el);
+      var t0 = null, dur = 1100;
+      function fmt(n){ return comma ? n.toLocaleString("en-US") : String(n); }
+      function step(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min((ts-t0)/dur, 1);
+        var eased = 1 - Math.pow(1-p, 3);
+        el.textContent = fmt(Math.round(target*eased));
+        if(p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  },{threshold:.6});
+  cio.observe(el);
+});
+
+/* ---------- CLOCK ---------- */
+var clock = document.getElementById("clock");
+function tick(){
+  var d = new Date();
+  clock.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()]
+    .map(function(n){return String(n).padStart(2,"0");}).join(":");
+}
+tick(); setInterval(tick, 1000);
+
+/* ---------- TERMINAL ---------- */
+var out = document.getElementById("termout");
+var cmd = document.getElementById("cmd");
+var history = [], hIdx = -1;
+
+function print(text, cls){
+  var div = document.createElement("div");
+  if(cls) div.className = cls;
+  div.textContent = text;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+function printBlock(lines, cls){ lines.forEach(function(l){ print(l, cls); }); }
+function typeOut(lines, done){
+  if(reduced){ printBlock(lines); if(done) done(); return; }
+  var i = 0;
+  (function next(){
+    if(i >= lines.length){ if(done) done(); return; }
+    print(lines[i++]);
+    setTimeout(next, 46);
+  })();
+}
+
+var COMMANDS = {
+  help: function(){ typeOut([
+    "AVAILABLE COMMANDS",
+    "  help       this list",
+    "  exhibits   what's in the machine hall",
+    "  hours      opening times",
+    "  tickets    prices",
+    "  visit      address + directions",
+    "  lab        restoration lab feed",
+    "  about      what TERMINAL_84 is",
+    "  amber      switch phosphor to amber",
+    "  green      switch phosphor to green",
+    "  whoami     who are you, anyway",
+    "  date       system date",
+    "  clear      wipe the screen",
+    "",
+    "  ...museums keep a few things off the label. so do we."
+  ]);},
+  exhibits: function(){ typeOut([
+    "MACHINE HALL · 6 headline exhibits of 212:",
+    "  T84-001  MITS Altair 8800    1975  OPERATIONAL",
+    "  T84-014  Apple II            1977  OPERATIONAL",
+    "  T84-027  IBM 5150 PC         1981  OPERATIONAL",
+    "  T84-042  Commodore 64        1982  OPERATIONAL",
+    "  T84-063  Macintosh 128K      1984  OPERATIONAL",
+    "  T84-777  DEC PDP-11/70       1975  RESTORATION",
+    "green tag = touch it. red tag = Gerald is watching."
+  ]);},
+  hours: function(){ typeOut([
+    "OPENING HOURS",
+    "  Tue-Fri   10:00-18:00",
+    "  Saturday  09:00-20:00",
+    "  Sunday    11:00-17:00",
+    "  Monday    CLOSED (maintenance & tape backups)"
+  ]);},
+  tickets: function(){ typeOut([
+    "TICKETS",
+    "  Adult ................. $14.00",
+    "  Student / Senior ....... $9.00",
+    "  Under 12 ................ FREE",
+    "  Annual pass ........... $48.00",
+    "  Arrive on pre-1990 hardware: FREE, obviously."
+  ]);},
+  visit: function(){ typeOut([
+    "TERMINAL_84",
+    "  84 Relay Street, Old Mill Quarter, Ferngate FG2 4TP",
+    "  2 min walk from Ferngate Central. Bike racks out front.",
+    "  tickets@terminal84.museum · (0)84 8080 8088"
+  ]);},
+  lab: function(){ typeOut([
+    "RESTORATION LAB · latest worklog:",
+    "  2026-07-06  TRS-80 Model III: first clean boot since 1994",
+    "  2026-07-02  Osborne 1: keyboard membrane rebuilt",
+    "  2026-06-19  PDP-11/70: 38 of 61 capacitors recapped",
+    "open bench night: Wednesdays 18:00-21:00. bring patience."
+  ]);},
+  about: function(){ typeOut([
+    "TERMINAL_84 · Museum of Personal Computing, est. 1997.",
+    "212 machines, all functional. We believe old computers",
+    "should be switched ON, not sealed behind glass.",
+    "This website is itself exhibit no. T84-999."
+  ]);},
+  amber: function(){ setMode("amber"); print("phosphor set to AMBER P3. cozy."); },
+  green: function(){ setMode("green"); print("phosphor set to GREEN P1. classic."); },
+  whoami: function(){ print("guest (uid 1984). visitor privileges: touch green-tagged machines."); },
+  date: function(){ print(new Date().toString()); },
+  clear: function(){ out.innerHTML = ""; },
+  motd: function(){ print("MOTD: the C64 corner smells like 1987 and we refuse to fix it."); },
+  credits: function(){ typeOut([
+    "Designed & built by Claude Fable.",
+    "Part of the Fable 25 showcase.",
+    "No pixels were generated. Every glyph is code."
+  ]);},
+  /* ----- unlisted ----- */
+  sudo: function(){ print("guest is not in the sudoers file. this incident will be written to tape.", "err"); },
+  hack: function(){ typeOut([
+    "INITIATING HACK SEQUENCE...",
+    "bypassing firewall .......... done",
+    "decrypting mainframe ........ done",
+    "ACCESS GRANTED.",
+    "you now have permission to... read the gift shop price list.",
+    "  floppy-disk coasters (4) ..... $12",
+    "  'I ♥ 8-BIT' enamel pin ........ $6",
+    "  DIY crystal radio kit ........ $19"
+  ]);},
+  coffee: function(){ typeOut([
+    "brewing...",
+    "     ( (",
+    "      ) )",
+    "   ┌─────┐",
+    "   │▓▓▓▓▓├┐",
+    "   │▓▓▓▓▓│││",
+    "   │▓▓▓▓▓├┘",
+    "   └─────┘",
+    "café TERMINAL is next to the PDP-11. it is warmer there. related."
+  ]);},
+  xyzzy: function(){ print("nothing happens. (you knew that.)"); },
+  "42": function(){ print("correct. but what was the question?"); },
+  ls: function(){ print("exhibits/  lab/  visit/  gift_shop/  do_not_open/"); },
+  dir: function(){ COMMANDS.ls(); },
+  cat: function(a){
+    if(a === "do_not_open"){ print("it's a directory. nice try. (try: ls do_not_open)"); }
+    else print("cat: " + (a||"") + ": use your eyes, the whole site is right there", "err");
+  },
+  exit: function(){ print("there is no exit. only the gift shop."); },
+  gerald: function(){ typeOut([
+    "GERALD · head docent since 1997. age: classified. tags: red.",
+    "knows the pinout of every connector made between 1974 and 1991.",
+    "do NOT mention: Betamax, the 1999 flood, or 'retro aesthetic'.",
+    "may be bribed with: DeoxIT, licorice, working Twiggy drives."
+  ]);},
+  reboot: function(){
+    print("rebooting visitor shell...");
+    try{ sessionStorage.removeItem("t84-booted"); }catch(e){}
+    setTimeout(function(){
+      if(!reduced) document.body.classList.add("poweroff");
+      setTimeout(function(){ location.reload(); }, reduced ? 0 : 520);
+    }, 600);
+  }
+};
+COMMANDS["ls do_not_open"] = function(){ print("gerald_fanfic.txt  y2k_plan_B.doc  divorce_letter_1988.img [SEALED]"); };
+
+function run(raw){
+  var line = raw.trim();
+  print("guest@t84:~$ " + line, "in");
+  if(!line) return;
+  history.push(line); hIdx = history.length;
+  var lower = line.toLowerCase();
+  if(COMMANDS[lower]){ COMMANDS[lower](); return; }
+  var parts = lower.split(/\s+/);
+  if(COMMANDS[parts[0]]){ COMMANDS[parts[0]](parts.slice(1).join(" ")); return; }
+  print("command not found: " + line + "  (try: help)", "err");
+}
+
+var COMPLETABLE = ["help","exhibits","hours","tickets","visit","lab","about","amber","green","whoami","date","clear","motd","credits","reboot","exit","gerald"];
+cmd.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ run(cmd.value); cmd.value = ""; }
+  else if(e.key === "ArrowUp"){ e.preventDefault(); if(hIdx > 0){ hIdx--; cmd.value = history[hIdx]; } }
+  else if(e.key === "ArrowDown"){ e.preventDefault(); if(hIdx < history.length-1){ hIdx++; cmd.value = history[hIdx]; } else { hIdx = history.length; cmd.value = ""; } }
+  else if(e.key === "Tab"){
+    e.preventDefault();
+    var v = cmd.value.trim().toLowerCase();
+    if(!v) return;
+    var hits = COMPLETABLE.filter(function(c){ return c.indexOf(v) === 0; });
+    if(hits.length === 1){ cmd.value = hits[0]; }
+    else if(hits.length > 1){ print(hits.join("  "), "dim"); }
+  }
+});
+document.getElementById("term").addEventListener("click", function(){ cmd.focus(); });
+
+/* greeting */
+printBlock([
+  "TERMINAL_84 visitor shell v2.6 · guest session on tty84",
+  "type 'help' for commands. type nothing to just enjoy the glow.",
+  ""
+]);
+
+/* ---------- GLOBAL KEYS ---------- */
+document.addEventListener("keydown", function(e){
+  if(e.target === cmd || e.ctrlKey || e.metaKey || e.altKey) return;
+  var k = e.key.toLowerCase();
+  var map = {"1":"#exhibits","2":"#lab","3":"#visit"};
+  if(map[k]){ document.querySelector(map[k]).scrollIntoView({behavior: reduced?"auto":"smooth"}); }
+  else if(k === "t" || k === "/"){
+    e.preventDefault();
+    document.getElementById("terminal-sec").scrollIntoView({behavior: reduced?"auto":"smooth"});
+    setTimeout(function(){ cmd.focus({preventScroll:true}); }, reduced?0:450);
+  }
+});
+})();
+</script>
+</body>
+</html>

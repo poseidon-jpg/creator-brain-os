@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inspos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --border: #1a1a1a;
+      --border-hover: #333;
+      --text: #fff;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --accent: #ff6b1a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .insp-wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 64px; }
+    .insp-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; margin-bottom: 24px; gap: 16px; }
+    .insp-brand { display: flex; align-items: center; gap: 10px; }
+    .insp-title { font-size: 22px; font-weight: 600; margin: 0; color: var(--text); }
+    .insp-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .insp-actions { display: flex; gap: 8px; }
+    .insp-btn {
+      font: inherit; font-size: 13px; color: var(--text-secondary);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; cursor: pointer;
+    }
+    .insp-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .insp-note {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 24px;
+    }
+    .insp-note code { color: var(--text); font-size: 12px; }
+    .insp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+      gap: 24px 18px;
+    }
+    .insp-card { display: block; text-decoration: none; color: inherit; }
+    .insp-thumb {
+      position: relative; width: 100%; aspect-ratio: 16 / 9;
+      border-radius: 12px; overflow: hidden; background: var(--border);
+    }
+    .insp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+    .insp-card:hover .insp-thumb img { transform: scale(1.03); }
+    .insp-dur {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,.85); color: #fff;
+      font-size: 12px; font-weight: 500; line-height: 1;
+      padding: 3px 5px; border-radius: 5px;
+    }
+    .insp-tag {
+      position: absolute; top: 8px; left: 8px;
+      background: var(--accent); color: #000;
+      font-size: 11px; font-weight: 600; line-height: 1;
+      padding: 4px 6px; border-radius: 5px;
+    }
+    .insp-meta { padding: 10px 2px 0; }
+    .insp-vtitle {
+      font-size: 15px; font-weight: 600; color: var(--text);
+      line-height: 1.35; margin: 0 0 6px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .insp-chan { font-size: 13px; color: var(--text-secondary); margin: 0 0 4px; }
+    .insp-stats { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+    .insp-stats .insp-dot, .insp-chan .insp-dot { color: var(--text-muted); }
+    .insp-why {
+      font-size: 13px; color: var(--text-secondary); font-style: italic; line-height: 1.4; margin-top: 6px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .insp-empty { color: var(--text-secondary); font-size: 14px; padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+    .insp-foot { margin-top: 48px; font-size: 11px; color: var(--text-muted); }
+    .insp-foot a { color: var(--text-muted); }
+    .insp-foot a:hover { color: var(--accent); }
+    @media (max-width: 600px) { .insp-wrap { padding: 24px 16px 48px; } }
+  </style>
+</head>
+<body>
+  <main class="insp-wrap">
+    <div class="insp-head">
+      <div>
+        <div class="insp-brand">
+          <svg viewBox="0 0 48 48" width="26" height="26" fill="none" stroke="#ff6b1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M24 6l18 10v16L24 42 6 32V16Z"/><path d="M24 6v16l18 10" opacity="0.5"/><path d="M24 22L6 32" opacity="0.5"/>
+          </svg>
+          <h1 class="insp-title">Inspos</h1>
+        </div>
+        <div class="insp-sub" id="insp-sub">Loading...</div>
+      </div>
+      <div class="insp-actions">
+        <button class="insp-btn" id="insp-refresh" type="button">Refresh</button>
+        <button class="insp-btn" id="insp-open" type="button">Open file</button>
+        <input type="file" id="insp-file" accept=".json,application/json" hidden>
+      </div>
+    </div>
+    <div class="insp-note" id="insp-note" hidden></div>
+    <div class="insp-grid" id="insp-grid"></div>
+    <p class="insp-foot">Inspos by <a href="https://robonuggets.com" target="_blank" rel="noopener">RoboNuggets</a>. CC BY 4.0.</p>
+  </main>
+
+  <script>
+  (function () {
+    // Shown until your own inspos.json loads, so the page never sits empty.
+    const EXAMPLES = { inspos: [
+      { id: 'UF8uR6Z6KLc', url: 'https://www.youtube.com/watch?v=UF8uR6Z6KLc', title: "Steve Jobs' 2005 Stanford Commencement Address", channel: 'Stanford', subscribers: 2210000, viewsText: '49.2M', ago: '18y ago', duration: '15:04', note: 'Three stories, one lesson each. Steal the structure for a talking-head video.', capturedAt: '2026-10-09T08:45:48.000Z', example: true },
+      { id: 'jNQXAC9IVRw', url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', title: 'Me at the zoo', channel: 'jawed', subscribers: 6670000, viewsText: '441.5M', ago: '21y ago', duration: '0:19', note: 'Proof that a simple idea, shot plainly, can still travel.', capturedAt: '2026-10-09T08:45:46.000Z', example: true }
+    ] };
+
+    const grid = document.getElementById('insp-grid');
+    const sub = document.getElementById('insp-sub');
+    const note = document.getElementById('insp-note');
+    const fileInput = document.getElementById('insp-file');
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // 2210000 -> "2.2M" (numbers only, so the result is always safe to put in the page)
+    const short = n => { n = Number(n) || 0; const t = x => x.replace(/\.0$/, ''); return n < 1e3 ? String(n) : n < 1e6 ? (n < 1e4 ? t((n / 1e3).toFixed(1)) : Math.round(n / 1e3)) + 'K' : n < 1e9 ? t((n / 1e6).toFixed(1)) + 'M' : t((n / 1e9).toFixed(1)) + 'B'; };
+    let pickedFile = null;
+
+    function showNote(html) { note.innerHTML = html; note.hidden = !html; }
+
+    function render(data) {
+      const rows = ((data && data.inspos) || []).filter(v => v && /^[A-Za-z0-9_-]{11}$/.test(v.id || '')).slice();
+      rows.sort((a, b) => (Date.parse(b.capturedAt) || 0) - (Date.parse(a.capturedAt) || 0));
+      if (!rows.length) {
+        grid.innerHTML = '<div class="insp-empty">No inspos yet. Ask your agent for <b>/inspo &lt;youtube link&gt;</b>, or right-click a YouTube video.</div>';
+        sub.textContent = 'No videos yet';
+        return;
+      }
+      grid.innerHTML = rows.map(v => {
+        const id = v.id; // already checked: 11 safe characters
+        const thumb = 'https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg';
+        // Older videos have no max-res thumbnail. YouTube then sends a tiny 120px grey placeholder
+        // instead of an error, so fall back to the always-present hqdefault on an error OR a tiny image.
+        const fb = "if(!this.dataset.fb){this.dataset.fb=1;this.src='https://i.ytimg.com/vi/" + id + "/hqdefault.jpg'}";
+        const views = esc(v.viewsText || (v.views != null ? v.views : ''));
+        const ago = esc(v.ago || '');
+        const stats = (views ? '&#9655; ' + views : '') + (views && ago ? '<span class="insp-dot">&middot;</span>' : '') + ago;
+        return '<a class="insp-card" href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener">' +
+          '<div class="insp-thumb">' +
+            '<img src="' + thumb + '" loading="lazy" onerror="' + fb + '" onload="if(this.naturalWidth<=120){' + fb + '}" alt="">' +
+            (v.example ? '<span class="insp-tag">example</span>' : '') +
+            (v.duration ? '<span class="insp-dur">' + esc(v.duration) + '</span>' : '') +
+          '</div>' +
+          '<div class="insp-meta">' +
+            '<p class="insp-vtitle">' + esc(v.title) + '</p>' +
+            (v.channel ? '<p class="insp-chan">' + esc(v.channel) + (v.subscribers ? ' <span class="insp-dot">&middot;</span> ' + short(v.subscribers) + ' subs' : '') + '</p>' : '') +
+            '<div class="insp-stats">' + stats + '</div>' +
+            (v.note ? '<p class="insp-why">' + esc(v.note) + '</p>' : '') +
+          '</div>' +
+        '</a>';
+      }).join('');
+      sub.textContent = rows.every(v => v.example)
+        ? 'Showing examples until you save your first video'
+        : rows.length + (rows.length === 1 ? ' video' : ' videos') + ' · views and age frozen at the moment you saved each one';
+    }
+
+    function readPicked() {
+      const r = new FileReader();
+      r.onload = () => {
+        try { render(JSON.parse(r.result)); showNote(''); }
+        catch (e) { showNote('That file is not a valid inspos.json: ' + esc(e.message)); }
+      };
+      r.readAsText(pickedFile);
+    }
+
+    async function load() {
+      if (pickedFile) return readPicked();
+      try {
+        const res = await fetch('inspos.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        render(await res.json());
+        showNote('');
+      } catch (e) {
+        render(EXAMPLES);
+        const live = location.protocol.startsWith('http');
+        showNote(live
+          ? 'Showing examples. No inspos saved yet. Save your first video and click Refresh.'
+          : 'Showing examples. To see your own wall, start the bridge and open <code>http://127.0.0.1:5299/</code>, or click <b>Open file</b> and pick your <code>inspos.json</code>.');
+      }
+    }
+
+    document.getElementById('insp-refresh').addEventListener('click', load);
+    document.getElementById('insp-open').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) { pickedFile = fileInput.files[0]; readPicked(); } });
+    // Coming back to the tab after saving a video shows it without a manual refresh.
+    window.addEventListener('focus', () => { if (!pickedFile && location.protocol.startsWith('http')) load(); });
+    load();
+  })();
+  </script>
+</body>
+</html>

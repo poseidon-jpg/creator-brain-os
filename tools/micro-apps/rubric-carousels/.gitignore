@@ -1,0 +1,4 @@
+env.local
+node_modules/
+carousels/_home.json
+*.tmp

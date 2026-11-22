@@ -1,0 +1,14 @@
+{
+  "name": "inspo-bridge",
+  "version": "1.0.0",
+  "description": "Local bridge between the Inspo browser extension and the inspo helper script",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "CC-BY-4.0"
+}

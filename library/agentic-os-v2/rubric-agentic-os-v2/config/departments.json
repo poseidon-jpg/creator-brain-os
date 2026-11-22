@@ -1,0 +1,19 @@
+{
+  "_note": "The coloured slices of the 3D globe. Your agent writes 3 to 6 departments from what it knows about you and your workspace (BRAIN.md, step 2). Every file lands in one: projectPrefixes (folders inside projectsDir), then memoryKeywords (files inside memoryDir), then pathRules, else default. Colours: saturated and clearly different from each other and from the four layer colours.",
+  "departments": [
+    { "key": "work", "label": "Work", "color": "#e040fb", "icon": "build" },
+    { "key": "content", "label": "Content", "color": "#2196f3", "icon": "pen" },
+    { "key": "personal", "label": "Personal", "color": "#fdd835", "icon": "people" },
+    { "key": "operations", "label": "Operations", "color": "#00bcd4", "icon": "coin" }
+  ],
+  "layers": [
+    { "key": "A", "label": "Applications", "color": "#3f8fd4", "shape": "hex", "blurb": "MCP servers, CLIs and APIs your agent can reach" },
+    { "key": "R", "label": "Routines", "color": "#d99a1f", "shape": "ringdot", "blurb": "Scheduled automations that run without being asked" },
+    { "key": "M", "label": "Memory", "color": "#9a66e0", "shape": "chip", "blurb": "Every file of context, clustered by department" },
+    { "key": "S", "label": "Skills", "color": "#ff6b1a", "shape": "diamond", "blurb": "Capabilities your agent can run on demand" }
+  ],
+  "projectPrefixes": {},
+  "pathRules": [],
+  "memoryKeywords": [],
+  "default": "work"
+}

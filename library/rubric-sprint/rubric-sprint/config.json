@@ -1,0 +1,13 @@
+{
+  "brandName": "RUBRIC Sprint & Backlog",
+  "sprintCadence": "weekly",
+  "epics": {
+    "Engineering": "E",
+    "Marketing": "M",
+    "Operations": "O"
+  },
+  "statuses": ["Todo", "In Progress", "Review", "Done"],
+  "priorities": ["High", "Mid", "Low"],
+  "efforts": ["S", "M", "L"],
+  "assignees": ["Alpha", "Beta", "Gamma"]
+}

@@ -1,0 +1,837 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAVENIQ - AI for Real Estate That Moves the Market</title>
+<meta name="description" content="HAVENIQ builds instant valuation models, listing generation engines, and lead qualification agents for real estate teams and property funds.">
+<meta property="og:title" content="HAVENIQ - AI for Real Estate">
+<meta property="og:description" content="Instant valuation models, listing generation, lead qualification agents, and portfolio analytics for serious property teams.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e1b17'/%3E%3Cpath d='M8 24V13l8-6 8 6v11h-5.5v-6.5h-5V24z' fill='%23a97c50'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --sand:#efe8dc;
+  --sand-deep:#e5dccb;
+  --sand-soft:#f6f1e8;
+  --char:#1e1b17;
+  --char-2:#2a2620;
+  --ink:#3a352d;
+  --bronze:#a97c50;
+  --bronze-deep:#8a6238;
+  --bronze-soft:#c9a377;
+  --line:rgba(30,27,23,.14);
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'Manrope',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--sand);
+  color:var(--char);
+  line-height:1.65;
+  font-size:16px;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--bronze);color:#fff}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.1}
+
+/* ---------- shared ---------- */
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+  color:var(--bronze-deep);margin-bottom:20px;
+}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--bronze)}
+.section{padding:clamp(72px,9vw,130px) 0}
+.section-head{max-width:640px;margin-bottom:clamp(40px,5vw,64px)}
+.section-head h2{font-size:clamp(32px,4.2vw,52px);margin-bottom:16px}
+.section-head p{color:var(--ink);font-size:17px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.02em;
+  padding:15px 30px;border-radius:2px;border:1px solid transparent;
+  text-decoration:none;cursor:pointer;
+  transition:background .25s ease,color .25s ease,border-color .25s ease,transform .25s ease;
+}
+.btn-bronze{background:var(--bronze);color:#fff}
+.btn-bronze:hover{background:var(--bronze-deep);transform:translateY(-2px)}
+.btn-ghost{border-color:rgba(255,255,255,.45);color:#fff;background:transparent}
+.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+.btn-dark{background:var(--char);color:var(--sand)}
+.btn-dark:hover{background:var(--char-2);transform:translateY(-2px)}
+.btn .arr{transition:transform .25s ease}
+.btn:hover .arr{transform:translateX(4px)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.6,.2,1),transform .8s cubic-bezier(.2,.6,.2,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  transition:background .35s ease,box-shadow .35s ease,color .35s ease;
+  color:#fff;
+}
+.nav-inner{
+  max-width:1320px;margin:0 auto;padding:22px clamp(20px,4vw,48px);
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+}
+.nav.solid{background:rgba(239,232,220,.92);backdrop-filter:blur(12px);color:var(--char);box-shadow:0 1px 0 var(--line)}
+.nav.solid .nav-cta{background:var(--char);color:var(--sand)}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none;font-family:var(--serif);font-size:22px;letter-spacing:.04em}
+.logo svg{flex:0 0 auto}
+.logo .iq{color:var(--bronze-soft)}
+.nav.solid .logo .iq{color:var(--bronze-deep)}
+.nav-links{display:flex;gap:34px;list-style:none}
+.nav-links a{font-size:13.5px;font-weight:600;text-decoration:none;opacity:.85;transition:opacity .2s}
+.nav-links a:hover{opacity:1}
+.nav-cta{font-size:13px;font-weight:700;text-decoration:none;padding:11px 20px;border-radius:2px;background:var(--bronze);color:#fff;transition:background .25s}
+.nav-cta:hover{background:var(--bronze-deep)}
+@media(max-width:820px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--char)}
+.hero-media{position:absolute;inset:0;overflow:hidden}
+.hero-media img,.hero-media video{
+  position:absolute;left:0;top:-6%;width:100%;height:112%;object-fit:cover;
+  will-change:transform;
+}
+.hero-media video{z-index:2}
+.hero-media::after{
+  content:"";position:absolute;inset:0;z-index:3;
+  background:
+    linear-gradient(100deg,rgba(20,17,13,.55) 0%,rgba(20,17,13,.18) 48%,rgba(20,17,13,0) 70%),
+    linear-gradient(180deg,rgba(20,17,13,.42) 0%,rgba(20,17,13,.12) 38%,rgba(20,17,13,.66) 78%,rgba(20,17,13,.86) 100%);
+}
+@keyframes kenburns{from{scale:1}to{scale:1.07}}
+.hero-media img{animation:kenburns 22s ease-out forwards}
+.hero-inner{
+  position:relative;z-index:4;width:100%;max-width:1320px;margin:0 auto;
+  padding:140px clamp(20px,4vw,48px) clamp(56px,7vw,96px);
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,460px);
+  gap:clamp(32px,5vw,72px);align-items:end;
+}
+.hero h1{font-size:clamp(42px,6vw,78px);letter-spacing:-.01em;margin:18px 0 22px;text-wrap:balance}
+.hero h1 em{font-style:italic;color:var(--bronze-soft)}
+.hero-sub{max-width:520px;font-size:clamp(16px,1.4vw,18.5px);color:rgba(255,255,255,.85);margin-bottom:34px}
+.hero-eyebrow{color:var(--bronze-soft)}
+.hero-eyebrow::before{background:var(--bronze-soft)}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.hero-scroll{
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:5;
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.55);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.hero-scroll::after{content:"";width:1px;height:34px;background:linear-gradient(rgba(255,255,255,.6),transparent);animation:drop 2.2s ease-in-out infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@media(max-width:820px){.hero-scroll{display:none}}
+
+/* ---------- valuation widget ---------- */
+.val-card{
+  background:rgba(30,27,23,.62);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(201,163,119,.35);
+  border-radius:4px;padding:28px 28px 26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45);
+}
+.val-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.val-head h3{font-size:20px;color:#fff}
+.val-live{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--bronze-soft)}
+.val-live i{width:7px;height:7px;border-radius:50%;background:var(--bronze-soft);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(201,163,119,.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(201,163,119,0)}}
+.val-note{font-size:12.5px;color:rgba(255,255,255,.6);margin-bottom:20px}
+.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.val-field{display:flex;flex-direction:column;gap:6px}
+.val-field.full{grid-column:1/-1}
+.val-field label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.55)}
+.val-select{position:relative}
+.val-select select{
+  appearance:none;-webkit-appearance:none;width:100%;
+  background:rgba(239,232,220,.08);border:1px solid rgba(239,232,220,.22);
+  color:#fff;font-family:var(--sans);font-weight:600;font-size:14px;
+  padding:12px 38px 12px 14px;border-radius:2px;cursor:pointer;
+  transition:border-color .2s,background .2s;
+}
+.val-select select:hover{border-color:rgba(201,163,119,.6)}
+.val-select select:focus{outline:none;border-color:var(--bronze-soft);background:rgba(239,232,220,.12)}
+.val-select select option{color:var(--char);background:var(--sand)}
+.val-select::after{
+  content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;
+  border-right:1.5px solid var(--bronze-soft);border-bottom:1.5px solid var(--bronze-soft);
+  transform:translateY(-70%) rotate(45deg);pointer-events:none;
+}
+.val-btn{width:100%;justify-content:center;font-size:14px}
+.val-result{
+  margin-top:20px;padding-top:20px;border-top:1px solid rgba(239,232,220,.14);
+  min-height:118px;
+}
+.val-result .vr-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.55);margin-bottom:6px}
+.val-range{font-family:var(--serif);font-size:clamp(26px,2.4vw,32px);color:#fff;line-height:1.15}
+.val-range .dash{color:var(--bronze-soft);padding:0 4px}
+.val-meta{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap}
+.val-meta span{font-size:12px;color:rgba(255,255,255,.65)}
+.val-meta b{color:var(--bronze-soft);font-weight:700}
+.val-bar{margin-top:14px;height:4px;background:rgba(239,232,220,.14);border-radius:2px;overflow:hidden}
+.val-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bronze),var(--bronze-soft));border-radius:2px;transition:width 1.2s cubic-bezier(.2,.7,.2,1)}
+.val-idle{font-size:13.5px;color:rgba(255,255,255,.55);padding-top:8px}
+.val-working .val-idle{display:none}
+.val-comps{list-style:none;margin-top:14px;border-top:1px dashed rgba(239,232,220,.16);padding-top:10px}
+.val-comps li{
+  display:flex;justify-content:space-between;gap:12px;font-size:12.5px;
+  color:rgba(255,255,255,.7);padding:5px 0;
+  opacity:0;transform:translateY(8px);animation:compIn .5s ease forwards;
+}
+.val-comps li:nth-child(2){animation-delay:.12s}
+.val-comps li:nth-child(3){animation-delay:.24s}
+.val-comps li b{color:#fff;font-weight:600;white-space:nowrap}
+.val-comps li em{font-style:normal;color:var(--bronze-soft);font-weight:700;white-space:nowrap}
+@keyframes compIn{to{opacity:1;transform:none}}
+
+/* ---------- FAQ ---------- */
+.faq{background:var(--sand-soft);border-top:1px solid var(--line)}
+.faq-list{max-width:820px}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item summary{
+  list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:24px 4px;font-family:var(--serif);font-size:clamp(19px,1.7vw,23px);
+  transition:color .2s;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:hover{color:var(--bronze-deep)}
+.faq-item summary .fx{
+  flex:0 0 auto;width:30px;height:30px;border:1px solid var(--line);border-radius:50%;
+  display:grid;place-items:center;font-family:var(--sans);font-size:16px;font-weight:400;color:var(--bronze-deep);
+  transition:transform .3s ease,background .3s,color .3s;
+}
+.faq-item[open] summary .fx{transform:rotate(45deg);background:var(--bronze);color:#fff;border-color:var(--bronze)}
+.faq-item p{padding:0 4px 26px;color:var(--ink);font-size:15px;max-width:660px}
+
+/* ---------- credibility strip ---------- */
+.cred{background:var(--char);color:var(--sand);padding:26px 0;border-top:1px solid rgba(239,232,220,.08)}
+.cred-inner{display:flex;align-items:center;gap:clamp(24px,4vw,56px);flex-wrap:wrap;justify-content:center}
+.cred-label{font-size:10px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;color:var(--bronze-soft);white-space:nowrap}
+.cred-names{display:flex;gap:clamp(22px,3.4vw,48px);flex-wrap:wrap;justify-content:center}
+.cred-names span{font-family:var(--serif);font-size:17px;letter-spacing:.05em;opacity:.55;white-space:nowrap;transition:opacity .25s}
+.cred-names span:hover{opacity:.95}
+
+/* ---------- stats band ---------- */
+.stats{border-bottom:1px solid var(--line)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.stat{background:var(--sand);padding:34px 28px}
+.stat .num{font-family:var(--serif);font-size:clamp(34px,3.4vw,48px);color:var(--char);line-height:1}
+.stat .num small{font-size:.55em;color:var(--bronze)}
+.stat p{font-size:13px;color:var(--ink);margin-top:10px;font-weight:600}
+@media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.stat{padding:24px 18px}}
+
+/* ---------- services ---------- */
+.services{background:var(--sand-soft)}
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(20px,2.4vw,32px)}
+.svc{
+  background:var(--sand);border:1px solid var(--line);border-radius:4px;
+  padding:clamp(28px,3vw,40px);position:relative;overflow:hidden;
+  transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease;
+}
+.svc:hover{transform:translateY(-5px);box-shadow:0 24px 50px rgba(30,27,23,.10);border-color:rgba(169,124,80,.5)}
+.svc::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--bronze);transform:scaleY(0);transform-origin:top;transition:transform .4s ease;
+}
+.svc:hover::before{transform:scaleY(1)}
+.svc-num{font-family:var(--serif);font-size:15px;color:var(--bronze);letter-spacing:.08em;margin-bottom:18px}
+.svc h3{font-size:clamp(23px,2vw,28px);margin-bottom:12px}
+.svc p{color:var(--ink);font-size:15px;margin-bottom:18px}
+.svc .win{
+  font-size:13.5px;font-weight:700;color:var(--bronze-deep);
+  display:flex;gap:8px;align-items:baseline;margin-bottom:18px;
+}
+.svc .win::before{content:"↳";color:var(--bronze)}
+.svc .tools{display:flex;flex-wrap:wrap;gap:8px}
+.svc .tools span{
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--ink);
+  background:var(--sand-soft);
+}
+@media(max-width:820px){.svc-grid{grid-template-columns:1fr}}
+
+/* ---------- model story ---------- */
+.model{background:var(--char);color:var(--sand);position:relative;overflow:hidden}
+.model .eyebrow{color:var(--bronze-soft)}
+.model .eyebrow::before{background:var(--bronze-soft)}
+.model-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(36px,5vw,80px);align-items:center}
+.model h2{font-size:clamp(32px,4vw,50px);color:#fff;margin-bottom:18px}
+.model .lede{color:rgba(239,232,220,.8);font-size:17px;margin-bottom:30px}
+.src-list{list-style:none;display:flex;flex-direction:column}
+.src-list li{
+  display:flex;gap:18px;padding:18px 0;border-bottom:1px solid rgba(239,232,220,.12);
+}
+.src-list li:first-child{border-top:1px solid rgba(239,232,220,.12)}
+.src-list .k{font-family:var(--serif);color:var(--bronze-soft);font-size:17px;min-width:34px}
+.src-list b{display:block;color:#fff;font-size:15px;margin-bottom:3px}
+.src-list p{font-size:13.5px;color:rgba(239,232,220,.65)}
+.model-visual{position:relative}
+.model-visual .frame{
+  border-radius:4px;overflow:hidden;border:1px solid rgba(201,163,119,.3);
+  box-shadow:0 40px 90px rgba(0,0,0,.5);position:relative;
+}
+.model-visual img{width:100%;height:auto;transform:scale(1.04);will-change:transform}
+.model-visual .chip{
+  position:absolute;background:rgba(30,27,23,.85);backdrop-filter:blur(8px);
+  border:1px solid rgba(201,163,119,.4);border-radius:3px;padding:12px 16px;
+  box-shadow:0 16px 40px rgba(0,0,0,.4);
+}
+.model-visual .chip .cl{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--bronze-soft)}
+.model-visual .chip .cv{font-family:var(--serif);font-size:21px;color:#fff;margin-top:2px}
+.chip-a{top:8%;right:-14px;animation:float 6s ease-in-out infinite}
+.chip-b{bottom:10%;left:-14px;animation:float 7s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.model-fine{font-size:12px;color:rgba(239,232,220,.45);margin-top:26px;max-width:520px}
+@media(max-width:900px){
+  .model-grid{grid-template-columns:1fr}
+  .chip-a{right:10px}.chip-b{left:10px}
+}
+
+/* ---------- process ---------- */
+.proc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(18px,2vw,28px);counter-reset:step}
+.proc{
+  position:relative;padding:28px 24px 30px;background:var(--sand-soft);
+  border:1px solid var(--line);border-radius:4px;
+  transition:border-color .3s,transform .3s;
+}
+.proc:hover{border-color:rgba(169,124,80,.55);transform:translateY(-4px)}
+.proc::before{
+  counter-increment:step;content:"0" counter(step);
+  font-family:var(--serif);font-size:40px;color:var(--bronze);opacity:.55;
+  display:block;margin-bottom:14px;line-height:1;
+}
+.proc h3{font-size:20px;margin-bottom:10px}
+.proc p{font-size:14px;color:var(--ink)}
+.proc .dur{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--bronze-deep)}
+@media(max-width:980px){.proc-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.proc-grid{grid-template-columns:1fr}}
+
+/* ---------- cases ---------- */
+.cases{background:var(--sand-deep)}
+.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,2.4vw,30px)}
+.case{
+  background:var(--sand);border:1px solid var(--line);border-radius:4px;overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform .35s,box-shadow .35s;
+}
+.case:hover{transform:translateY(-6px);box-shadow:0 28px 60px rgba(30,27,23,.12)}
+.case-top{padding:26px 26px 0}
+.case .tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:var(--bronze-deep)}
+.case h3{font-size:22px;margin:12px 0 10px}
+.case p{font-size:14px;color:var(--ink)}
+.case-metric{
+  margin-top:auto;padding:22px 26px 26px;
+  border-top:1px solid var(--line);display:flex;align-items:baseline;gap:12px;
+}
+.case-metric .big{font-family:var(--serif);font-size:clamp(34px,3vw,44px);color:var(--char);line-height:1}
+.case-metric .big small{color:var(--bronze);font-size:.55em}
+.case-metric span{font-size:12.5px;font-weight:700;color:var(--ink);max-width:150px;line-height:1.4}
+.case-quote{padding:0 26px 22px;font-size:13px;font-style:italic;color:var(--ink)}
+.case-quote b{display:block;font-style:normal;font-size:12px;color:var(--bronze-deep);margin-top:6px}
+@media(max-width:900px){.case-grid{grid-template-columns:1fr}}
+
+/* ---------- founder ---------- */
+.founder-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(36px,5vw,80px);align-items:center}
+.founder-photo{border-radius:4px;overflow:hidden;position:relative;border:1px solid var(--line)}
+.founder-photo img{width:100%;height:100%;object-fit:cover;transform:scale(1.05);will-change:transform}
+.founder-photo::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(169,124,80,.25)}
+.founder blockquote{font-family:var(--serif);font-size:clamp(24px,2.6vw,34px);line-height:1.35;margin:18px 0 26px}
+.founder blockquote em{color:var(--bronze-deep)}
+.founder .sig{display:flex;align-items:center;gap:16px}
+.founder .sig .line{width:44px;height:1px;background:var(--bronze)}
+.founder .sig b{font-size:14px}
+.founder .sig span{display:block;font-size:12.5px;color:var(--ink)}
+@media(max-width:820px){.founder-grid{grid-template-columns:1fr}.founder-photo{max-height:420px}}
+
+/* ---------- CTA ---------- */
+.cta{background:var(--char);color:var(--sand);position:relative;overflow:hidden;text-align:center}
+.cta::before{
+  content:"";position:absolute;inset:-40%;
+  background:radial-gradient(closest-side,rgba(169,124,80,.22),transparent 70%);
+  pointer-events:none;
+}
+.cta-inner{position:relative;max-width:720px;margin:0 auto}
+.cta .eyebrow{color:var(--bronze-soft);justify-content:center}
+.cta .eyebrow::before{background:var(--bronze-soft)}
+.cta h2{font-size:clamp(34px,4.6vw,58px);color:#fff;margin-bottom:18px;text-wrap:balance}
+.cta p{color:rgba(239,232,220,.75);margin-bottom:34px;font-size:17px}
+.cta .fine{font-size:12.5px;color:rgba(239,232,220,.5);margin-top:20px;margin-bottom:0}
+
+/* ---------- footer ---------- */
+footer{background:#161310;color:rgba(239,232,220,.7);padding:64px 0 34px;font-size:14px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:clamp(28px,4vw,56px);margin-bottom:48px}
+.foot-grid h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze-soft);margin-bottom:16px;font-weight:800}
+.foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-grid a{text-decoration:none;opacity:.75;transition:opacity .2s}
+.foot-grid a:hover{opacity:1}
+.foot-brand p{max-width:300px;font-size:13.5px;opacity:.65;margin-top:14px}
+.foot-bottom{
+  border-top:1px solid rgba(239,232,220,.12);padding-top:24px;
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;opacity:.65;
+}
+.foot-bottom a{color:var(--bronze-soft)}
+@media(max-width:820px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.foot-grid{grid-template-columns:1fr}}
+
+@media(max-width:820px){
+  .hero-inner{grid-template-columns:1fr;align-items:end;padding-top:120px}
+  .val-card{max-width:520px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .rv{opacity:1;transform:none}
+  .hero-media img,.hero-media video,.model-visual img,.founder-photo img{transform:none!important}
+}
+</style>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="logo" href="#top" aria-label="HAVENIQ home">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="currentColor" opacity=".12"/><path d="M8 24V13l8-6 8 6v11h-5.5v-6.5h-5V24z" fill="#a97c50"/></svg>
+      HAVEN<span class="iq">IQ</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#model">The Model</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#founder">About</a></li>
+    </ul>
+    <a class="nav-cta" href="#book">Book a Portfolio Demo</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-media" id="heroMedia">
+    <img src="../../assets/haven-1.jpg" alt="Modern architectural home at dusk, warm interior light" fetchpriority="high">
+    <video muted loop autoplay playsinline poster="../../assets/haven-1.jpg" aria-hidden="true">
+      <source src="../../assets/haven-hero.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow hero-eyebrow">AI for Real Estate</span>
+      <h1>Price it right.<br>Sell it <em>faster.</em></h1>
+      <p class="hero-sub">HAVENIQ builds valuation models, listing engines, and lead qualification agents for agencies and property funds that treat pricing as a science, not a hunch.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-bronze" href="#book">Book a Portfolio Demo <span class="arr">→</span></a>
+        <a class="btn btn-ghost" href="#model">How the model works</a>
+      </div>
+    </div>
+    <div class="val-card rv" id="valCard" aria-label="Instant valuation demo">
+      <div class="val-head">
+        <h3>Instant Valuation</h3>
+        <span class="val-live"><i></i>Live demo</span>
+      </div>
+      <p class="val-note">A taste of the model your team gets. Pick a property, watch it price.</p>
+      <div class="val-grid">
+        <div class="val-field full">
+          <label for="vSub">Suburb</label>
+          <div class="val-select">
+            <select id="vSub">
+              <option value="0">Paddington, QLD</option>
+              <option value="1">Surry Hills, NSW</option>
+              <option value="2">Brunswick, VIC</option>
+              <option value="3">Cottesloe, WA</option>
+              <option value="4">New Farm, QLD</option>
+              <option value="5">Manly, NSW</option>
+            </select>
+          </div>
+        </div>
+        <div class="val-field">
+          <label for="vBeds">Bedrooms</label>
+          <div class="val-select">
+            <select id="vBeds">
+              <option value="2">2 bed</option>
+              <option value="3" selected>3 bed</option>
+              <option value="4">4 bed</option>
+              <option value="5">5 bed</option>
+            </select>
+          </div>
+        </div>
+        <div class="val-field">
+          <label for="vType">Type</label>
+          <div class="val-select">
+            <select id="vType">
+              <option value="house">House</option>
+              <option value="town">Townhouse</option>
+              <option value="apt">Apartment</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-bronze val-btn" id="valGo">Run the model <span class="arr">→</span></button>
+      <div class="val-result" id="valResult" aria-live="polite">
+        <p class="val-idle">Estimates draw on 14 years of sales data, live listings, and 40+ property signals. Demo figures are illustrative.</p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- CREDIBILITY -->
+<div class="cred">
+  <div class="wrap cred-inner">
+    <span class="cred-label">Trusted by property teams at</span>
+    <div class="cred-names">
+      <span>Marlowe &amp; Finch</span>
+      <span>Northbank Capital</span>
+      <span>Ellery Estates</span>
+      <span>Corsair Property Group</span>
+      <span>Beaumont Residential</span>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="section stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat rv"><div class="num" data-count="4.1" data-dec="1"><small>±</small>0.0<small>%</small></div><p>Median valuation error on held-out sales, last 12 months</p></div>
+      <div class="stat rv d1"><div class="num" data-count="38">0<small>%</small></div><p>Average cut in days on market across client portfolios</p></div>
+      <div class="stat rv d2"><div class="num" data-count="2.4" data-dec="1">0.0<small>x</small></div><p>Lift in qualified appraisal bookings from AI lead triage</p></div>
+      <div class="stat rv d3"><div class="num" data-count="11200" data-fmt="k">0</div><p>Listings generated, checked, and published by our engines</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section services" id="services">
+  <div class="wrap">
+    <div class="section-head rv">
+      <span class="eyebrow">What we build</span>
+      <h2>Four systems. One faster book of business.</h2>
+      <p>Each engagement ships a working system your team uses daily, not a slide deck about AI. Everything runs on your data, inside your stack.</p>
+    </div>
+    <div class="svc-grid">
+      <article class="svc rv">
+        <div class="svc-num">01 / Valuation</div>
+        <h3>Instant Valuation Models</h3>
+        <p>A pricing model trained on your market's sales history, live listings, and property attributes. Appraisal-ready ranges in seconds, with the comparables that drove them shown alongside.</p>
+        <div class="win">Win listing presentations with a defensible price, not a gut feel.</div>
+        <div class="tools"><span>Gradient boosting</span><span>CoreLogic feeds</span><span>Python</span><span>BigQuery</span></div>
+      </article>
+      <article class="svc rv d1">
+        <div class="svc-num">02 / Listings</div>
+        <h3>Listing Generation Engine</h3>
+        <p>Turns inspection notes and photos into portal-ready copy in your agency's voice, with fair-trading compliance checks built in. Agents edit, never start from blank.</p>
+        <div class="win">Listings live in hours instead of days, written to convert.</div>
+        <div class="tools"><span>Claude</span><span>Vision models</span><span>REA / Domain APIs</span></div>
+      </article>
+      <article class="svc rv d2">
+        <div class="svc-num">03 / Leads</div>
+        <h3>Lead Qualification Agents</h3>
+        <p>An agent that answers every portal enquiry in under a minute, asks the qualifying questions, books inspections, and routes hot vendors straight to a human with full context.</p>
+        <div class="win">No enquiry waits overnight. Hot leads reach an agent while they are still hot.</div>
+        <div class="tools"><span>Claude agents</span><span>Twilio</span><span>CRM webhooks</span></div>
+      </article>
+      <article class="svc rv d3">
+        <div class="svc-num">04 / Portfolio</div>
+        <h3>Portfolio Analytics</h3>
+        <p>One dashboard for funds and rent rolls: valuation drift, vacancy risk, yield by asset, and hold-or-sell signals refreshed weekly against live market data.</p>
+        <div class="win">Board-ready portfolio answers in minutes, not a quarter-end scramble.</div>
+        <div class="tools"><span>dbt</span><span>BigQuery</span><span>Looker</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- MODEL STORY -->
+<section class="section model" id="model">
+  <div class="wrap">
+    <div class="model-grid">
+      <div>
+        <span class="eyebrow rv">The valuation model</span>
+        <h2 class="rv d1">Built on what the market actually did, not what it hopes.</h2>
+        <p class="lede rv d2">Most "estimates" are a median with a marketing budget. Ours is a market-specific model, retrained monthly, that shows its working: every range ships with the sales that justify it.</p>
+        <ul class="src-list">
+          <li class="rv"><span class="k">01</span><div><b>Settled sales, 14 years deep</b><p>State valuer-general records and portal history, cleaned and deduplicated per suburb.</p></div></li>
+          <li class="rv d1"><span class="k">02</span><div><b>Live listing dynamics</b><p>Asking-price movement, time on market, and withdrawal signals from current campaigns.</p></div></li>
+          <li class="rv d2"><span class="k">03</span><div><b>Property attributes, 40+ signals</b><p>Land size, aspect, renovation state from imagery, school catchments, flood overlays, walkability.</p></div></li>
+          <li class="rv d3"><span class="k">04</span><div><b>Your agency's own outcomes</b><p>Appraisal-to-sale gaps from your book feed back in, so the model learns your patch best.</p></div></li>
+        </ul>
+        <p class="model-fine rv d3">Accuracy varies by suburb and stock depth. We publish per-market error rates to every client and flag low-confidence estimates rather than bluffing them.</p>
+      </div>
+      <div class="model-visual rv d1">
+        <div class="frame"><img src="../../assets/haven-2.jpg" alt="Warm luxury interior with natural light" loading="lazy" data-plx="0.06"></div>
+        <div class="chip chip-a"><div class="cl">Median error</div><div class="cv">±4.1%</div></div>
+        <div class="chip chip-b"><div class="cl">Retrained</div><div class="cv">Monthly</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" id="process">
+  <div class="wrap">
+    <div class="section-head rv">
+      <span class="eyebrow">How engagement works</span>
+      <h2>Six weeks to a system your team actually uses.</h2>
+    </div>
+    <div class="proc-grid">
+      <div class="proc rv"><h3>Market Audit</h3><p>We map your data, your patch, and where deals stall. You get a written read on what AI will and will not move for you.</p><span class="dur">Week 1</span></div>
+      <div class="proc rv d1"><h3>Model Build</h3><p>We train the valuation model on your market and wire the first engine - listings or leads - into your CRM and portals.</p><span class="dur">Weeks 2-4</span></div>
+      <div class="proc rv d2"><h3>Team Rollout</h3><p>Side-by-side sessions with your agents. The tools bend to how your team sells, not the other way around.</p><span class="dur">Week 5</span></div>
+      <div class="proc rv d3"><h3>Tune &amp; Prove</h3><p>Live against real campaigns. We track error rates, response times, and days on market, then report the delta.</p><span class="dur">Week 6+</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section class="section cases" id="results">
+  <div class="wrap">
+    <div class="section-head rv">
+      <span class="eyebrow">Results</span>
+      <h2>The numbers our clients take to their boards.</h2>
+      <p>Client names and figures below are representative engagements, shared with permission and lightly anonymised.</p>
+    </div>
+    <div class="case-grid">
+      <article class="case rv">
+        <div class="case-top">
+          <span class="tag">Residential agency / 9 offices</span>
+          <h3>Ellery Estates</h3>
+          <p>Priced every new listing with the model and restructured campaigns around its range. Overpriced stock stopped sitting.</p>
+        </div>
+        <p class="case-quote">"We stopped arguing with vendors about price. We show them the comparables the model shows us."<b>Head of Sales, Ellery Estates</b></p>
+        <div class="case-metric"><span class="big">31<small>%</small></span><span>fewer days on market within two quarters</span></div>
+      </article>
+      <article class="case rv d1">
+        <div class="case-top">
+          <span class="tag">Portal leads / 2,100 enquiries a month</span>
+          <h3>Beaumont Residential</h3>
+          <p>Deployed the qualification agent across every portal enquiry. Median first response fell from 9 hours to 54 seconds.</p>
+        </div>
+        <p class="case-quote">"The Monday-morning enquiry backlog just does not exist anymore."<b>Operations Director, Beaumont</b></p>
+        <div class="case-metric"><span class="big">2.7<small>x</small></span><span>more appraisals booked from the same lead volume</span></div>
+      </article>
+      <article class="case rv d2">
+        <div class="case-top">
+          <span class="tag">Property fund / $180M under management</span>
+          <h3>Northbank Capital</h3>
+          <p>Portfolio analytics flagged six assets with valuation drift and rising vacancy risk a full quarter before the annual review.</p>
+        </div>
+        <p class="case-quote">"It paid for itself with one early exit decision."<b>Managing Partner, Northbank</b></p>
+        <div class="case-metric"><span class="big">$4.2<small>M</small></span><span>preserved by repositioning ahead of the market</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section class="section founder" id="founder">
+  <div class="wrap founder-grid">
+    <div class="founder-photo rv"><img src="../../assets/haven-2.jpg" alt="Warm interior of a home styled for sale" loading="lazy" data-plx="0.05"></div>
+    <div>
+      <span class="eyebrow rv">A note from the founder</span>
+      <blockquote class="rv d1">I spent eight years watching great agents lose listings to a bad number. <em>Pricing is the whole game</em> - so we made it the thing machines do best, and gave agents their evenings back.</blockquote>
+      <p class="rv d2" style="color:var(--ink);font-size:15px;max-width:520px;margin-bottom:26px">Before HAVENIQ, Mara led data science at a national portal and priced institutional portfolios through two rate cycles. The team is eleven people: modellers, former agents, and one very patient compliance lawyer.</p>
+      <div class="sig rv d3"><span class="line"></span><div><b>Mara Whitfield</b><span>Founder &amp; Principal, HAVENIQ</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta" id="book">
+  <div class="wrap cta-inner">
+    <span class="eyebrow rv">Next step</span>
+    <h2 class="rv d1">See your own portfolio through the model.</h2>
+    <p class="rv d2">Bring five addresses to a 30-minute demo. We will price them live, show the comparables, and tell you honestly where the model is strong and where it is not.</p>
+    <a class="btn btn-bronze rv d3" href="mailto:demo@haveniq.com.au" style="font-size:15px;padding:17px 36px">Book a Portfolio Demo <span class="arr">→</span></a>
+    <p class="fine rv d3">No deck, no lock-in. If the numbers do not impress you, the coffee is on us.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="logo" href="#top" style="color:var(--sand)">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="currentColor" opacity=".12"/><path d="M8 24V13l8-6 8 6v11h-5.5v-6.5h-5V24z" fill="#a97c50"/></svg>
+          HAVEN<span class="iq" style="color:var(--bronze-soft)">IQ</span>
+        </a>
+        <p>An AI practice for real estate. Valuation models, listing engines, lead agents, and portfolio analytics for teams that price with evidence.</p>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#services">Valuation Models</a></li>
+          <li><a href="#services">Listing Engine</a></li>
+          <li><a href="#services">Lead Agents</a></li>
+          <li><a href="#services">Portfolio Analytics</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#model">The Model</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#founder">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:demo@haveniq.com.au">demo@haveniq.com.au</a></li>
+          <li><a href="#book">Book a Portfolio Demo</a></li>
+          <li>Level 4, 88 Creek St, Brisbane QLD</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 HAVENIQ Pty Ltd. Estimates are decision support, not formal valuations.</span>
+      <span>Part of the <a href="../../index.html">RoboNuggets Design Systems</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* video graceful fallback */
+  var vid=document.querySelector('.hero-media video');
+  if(vid){
+    var hide=function(){vid.style.display='none';};
+    vid.addEventListener('error',hide);
+    var src=vid.querySelector('source');
+    if(src)src.addEventListener('error',hide);
+    vid.play&&vid.play().catch(function(){});
+  }
+
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* nav solid on scroll */
+  var nav=document.getElementById('nav');
+  var onScrollNav=function(){nav.classList.toggle('solid',window.scrollY>60);};
+  window.addEventListener('scroll',onScrollNav,{passive:true});
+  onScrollNav();
+
+  /* gentle parallax */
+  if(!reduced){
+    var heroImgs=document.querySelectorAll('.hero-media img,.hero-media video');
+    var plxEls=document.querySelectorAll('[data-plx]');
+    var ticking=false;
+    var doPlx=function(){
+      ticking=false;
+      var y=window.scrollY;
+      if(y<window.innerHeight*1.2){
+        for(var i=0;i<heroImgs.length;i++)heroImgs[i].style.transform='translateY('+(y*0.18)+'px)';
+      }
+      plxEls.forEach(function(el){
+        var r=el.getBoundingClientRect();
+        if(r.bottom<0||r.top>window.innerHeight)return;
+        var off=(r.top+r.height/2-window.innerHeight/2)*parseFloat(el.dataset.plx);
+        el.style.transform='scale(1.06) translateY('+(-off)+'px)';
+      });
+    };
+    window.addEventListener('scroll',function(){
+      if(!ticking){ticking=true;requestAnimationFrame(doPlx);}
+    },{passive:true});
+    doPlx();
+  }
+
+  /* reveals */
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+
+  /* stat counters */
+  var fmt=function(n,el){
+    var dec=parseInt(el.dataset.dec||'0',10);
+    if(el.dataset.fmt==='k')return (n/1000).toFixed(1)+'k';
+    return n.toFixed(dec);
+  };
+  var statIO=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting)return;
+      statIO.unobserve(e.target);
+      var el=e.target,target=parseFloat(el.dataset.count),t0=null;
+      var pre=el.querySelector('small')&&el.innerHTML.indexOf('±')>-1?'<small>±</small>':'';
+      var suf=el.dataset.fmt==='k'?'':(el.innerHTML.indexOf('%')>-1?'<small>%</small>':(el.innerHTML.indexOf('x')>-1?'<small>x</small>':''));
+      if(reduced){el.innerHTML=pre+fmt(target,el)+suf;return;}
+      var step=function(ts){
+        if(!t0)t0=ts;
+        var p=Math.min((ts-t0)/1400,1);
+        var eased=1-Math.pow(1-p,3);
+        el.innerHTML=pre+fmt(target*eased,el)+suf;
+        if(p<1)requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  },{threshold:.4});
+  document.querySelectorAll('.stat .num').forEach(function(el){statIO.observe(el);});
+
+  /* ---------- valuation widget ---------- */
+  var bases=[1240,1885,1120,2650,1410,2340]; /* suburb base, $k, 3-bed house */
+  var bedMult={2:.78,3:1,4:1.28,5:1.62};
+  var typeMult={house:1,town:.82,apt:.64};
+  var typeConf={house:'High',town:'High',apt:'Medium'};
+  var comps={house:[38,52],town:[24,37],apt:[41,63]};
+
+  var $=function(id){return document.getElementById(id);};
+  var res=$('valResult'),card=$('valCard');
+
+  var money=function(k){
+    if(k>=1000)return '$'+(k/1000).toFixed(2)+'m';
+    return '$'+Math.round(k)+'k';
+  };
+
+  $('valGo').addEventListener('click',function(){
+    var s=parseInt($('vSub').value,10);
+    var b=parseInt($('vBeds').value,10);
+    var t=$('vType').value;
+    var mid=bases[s]*bedMult[b]*typeMult[t];
+    /* deterministic wobble so it feels model-ish but stable per combo */
+    var seed=(s*7+b*13+t.length*17)%9;
+    mid=mid*(1+(seed-4)*.006);
+    var spread=t==='apt'?.052:.041;
+    var lo=mid*(1-spread),hi=mid*(1+spread);
+    var nComps=comps[t][0]+((s*3+b)%(comps[t][1]-comps[t][0]));
+
+    card.classList.add('val-working');
+    res.innerHTML='<p class="vr-label">Running model</p><p class="val-idle" style="display:block">Weighing '+nComps+' comparable sales, listing dynamics, and 40+ property signals...</p><div class="val-bar"><i id="valBarFill"></i></div>';
+    requestAnimationFrame(function(){var f=$('valBarFill');if(f)f.style.width='100%';});
+
+    var delay=reduced?50:1250;
+    setTimeout(function(){
+      res.innerHTML=
+        '<p class="vr-label">Estimated range - '+$('vSub').options[s].text+'</p>'+
+        '<div class="val-range"><span id="vLo">'+money(lo*.94)+'</span><span class="dash">-</span><span id="vHi">'+money(hi*.94)+'</span></div>'+
+        '<div class="val-meta"><span>Confidence <b>'+typeConf[t]+'</b></span><span>Comparables <b>'+nComps+'</b></span><span>Model <b>v4.2 · Jul 2026</b></span></div>'+
+        '<div class="val-bar"><i style="width:100%"></i></div>';
+      if(!reduced){
+        var t0=null,loEl=$('vLo'),hiEl=$('vHi');
+        var step=function(ts){
+          if(!t0)t0=ts;
+          var p=Math.min((ts-t0)/900,1),e=1-Math.pow(1-p,3);
+          loEl.textContent=money(lo*(.94+.06*e));
+          hiEl.textContent=money(hi*(.94+.06*e));
+          if(p<1)requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }else{
+        $('vLo').textContent=money(lo);$('vHi').textContent=money(hi);
+      }
+    },delay);
+  });
+})();
+</script>

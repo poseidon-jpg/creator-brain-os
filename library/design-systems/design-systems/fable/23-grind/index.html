@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRIND - Issue #14 · A Skate Culture Zine</title>
+<meta name="description" content="GRIND is a xeroxed skate culture zine. Issue #14: night stairs, wax science, the Ratline spot guide, and an interview with Moss Delgado. Photocopied, stapled, shipped.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23e9e6de'/%3E%3Crect x='4' y='6' width='56' height='52' fill='%23111' transform='rotate(-4 32 32)'/%3E%3Crect x='10' y='24' width='44' height='16' fill='%23ffd400' transform='rotate(-4 32 32)'/%3E%3Ctext x='32' y='38' font-family='Arial Black,Arial' font-size='15' font-weight='900' fill='%23111' text-anchor='middle' transform='rotate(-4 32 32)'%3EGRND%3C/text%3E%3Crect x='24' y='2' width='16' height='10' fill='%23d0271d' opacity='0.85' transform='rotate(6 32 7)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e9e6de;
+  --paper2:#dedad0;
+  --ink:#141311;
+  --yellow:#ffd400;
+  --red:#d0271d;
+  --tape:rgba(208,39,29,.82);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Barlow Condensed',Arial,sans-serif;
+  overflow-x:hidden;
+  cursor:crosshair;
+  line-height:1.25;
+}
+::selection{background:var(--yellow);color:var(--ink)}
+
+/* ---------- xerox grain overlay ---------- */
+body::before{
+  content:"";position:fixed;inset:0;z-index:60;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity:.16;mix-blend-mode:multiply;
+}
+/* photocopy roller streaks */
+body::after{
+  content:"";position:fixed;inset:0;z-index:59;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 210px,rgba(20,19,17,.045) 210px 214px,transparent 214px 420px);
+  mix-blend-mode:multiply;
+}
+
+a{color:inherit}
+img{max-width:100%;display:block}
+
+/* ---------- type helpers ---------- */
+.marker{font-family:'Permanent Marker',cursive}
+.cond{font-family:'Barlow Condensed',sans-serif}
+
+/* ---------- tape strips ---------- */
+.tape{
+  position:absolute;height:34px;width:120px;
+  background:var(--tape);
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
+  opacity:.92;z-index:5;pointer-events:none;
+}
+.tape::before,.tape::after{
+  content:"";position:absolute;top:0;bottom:0;width:7px;
+  background:
+    linear-gradient(135deg,var(--paper) 0 4px,transparent 4px),
+    linear-gradient(45deg,var(--paper) 0 4px,transparent 4px);
+  background-size:7px 9px;background-repeat:repeat-y;
+}
+.tape::before{left:-1px}
+.tape::after{right:-1px;transform:scaleX(-1)}
+.tape.yellow{background:rgba(255,212,0,.88)}
+.tape.grey{background:rgba(190,186,176,.85)}
+
+/* ---------- torn paper edges ---------- */
+.torn{
+  clip-path:polygon(1.2% 3%,6% 0.5%,13% 2.4%,21% 0.2%,30% 2.8%,38% 0.8%,47% 2.2%,56% 0.3%,64% 2.6%,73% 0.6%,81% 2.9%,90% 0.4%,97% 2.1%,99.5% 8%,98.2% 18%,99.8% 29%,98% 41%,99.6% 52%,98.1% 63%,99.7% 74%,98.3% 85%,99.5% 94%,95% 98.6%,87% 96.9%,78% 99.4%,69% 97.2%,60% 99.6%,51% 97.5%,42% 99.3%,33% 97.1%,24% 99.5%,15% 97.4%,7% 99.2%,1.5% 96.8%,0.3% 88%,1.8% 77%,0.2% 66%,1.6% 55%,0.4% 44%,1.9% 33%,0.3% 22%,1.7% 12%)
+}
+.torn2{
+  clip-path:polygon(0.4% 6%,7% 1.8%,16% 3.4%,26% 0.6%,35% 3.1%,45% 0.9%,54% 3.3%,64% 0.5%,74% 2.7%,83% 0.8%,92% 3%,99.4% 1.4%,98.6% 12%,99.9% 24%,98.2% 37%,99.7% 49%,98% 61%,99.8% 72%,98.4% 83%,99.6% 93%,93% 99.4%,83% 97%,72% 99.7%,62% 96.8%,52% 99.5%,41% 97.3%,31% 99.6%,20% 96.9%,10% 99.3%,2% 97.8%,0.6% 86%,2% 74%,0.3% 62%,1.7% 50%,0.5% 38%,1.8% 26%,0.4% 15%)
+}
+
+/* ---------- staples ---------- */
+.staple{
+  position:absolute;width:26px;height:9px;z-index:6;pointer-events:none;
+  border:2.5px solid #6c6a64;border-bottom:none;
+  box-shadow:inset 0 2px 2px rgba(255,255,255,.5),0 1px 1px rgba(0,0,0,.35);
+  background:linear-gradient(#b9b6ae,#8b8880);
+}
+
+/* =================================================================
+   HERO
+================================================================= */
+.hero{
+  position:relative;min-height:100svh;
+  padding:clamp(14px,3vw,40px);
+  overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 70% 10%,rgba(0,0,0,.05),transparent 60%),
+    var(--paper);
+}
+.hero-inner{position:relative;max-width:1360px;margin:0 auto;min-height:calc(100svh - 80px)}
+
+.masthead-top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+  font-size:clamp(11px,1.2vw,14px);
+  border-bottom:3px solid var(--ink);padding-bottom:8px;
+}
+.masthead-top .stamp-box{
+  border:2.5px solid var(--ink);padding:3px 10px 2px;transform:rotate(2deg);
+  background:var(--paper);
+}
+.hero-title-wrap{position:relative;margin-top:clamp(8px,2vh,30px)}
+.hero-title{
+  font-weight:900;text-transform:uppercase;
+  font-size:clamp(84px,19vw,290px);
+  line-height:.82;letter-spacing:-.015em;
+  position:relative;user-select:none;
+}
+/* misregistered print layers */
+.hero-title .layer{position:absolute;inset:0}
+.hero-title .layer.red{color:var(--red);transform:translate(5px,-4px);z-index:0;opacity:.9}
+.hero-title .layer.yel{color:var(--yellow);transform:translate(-6px,5px);z-index:0}
+.hero-title .layer.ink{position:relative;color:var(--ink);z-index:1}
+.jitter .layer.red,.jitter .layer.yel{animation:misreg 2.4s steps(2,end) infinite}
+.jitter .layer.yel{animation-name:misreg2;animation-duration:3.1s}
+@keyframes misreg{0%,88%{transform:translate(5px,-4px)}89%,93%{transform:translate(9px,-1px)}94%,100%{transform:translate(4px,-6px)}}
+@keyframes misreg2{0%,84%{transform:translate(-6px,5px)}85%,90%{transform:translate(-2px,8px)}91%,100%{transform:translate(-8px,3px)}}
+
+.hero-sub{
+  display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;
+  margin-top:clamp(10px,2vh,22px);
+  font-size:clamp(16px,2vw,24px);font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+}
+.hero-sub .issue-tag{
+  background:var(--ink);color:var(--yellow);padding:4px 14px 3px;
+  transform:rotate(-1.5deg);font-weight:800;
+}
+.hero-sub .price{
+  border:2.5px dashed var(--red);color:var(--red);padding:3px 12px 2px;transform:rotate(1deg);
+}
+
+/* hero photo */
+.hero-photo{
+  position:absolute;right:clamp(-10px,1vw,40px);top:clamp(220px,32vh,320px);
+  width:clamp(280px,38vw,560px);
+  transform:rotate(3.5deg);
+  z-index:3;
+  filter:grayscale(.25) contrast(1.15);
+}
+.hero-photo .ph{
+  background:#fff;padding:12px 12px 44px;
+  box-shadow:6px 8px 0 rgba(20,19,17,.85);
+}
+.hero-photo img{filter:contrast(1.1) saturate(.85)}
+.hero-photo .cap{
+  font-family:'Permanent Marker',cursive;font-size:clamp(13px,1.4vw,18px);
+  margin-top:10px;transform:rotate(-.6deg);
+}
+.hero-photo:hover{transform:rotate(1.2deg) translate(-4px,-6px)}
+.hero-photo,.hero-photo .ph{transition:none}
+
+/* marker annotation w/ arrow */
+.annot{
+  position:absolute;font-family:'Permanent Marker',cursive;color:var(--red);
+  z-index:4;pointer-events:none;
+}
+.annot svg{display:block;overflow:visible}
+.annot .txt{font-size:clamp(15px,1.8vw,24px);white-space:nowrap;transform:rotate(-4deg)}
+.draw path{stroke-dasharray:400;stroke-dashoffset:400;animation:draw 1s steps(8,end) .5s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* scrawled underline under title */
+.scrawl{position:absolute;left:2%;bottom:-14px;width:64%;z-index:2;pointer-events:none}
+.scrawl path{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;
+  stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw .9s steps(10,end) .25s forwards}
+
+/* contents scrawl list */
+.hero-contents{
+  position:relative;z-index:2;margin-top:clamp(26px,5vh,60px);
+  max-width:520px;background:var(--paper2);padding:22px 26px 26px;
+  transform:rotate(-1.6deg);
+  box-shadow:5px 6px 0 rgba(20,19,17,.8);
+}
+.hero-contents h2{
+  font-weight:900;text-transform:uppercase;font-size:clamp(20px,2.4vw,30px);
+  letter-spacing:.04em;border-bottom:3px solid var(--ink);padding-bottom:4px;margin-bottom:10px;
+}
+.hero-contents li{
+  list-style:none;font-size:clamp(17px,1.9vw,23px);font-weight:600;
+  padding:5px 0;border-bottom:1.5px dotted rgba(20,19,17,.4);
+  display:flex;justify-content:space-between;gap:14px;
+}
+.hero-contents li b{font-family:'Permanent Marker',cursive;font-weight:400;color:var(--red);font-size:.85em}
+.hero-contents li:hover{background:var(--yellow);padding-left:8px;transition:none}
+
+/* scroll hint */
+.scroll-hint{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  font-family:'Permanent Marker',cursive;font-size:15px;z-index:4;opacity:.85;
+}
+
+/* =================================================================
+   STICKERS
+================================================================= */
+.sticker{
+  position:absolute;z-index:7;
+  filter:drop-shadow(2px 3px 2px rgba(0,0,0,.3));
+  cursor:pointer;transition:none;user-select:none;
+}
+.sticker:hover{transform:scale(1.12) rotate(0deg)!important;z-index:20}
+.sticker:active{transform:scale(.9)!important}
+.jitter .sticker{animation:stickjit 4s steps(2,end) infinite}
+.jitter .sticker:nth-child(odd){animation-duration:5.3s}
+@keyframes stickjit{0%,92%{translate:var(--px,0px) var(--py,0px)}93%,96%{translate:calc(var(--px,0px) + 1px) calc(var(--py,0px) - 2px)}97%,100%{translate:calc(var(--px,0px) - 1px) calc(var(--py,0px) + 1px)}}
+
+/* =================================================================
+   TICKER
+================================================================= */
+.ticker{
+  background:var(--yellow);border-top:4px solid var(--ink);border-bottom:4px solid var(--ink);
+  overflow:hidden;white-space:nowrap;transform:rotate(-1.2deg) scale(1.02);
+  margin:-10px 0 0;position:relative;z-index:8;
+}
+.ticker-track{
+  display:inline-block;padding:9px 0;
+  font-weight:800;text-transform:uppercase;font-size:clamp(17px,2vw,24px);letter-spacing:.08em;
+  animation:tick 22s linear infinite;
+}
+.ticker-track span{margin:0 26px}
+.ticker-track .x{color:var(--red)}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker:hover .ticker-track{animation-play-state:paused}
+
+/* =================================================================
+   SECTIONS (photocopy stamp-in)
+================================================================= */
+section{position:relative;padding:clamp(56px,9vw,120px) clamp(16px,4vw,56px)}
+.wrap{max-width:1200px;margin:0 auto;position:relative}
+
+.stamp{opacity:0;transform:scale(1.05) rotate(.8deg)}
+.stamp.in{opacity:1;transform:none;transition:all .18s steps(2,end)}
+/* staggered child stamp-in */
+.stamp .pop{opacity:0}
+.stamp.in .pop{opacity:1;transition:opacity .12s steps(2,end)}
+.stamp.in .pop:nth-child(1){transition-delay:.05s}
+.stamp.in .pop:nth-child(2){transition-delay:.16s}
+.stamp.in .pop:nth-child(3){transition-delay:.27s}
+.stamp.in .pop:nth-child(4){transition-delay:.38s}
+.stamp.in .pop:nth-child(5){transition-delay:.12s}
+.stamp.in .pop:nth-child(6){transition-delay:.22s}
+.stamp.in .pop:nth-child(7){transition-delay:.32s}
+.stamp.in .pop:nth-child(8){transition-delay:.42s}
+
+.sec-label{
+  position:relative;display:inline-block;
+  font-weight:900;text-transform:uppercase;
+  font-size:clamp(40px,7vw,88px);line-height:.9;letter-spacing:-.01em;
+  margin-bottom:clamp(26px,4vw,48px);
+}
+.sec-label .no{
+  font-family:'Permanent Marker',cursive;font-size:.45em;color:var(--red);
+  position:absolute;top:-.7em;left:-.2em;transform:rotate(-8deg);
+}
+.sec-label em{font-style:normal;background:var(--yellow);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+
+/* ---------- FEATURES ---------- */
+.features{background:var(--ink);color:var(--paper);transform:rotate(-1deg) scale(1.02);margin:20px 0}
+.features .inner-derot{transform:rotate(1deg)}
+.features .sec-label em{background:var(--red);color:var(--paper)}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(18px,3vw,34px)}
+.feat-card{
+  background:var(--paper);color:var(--ink);padding:24px 22px 28px;position:relative;
+  box-shadow:0 0 0 rgba(255,212,0,0);transition:none;
+}
+.feat-card:nth-child(1){transform:rotate(-1.8deg)}
+.feat-card:nth-child(2){transform:rotate(1.2deg) translateY(12px)}
+.feat-card:nth-child(3){transform:rotate(-.8deg) translateY(-6px)}
+.feat-card:nth-child(4){transform:rotate(2deg) translateY(8px)}
+.feat-card:hover{background:var(--yellow);transform:rotate(0) translateY(0);box-shadow:8px 8px 0 var(--red)}
+.feat-card::after{
+  content:"READ IT →";position:absolute;bottom:8px;right:12px;
+  font-family:'Permanent Marker',cursive;font-size:15px;color:var(--red);
+  transform:rotate(-4deg);opacity:0;
+}
+.feat-card:hover::after{opacity:1}
+.feat-card .pg{
+  font-family:'Permanent Marker',cursive;color:var(--red);font-size:15px;
+  position:absolute;top:10px;right:14px;transform:rotate(6deg);
+}
+.feat-card h3{
+  font-weight:900;text-transform:uppercase;font-size:clamp(24px,2.6vw,34px);line-height:.95;
+  margin-bottom:10px;
+}
+.feat-card p{font-size:clamp(16px,1.6vw,19px);font-weight:500;line-height:1.35}
+.feat-card .byline{
+  margin-top:14px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+  border-top:2px solid var(--ink);padding-top:8px;
+}
+
+/* ---------- SPOT GUIDE ---------- */
+.spots-table{width:100%;border-collapse:collapse;font-size:clamp(15px,1.7vw,20px)}
+.spots-table th{
+  text-align:left;font-weight:900;text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:4px solid var(--ink);padding:8px 10px;font-size:clamp(14px,1.5vw,18px);
+}
+.spots-table td{border-bottom:2px solid rgba(20,19,17,.25);padding:12px 10px;font-weight:500;vertical-align:top}
+.spots-table tr{transition:none}
+.spots-table tbody tr:hover{background:var(--ink);color:var(--paper)}
+.spots-table tbody tr:hover .bust{color:var(--yellow)}
+.spots-table .name{font-weight:800;text-transform:uppercase;font-size:1.1em;white-space:nowrap}
+.spots-table .coords{font-size:.78em;letter-spacing:.06em;opacity:.75;display:block;font-weight:600}
+.bust{font-family:'Permanent Marker',cursive;color:var(--red);font-size:.9em;white-space:nowrap}
+.wax{letter-spacing:2px;white-space:nowrap}
+.spot-note{
+  margin-top:22px;font-family:'Permanent Marker',cursive;font-size:clamp(15px,1.8vw,21px);
+  color:var(--red);transform:rotate(-1.3deg);max-width:640px;
+}
+.circled{position:relative;display:inline-block}
+.circled svg{position:absolute;inset:-38% -14%;width:128%;height:176%;pointer-events:none;overflow:visible}
+.circled svg path{stroke:var(--red);stroke-width:3.5;fill:none}
+
+/* ---------- INTERVIEW ---------- */
+.interview{background:var(--paper2)}
+.int-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,5vw,70px);align-items:start}
+.int-photo{position:relative;transform:rotate(-2.4deg);filter:grayscale(.3) contrast(1.12)}
+.int-photo .ph{background:#fff;padding:10px 10px 40px;box-shadow:7px 9px 0 rgba(20,19,17,.85)}
+.int-photo .cap{font-family:'Permanent Marker',cursive;font-size:15px;margin-top:8px}
+.int-photo:hover{transform:rotate(-.6deg)}
+.int-photo,.int-photo .ph{transition:none}
+.pullquote{
+  font-weight:800;text-transform:uppercase;
+  font-size:clamp(28px,4.2vw,54px);line-height:.98;letter-spacing:-.01em;
+}
+.pullquote .hl{background:var(--yellow);padding:0 .1em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.pullquote .rd{color:var(--red)}
+.int-body{margin-top:22px;font-size:clamp(17px,1.8vw,21px);font-weight:500;max-width:56ch;line-height:1.45}
+.int-body p+p{margin-top:12px}
+.qa{margin-top:26px;border-left:5px solid var(--red);padding-left:18px}
+.qa .q{font-family:'Permanent Marker',cursive;color:var(--red);font-size:clamp(15px,1.6vw,19px);margin-bottom:4px}
+.qa .a{font-weight:600;font-size:clamp(17px,1.8vw,21px)}
+.qa+.qa{margin-top:18px}
+.read-more{
+  display:inline-block;margin-top:28px;background:var(--ink);color:var(--paper);
+  font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:16px;
+  padding:12px 22px;text-decoration:none;transform:rotate(-1deg);transition:none;
+}
+.read-more:hover{background:var(--red);transform:rotate(1deg)}
+
+/* ---------- DISTRO ---------- */
+.distro-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.shop{
+  border:3px solid var(--ink);padding:16px 16px 14px;background:var(--paper);
+  position:relative;transition:none;
+}
+.shop:nth-child(3n+1){transform:rotate(-1deg)}
+.shop:nth-child(3n+2){transform:rotate(.8deg)}
+.shop:nth-child(3n){transform:rotate(-.4deg)}
+.shop:hover{background:var(--yellow);transform:rotate(0);box-shadow:6px 6px 0 var(--ink)}
+.shop h4{font-weight:900;text-transform:uppercase;font-size:clamp(19px,2vw,24px);line-height:1}
+.shop .city{font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:13px;margin-top:5px;opacity:.75}
+.shop .copies{font-family:'Permanent Marker',cursive;font-size:13px;color:var(--red);margin-top:8px}
+.soldout::after{
+  content:"SOLD OUT";position:absolute;top:34%;left:-6%;right:-6%;
+  font-family:'Permanent Marker',cursive;color:var(--red);font-size:26px;text-align:center;
+  transform:rotate(-9deg);border:3px solid var(--red);opacity:.85;background:rgba(233,230,222,.6);
+}
+.distro-note{margin-top:26px;font-size:clamp(16px,1.7vw,20px);font-weight:600;max-width:60ch}
+
+/* ---------- SUBMIT ---------- */
+.submit{background:var(--yellow);transform:rotate(1deg) scale(1.02);margin-bottom:-10px}
+.submit .inner-derot{transform:rotate(-1deg)}
+.ransom{
+  font-size:clamp(34px,6.4vw,84px);line-height:1.02;text-transform:uppercase;
+  font-weight:900;max-width:14ch;
+}
+.ransom span{display:inline-block;padding:0 .1em;margin:.03em .01em}
+.ransom .r1{background:var(--ink);color:var(--paper);transform:rotate(-2deg)}
+.ransom .r2{background:var(--paper);transform:rotate(1.4deg)}
+.ransom .r3{background:var(--red);color:var(--paper);transform:rotate(-1deg)}
+.ransom .r4{background:var(--paper);font-family:'Permanent Marker',cursive;font-weight:400;transform:rotate(2deg)}
+.sub-rules{
+  margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;
+  font-size:clamp(16px,1.7vw,20px);font-weight:600;
+}
+.sub-rules div{background:rgba(233,230,222,.85);padding:16px 18px;border:3px solid var(--ink);transition:none}
+.sub-rules div:hover{background:var(--ink);color:var(--yellow)}
+.sub-rules b{display:block;font-weight:900;text-transform:uppercase;font-size:1.1em;margin-bottom:6px}
+.sub-mail{
+  display:inline-block;margin-top:30px;font-weight:900;font-size:clamp(20px,3vw,34px);
+  text-transform:uppercase;background:var(--ink);color:var(--yellow);
+  padding:14px 26px;text-decoration:none;transform:rotate(-1.4deg);transition:none;
+}
+.sub-mail:hover{background:var(--red);color:var(--paper);transform:rotate(.6deg)}
+.sub-deadline{font-family:'Permanent Marker',cursive;color:var(--red);margin-top:16px;font-size:clamp(15px,1.7vw,20px)}
+
+/* ---------- FOOTER ---------- */
+footer{
+  background:var(--ink);color:var(--paper);
+  padding:clamp(40px,6vw,70px) clamp(16px,4vw,56px) 26px;position:relative;
+}
+.foot-grid{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between;align-items:flex-end}
+.foot-logo{font-weight:900;font-size:clamp(48px,7vw,90px);line-height:.85;text-transform:uppercase}
+.foot-logo span{color:var(--yellow)}
+.foot-meta{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;line-height:1.9;text-align:right}
+.foot-meta a{text-decoration:none;border-bottom:2px solid var(--red);transition:none}
+.foot-meta a:hover{background:var(--red)}
+.credit{
+  max-width:1200px;margin:34px auto 0;padding-top:14px;border-top:1px solid rgba(233,230,222,.25);
+  font-size:12.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;opacity:.75;
+}
+.credit a{text-decoration:none;border-bottom:1px solid var(--yellow)}
+.credit a:hover{color:var(--yellow)}
+
+/* coffee stain + rubber stamp textures */
+.stain{position:absolute;pointer-events:none;opacity:.5;mix-blend-mode:multiply}
+.rubber{
+  position:absolute;pointer-events:none;z-index:4;
+  font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--red);
+  border:4px double var(--red);padding:8px 16px 6px;font-size:clamp(14px,1.6vw,20px);
+  transform:rotate(-7deg);opacity:.72;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='60'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.32' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.25'/%3E%3C/filter%3E%3Crect width='140' height='60' filter='url(%23r)'/%3E%3C/svg%3E");
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='60'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.32' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.25'/%3E%3C/filter%3E%3Crect width='140' height='60' filter='url(%23r)'/%3E%3C/svg%3E");
+}
+/* red pen margin ticks */
+.pen-ticks{position:absolute;left:-6px;top:18%;pointer-events:none;font-family:'Permanent Marker',cursive;color:var(--red);font-size:20px;line-height:2.3;opacity:.8}
+
+/* spawned stickers */
+.spawned{position:fixed;z-index:55;pointer-events:none;filter:drop-shadow(2px 3px 3px rgba(0,0,0,.35))}
+
+/* =================================================================
+   RESPONSIVE
+================================================================= */
+@media (max-width:900px){
+  .int-grid{grid-template-columns:1fr}
+  .int-photo{max-width:440px;margin:0 auto}
+  .hero-photo{position:relative;right:auto;top:auto;margin:26px 0 0;width:min(440px,92%);transform:rotate(2.4deg)}
+  .hero-contents{max-width:none}
+}
+@media (max-width:600px){
+  .masthead-top{font-size:10px;gap:8px}
+  .hero-title{font-size:clamp(78px,26.5vw,132px)}
+  .spots-table{min-width:600px}
+  .foot-meta{text-align:left}
+  .annot.hide-m,.sticker.hide-m{display:none}
+  .spots-table .hide-m{display:none}
+  .spots-table td,.spots-table th{padding:10px 6px}
+  .features,.submit{transform:none;margin:0}
+  .features .inner-derot,.submit .inner-derot{transform:none}
+}
+/* =================================================================
+   REDUCED MOTION
+================================================================= */
+@media (prefers-reduced-motion:reduce){
+  .ticker-track{animation:none;padding-left:20px}
+  .jitter .layer.red,.jitter .layer.yel,.jitter .sticker{animation:none}
+  .draw path,.scrawl path{animation:none;stroke-dashoffset:0}
+  .stamp{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body class="jitter">
+
+<!-- =============== HERO =============== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="masthead-top">
+      <div>Photocopied in a basement<br>since 2019</div>
+      <div class="stamp-box">Winter 2026 · Not for resale... but resell it</div>
+      <div style="text-align:right">44 pages · B&amp;W + 1 angry colour<br>Print run: 500 exactly</div>
+    </div>
+
+    <div class="hero-title-wrap">
+      <h1 class="hero-title" aria-label="GRIND">
+        <span class="layer red" aria-hidden="true">GRIND</span>
+        <span class="layer yel" aria-hidden="true">GRIND</span>
+        <span class="layer ink">GRIND</span>
+      </h1>
+      <svg class="scrawl" viewBox="0 0 600 40" aria-hidden="true">
+        <path d="M8 22 C 90 10, 160 34, 250 20 S 430 8, 560 24 M 40 30 C 150 20, 300 36, 520 26"/>
+      </svg>
+    </div>
+
+    <div class="hero-sub">
+      <span class="issue-tag">Issue #14</span>
+      <span>A skate culture zine · stapled by hand</span>
+      <span class="price">$6 or trade for wax</span>
+    </div>
+
+    <!-- taped photo -->
+    <figure class="hero-photo">
+      <span class="tape" style="top:-16px;left:8%;transform:rotate(-8deg)"></span>
+      <span class="tape yellow" style="top:-14px;right:6%;transform:rotate(11deg)"></span>
+      <div class="ph torn2">
+        <img src="/assets/grind-1.jpg" alt="Flash photo of a kickflip over a stair set at night" width="1280" height="720">
+        <figcaption class="cap">Ruka Tam, kickflip over the Meridian 9 - 1:47am, one flash, third try.</figcaption>
+      </div>
+    </figure>
+
+    <!-- annotation pointing at photo -->
+    <div class="annot hide-m" style="left:42%;top:48%">
+      <div class="txt">security showed up 40 sec later →</div>
+      <svg class="draw" width="120" height="60" viewBox="0 0 120 60"><path d="M6 8 C 40 40, 80 46, 112 38 M 98 28 L 114 38 L 96 48" stroke="#d0271d" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+    </div>
+
+    <!-- contents box -->
+    <div class="hero-contents torn">
+      <div class="staple" style="top:-4px;left:46%;transform:rotate(3deg)"></div>
+      <h2>In this issue</h2>
+      <ul>
+        <li>The Meridian 9, at night, illegally <b>p.04</b></li>
+        <li>Wax science: a field report <b>p.11</b></li>
+        <li>The Ratline - 7-spot guide <b>p.16</b></li>
+        <li>Moss Delgado won't shut up (good) <b>p.24</b></li>
+        <li>Your worst slams, illustrated <b>p.33</b></li>
+        <li>Distro list + how to submit <b>p.41</b></li>
+      </ul>
+    </div>
+
+    <div class="scroll-hint">scroll, coward ↓</div>
+
+    <!-- hero sticker cluster -->
+    <svg class="sticker" style="top:6%;right:4%;width:clamp(80px,10vw,140px);transform:rotate(12deg)" viewBox="0 0 120 120" role="img" aria-label="Skate and destroy sticker">
+      <circle cx="60" cy="60" r="56" fill="#ffd400" stroke="#141311" stroke-width="5"/>
+      <circle cx="60" cy="60" r="38" fill="none" stroke="#141311" stroke-width="3"/>
+      <path id="circA" d="M60 14 a46 46 0 1 1 -0.01 0" fill="none"/>
+      <text font-family="Barlow Condensed,Arial" font-weight="800" font-size="16.5" letter-spacing="2.5" fill="#141311"><textPath href="#circA">SKATE &amp; DESTROY · GRIND ZINE · </textPath></text>
+      <text x="60" y="70" text-anchor="middle" font-family="Permanent Marker" font-size="26" fill="#d0271d" transform="rotate(-8 60 60)">#14</text>
+    </svg>
+
+    <svg class="sticker hide-m" style="top:66%;left:43%;width:clamp(90px,11vw,150px);transform:rotate(-9deg)" viewBox="0 0 150 90" role="img" aria-label="Hello my name is GRIND sticker">
+      <rect width="150" height="90" rx="8" fill="#d0271d"/>
+      <rect x="8" y="34" width="134" height="42" rx="4" fill="#f2efe7"/>
+      <text x="75" y="20" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="800" font-size="15" fill="#f2efe7" letter-spacing="1">HELLO MY NAME IS</text>
+      <text x="75" y="30" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="600" font-size="8" fill="#f2efe7" letter-spacing="2">AND I RUINED THIS LEDGE</text>
+      <text x="75" y="66" text-anchor="middle" font-family="Permanent Marker" font-size="26" fill="#141311" transform="rotate(-3 75 57)">grind</text>
+    </svg>
+
+    <svg class="sticker" style="bottom:16%;right:14%;width:clamp(70px,9vw,120px);transform:rotate(7deg)" viewBox="0 0 120 74" role="img" aria-label="Barcode sticker">
+      <rect width="120" height="74" fill="#f2efe7" stroke="#141311" stroke-width="4"/>
+      <g fill="#141311">
+        <rect x="12" y="12" width="3" height="36"/><rect x="18" y="12" width="6" height="36"/><rect x="27" y="12" width="2" height="36"/><rect x="33" y="12" width="5" height="36"/><rect x="41" y="12" width="2" height="36"/><rect x="46" y="12" width="7" height="36"/><rect x="56" y="12" width="3" height="36"/><rect x="62" y="12" width="2" height="36"/><rect x="67" y="12" width="6" height="36"/><rect x="76" y="12" width="3" height="36"/><rect x="82" y="12" width="5" height="36"/><rect x="90" y="12" width="2" height="36"/><rect x="95" y="12" width="6" height="36"/><rect x="104" y="12" width="3" height="36"/>
+      </g>
+      <text x="60" y="64" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="700" font-size="13" letter-spacing="3" fill="#141311">0 0 6 1 4 0 0 5 0 0</text>
+    </svg>
+
+    <svg class="sticker hide-m" style="bottom:5%;left:58%;width:clamp(90px,12vw,160px);transform:rotate(-14deg)" viewBox="0 0 160 60" role="img" aria-label="Caution stripes sticker reading NO SKATEBOARDING crossed out">
+      <defs><pattern id="cau" width="24" height="60" patternUnits="userSpaceOnUse" patternTransform="skewX(-30)"><rect width="12" height="60" fill="#141311"/><rect x="12" width="12" height="60" fill="#ffd400"/></pattern></defs>
+      <rect width="160" height="60" fill="url(#cau)"/>
+      <rect x="10" y="16" width="140" height="28" fill="#f2efe7"/>
+      <text x="80" y="36" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="800" font-size="16" letter-spacing="1" fill="#141311">NO SKATEBOARDING</text>
+      <path d="M14 20 L146 42 M146 18 L14 40" stroke="#d0271d" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+  </div>
+</header>
+
+<!-- =============== TICKER =============== -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack">
+    <span>Issue #14 out now</span><span class="x">✕</span>
+    <span>500 copies, then it's gone</span><span class="x">✕</span>
+    <span>The Ratline spot guide inside</span><span class="x">✕</span>
+    <span>Moss Delgado speaks</span><span class="x">✕</span>
+    <span>Wax science, peer-reviewed by nobody</span><span class="x">✕</span>
+    <span>Submissions close Feb 20</span><span class="x">✕</span>
+  </div>
+</div>
+
+<!-- =============== FEATURES =============== -->
+<section class="features" id="features">
+  <div class="wrap inner-derot stamp">
+    <h2 class="sec-label"><span class="no">01.</span>This <em>issue</em></h2>
+    <div class="feat-grid">
+      <article class="feat-card torn pop">
+        <span class="pg">p.04</span>
+        <h3>Nine stairs, zero permission</h3>
+        <p>The Meridian office block locks its plaza at 10pm. We went at 1am with one flash, a broom, and Ruka's last set of bearings. Photo essay, 8 pages, no apologies.</p>
+        <div class="byline">Photos: Dara Okafor</div>
+      </article>
+      <article class="feat-card torn2 pop">
+        <span class="pg">p.11</span>
+        <h3>Wax science: a field report</h3>
+        <p>We tested candle stubs, surf wax, a $14 "pro" bar, and a stolen hotel soap on the same granite ledge. One of them won. It cost 90 cents. Charts drawn in marker.</p>
+        <div class="byline">Words: Fen Kowalczyk</div>
+      </article>
+      <article class="feat-card torn pop">
+        <span class="pg">p.24</span>
+        <h3>Moss Delgado won't shut up</h3>
+        <p>Two hours in a parking garage with the loudest frontside grinder in the city. On quitting his job, skating in court shoes, and why every new park is built wrong.</p>
+        <div class="byline">Interview: Yuli Marsh</div>
+      </article>
+      <article class="feat-card torn2 pop">
+        <span class="pg">p.33</span>
+        <h3>Your worst slams, illustrated</h3>
+        <p>You sent us 61 injury stories. Bex drew the twelve most upsetting ones in ballpoint pen. Includes "the pinecone incident" and one broken tailbone at a wedding.</p>
+        <div class="byline">Art: Bex Ruiz</div>
+      </article>
+    </div>
+  </div>
+  <svg class="sticker" style="top:-28px;right:6%;width:clamp(80px,9vw,130px);transform:rotate(-8deg)" viewBox="0 0 130 130" role="img" aria-label="Fresh off the copier starburst sticker">
+    <path d="M65 2 79 22 102 12 103 37 128 40 113 61 130 79 106 86 111 111 87 105 78 128 65 108 52 128 43 105 19 111 24 86 0 79 17 61 2 40 27 37 28 12 51 22Z" fill="#d0271d"/>
+    <text x="65" y="58" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="900" font-size="20" fill="#f2efe7">FRESH OFF</text>
+    <text x="65" y="80" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="900" font-size="20" fill="#ffd400">THE COPIER</text>
+  </svg>
+</section>
+
+<!-- =============== SPOT GUIDE =============== -->
+<section id="spots">
+  <svg class="stain" style="top:8%;right:10%;width:150px;height:150px" viewBox="0 0 150 150" aria-hidden="true">
+    <circle cx="75" cy="75" r="62" fill="none" stroke="rgba(120,90,40,.55)" stroke-width="9" stroke-dasharray="46 12 88 20 60 8"/>
+    <circle cx="78" cy="72" r="55" fill="none" stroke="rgba(120,90,40,.3)" stroke-width="4" stroke-dasharray="70 16 40 24"/>
+  </svg>
+  <div class="wrap stamp">
+    <h2 class="sec-label"><span class="no">02.</span>The <em>Ratline</em> spot guide</h2>
+    <div style="overflow-x:auto">
+      <table class="spots-table">
+        <thead>
+          <tr><th>Spot</th><th>What it is</th><th class="hide-m">Wax level</th><th>Bust factor</th><th class="hide-m">Best hour</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">Meridian 9<span class="coords">40.7412°N 73.9891°W</span></td>
+            <td>Nine-stair with a kinked rail nobody has finished. Perfect run-up, evil landing.</td>
+            <td class="hide-m wax">▮▮▮▯▯</td>
+            <td class="bust">guard w/ e-bike, fast</td>
+            <td class="hide-m">1–3am</td>
+          </tr>
+          <tr>
+            <td class="name">The Ashtray<span class="coords">40.7268°N 74.0034°W</span></td>
+            <td>Sunken brick plaza behind the old cinema. Ledges waxed since 2021. Smells like rain.</td>
+            <td class="hide-m wax">▮▮▮▮▮</td>
+            <td class="bust">zero. nobody cares</td>
+            <td class="hide-m">any</td>
+          </tr>
+          <tr>
+            <td class="name">Bank of Regret<span class="coords">40.7501°N 73.9722°W</span></td>
+            <td>Steep marble bank to buttery flat. Cracks at the top will send you to page 33.</td>
+            <td class="hide-m wax">▮▮▯▯▯</td>
+            <td class="bust">lunch-hour suits only</td>
+            <td class="hide-m">7–9am</td>
+          </tr>
+          <tr>
+            <td class="name"><span class="circled">Pipeworks<svg viewBox="0 0 100 50" preserveAspectRatio="none"><path d="M8 25 C 10 8, 50 2, 78 8 C 98 13, 96 38, 60 44 C 30 49, 4 42, 8 22"/></svg></span><span class="coords">40.7133°N 74.0121°W</span></td>
+            <td>Full-pipe under the disused water plant. Bring lights, a friend, and a tetanus shot.</td>
+            <td class="hide-m wax">▮▯▯▯▯</td>
+            <td class="bust">locked gate, hop it</td>
+            <td class="hide-m">daylight</td>
+          </tr>
+          <tr>
+            <td class="name">Curb Church<span class="coords">40.7359°N 73.9855°W</span></td>
+            <td>One perfect red curb, painted and re-painted by the congregation. Treat it with respect.</td>
+            <td class="hide-m wax">▮▮▮▮▯</td>
+            <td class="bust">the locals ARE the bust</td>
+            <td class="hide-m">golden hour</td>
+          </tr>
+          <tr>
+            <td class="name">Loading Dock C<span class="coords">40.7444°N 74.0079°W</span></td>
+            <td>Three flat gaps and a chest-high ledge. Active Mon–Fri. Weekends it's all yours.</td>
+            <td class="hide-m wax">▮▮▯▯▯</td>
+            <td class="bust">forklift guy is chill</td>
+            <td class="hide-m">Sat–Sun</td>
+          </tr>
+          <tr>
+            <td class="name">The Nursery<span class="coords">40.7290°N 73.9944°W</span></td>
+            <td>Mellow banks behind the garden centre. Where everyone here learned to push. Sacred.</td>
+            <td class="hide-m wax">▮▮▮▯▯</td>
+            <td class="bust">none. bring beginners</td>
+            <td class="hide-m">after close</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="spot-note">↑ full map on p.16 with the two spots we will NOT print online. Buy the zine. Some things stay on paper.</p>
+  </div>
+  <svg class="sticker hide-m" style="bottom:8%;right:3%;width:clamp(70px,8vw,110px);transform:rotate(10deg)" viewBox="0 0 110 110" role="img" aria-label="100 percent illegal fun sticker">
+    <circle cx="55" cy="55" r="52" fill="#141311"/>
+    <circle cx="55" cy="55" r="44" fill="none" stroke="#ffd400" stroke-width="3" stroke-dasharray="6 5"/>
+    <text x="55" y="48" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="900" font-size="27" fill="#ffd400">100%</text>
+    <text x="55" y="70" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="800" font-size="15" fill="#f2efe7" letter-spacing="1">ILLEGAL FUN</text>
+  </svg>
+</section>
+
+<!-- =============== INTERVIEW =============== -->
+<section class="interview" id="interview">
+  <div class="wrap stamp">
+    <h2 class="sec-label"><span class="no">03.</span>The <em>interview</em></h2>
+    <div class="int-grid">
+      <figure class="int-photo">
+        <span class="tape grey" style="top:-15px;left:10%;transform:rotate(-7deg)"></span>
+        <span class="tape" style="bottom:26px;right:-22px;transform:rotate(84deg)"></span>
+        <div class="ph torn">
+          <img src="/assets/grind-2.jpg" alt="Stickered skateboard decks leaning against a chain-link fence" width="960" height="720" loading="lazy">
+          <figcaption class="cap">Moss's quiver. Every deck is a funeral.</figcaption>
+        </div>
+        <div class="staple" style="top:-2px;left:52%;transform:rotate(-4deg)"></div>
+      </figure>
+      <div>
+        <p class="pullquote">"They built a <span class="hl">$2 million park</span> and everyone still skates the <span class="rd">gas station.</span> That should tell you everything."</p>
+        <div class="int-body">
+          <p>Moss Delgado, 31, has been the loudest thing in this city's skate scene for a decade - frontside grinds you can hear from two blocks, opinions you can hear from three. In March he quit his logistics job, sold his car, and started skating in $12 court shoes "out of spite."</p>
+          <p>We got two hours in the Level 4 parking garage before security got curious. Extracts below. Full thing on p.24, unedited, swearing intact.</p>
+        </div>
+        <div class="qa">
+          <p class="q">GRIND: You keep every broken deck. Why?</p>
+          <p class="a">"They're receipts. Proof I was there. My landlord counts them when he's deciding whether to evict me."</p>
+        </div>
+        <div class="qa">
+          <p class="q">GRIND: What's wrong with the new park?</p>
+          <p class="a">"Everything is a perfect radius. Nothing in a real city is a perfect radius. They built a skatepark for a video game."</p>
+        </div>
+        <a class="read-more" href="#distro">Read the rest in print →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== DISTRO =============== -->
+<section id="distro">
+  <div class="wrap stamp">
+    <div class="rubber" style="top:-8px;right:2%">Approved by nobody</div>
+    <h2 class="sec-label"><span class="no">04.</span>Where to <em>get it</em></h2>
+    <div class="distro-grid">
+      <div class="shop pop"><h4>Hesh Supply</h4><p class="city">Ridgewood · NYC</p><p class="copies">40 copies · by the register</p></div>
+      <div class="shop soldout pop"><h4>Gutterball Records</h4><p class="city">Philadelphia</p><p class="copies">had 25. gone in a weekend</p></div>
+      <div class="shop pop"><h4>Concrete Poems</h4><p class="city">Portland OR</p><p class="copies">30 copies · zine wall, top left</p></div>
+      <div class="shop pop"><h4>Slappy's Deli &amp; Skate</h4><p class="city">Chicago</p><p class="copies">20 copies · ask for Tony</p></div>
+      <div class="shop soldout pop"><h4>Kickturn Coffee</h4><p class="city">Austin TX</p><p class="copies">restock coming Feb 14</p></div>
+      <div class="shop pop"><h4>Palomar Zine Distro</h4><p class="city">Los Angeles</p><p class="copies">60 copies + back issues 9–13</p></div>
+      <div class="shop pop"><h4>Rat King Books</h4><p class="city">Montréal</p><p class="copies">25 copies · basement shelf</p></div>
+      <div class="shop pop"><h4>The Mail Order</h4><p class="city">Anywhere w/ stamps</p><p class="copies">$6 + $2 ship · cash in envelope, we're serious</p></div>
+    </div>
+    <p class="distro-note">Shops: we do 60/40 in your favour, no invoices, no minimums. If you sell zines and skate stuff and are not a cop, write to the address below and we'll mail you a stack.</p>
+  </div>
+</section>
+
+<!-- =============== SUBMIT =============== -->
+<section class="submit" id="submit">
+  <div class="wrap inner-derot stamp">
+    <h2 class="ransom"><span class="r1">Issue #15</span> <span class="r2">needs</span> <span class="r3">your</span> <span class="r4">garbage</span></h2>
+    <div class="sub-rules">
+      <div><b>Photos</b>Grainy, flashed, blurry-but-honest beats crisp-and-boring every time. Scans of prints get bumped to the front.</div>
+      <div><b>Words</b>Spot stories, slam confessions, rants under 800 words. If it reads like a press release we burn it (politely).</div>
+      <div><b>Art</b>Ballpoint, marker, lino, collage. Must survive a photocopier. Colour becomes black - plan for it.</div>
+      <div><b>No</b>Sponsor-me tapes, crypto anything, AI slop, drone footage of a sunset. Instant bin, we don't even reply.</div>
+    </div>
+    <a class="sub-mail" href="mailto:submit@grindzine.press">submit@grindzine.press</a>
+    <p class="sub-deadline">deadline Feb 20, 2026 - late entries accepted if they're incredible or include snacks</p>
+  </div>
+  <svg class="sticker hide-m" style="top:-24px;left:6%;width:clamp(80px,9vw,130px);transform:rotate(-11deg)" viewBox="0 0 130 80" role="img" aria-label="Photocopy it forever sticker">
+    <rect width="130" height="80" rx="6" fill="#141311"/>
+    <rect x="6" y="6" width="118" height="68" rx="3" fill="none" stroke="#f2efe7" stroke-width="2" stroke-dasharray="8 4"/>
+    <text x="65" y="34" text-anchor="middle" font-family="Permanent Marker" font-size="17" fill="#ffd400">photocopy it</text>
+    <text x="65" y="60" text-anchor="middle" font-family="Permanent Marker" font-size="17" fill="#d0271d">forever</text>
+  </svg>
+</section>
+
+<!-- =============== FOOTER =============== -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-logo">GRIND<span>.</span></div>
+      <div style="font-family:'Permanent Marker',cursive;color:var(--yellow);margin-top:10px;font-size:15px;transform:rotate(-1.5deg)">click anywhere on this page to slap a sticker on it ↑</div>
+    </div>
+    <div class="foot-meta">
+      PO Box 1147 · Ridgewood NY 11385<br>
+      <a href="mailto:submit@grindzine.press">submit@grindzine.press</a> · <a href="#features">back issues</a><br>
+      No website until this one. No socials. Find us at the Ashtray.
+    </div>
+  </div>
+  <p class="credit">Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></p>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* duplicate ticker for seamless loop */
+  var track = document.getElementById('tickerTrack');
+  if(track){ track.innerHTML += track.innerHTML; }
+
+  /* photocopy stamp-in on scroll */
+  var stamps = document.querySelectorAll('.stamp');
+  if('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    },{threshold:0.12});
+    stamps.forEach(function(s){ io.observe(s); });
+  } else {
+    stamps.forEach(function(s){ s.classList.add('in'); });
+  }
+
+  /* click-to-slap sticker easter egg */
+  var slaps = [
+    function(c){return '<svg class="spawned" viewBox="0 0 90 90" style="width:72px"><circle cx="45" cy="45" r="42" fill="'+c+'" stroke="#141311" stroke-width="4"/><text x="45" y="53" text-anchor="middle" font-family="Permanent Marker" font-size="20" fill="#141311">GRIND</text></svg>';},
+    function(c){return '<svg class="spawned" viewBox="0 0 110 60" style="width:88px"><rect width="110" height="60" rx="6" fill="#141311"/><text x="55" y="38" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="900" font-size="22" fill="'+c+'">SKATE OR DIE</text></svg>';},
+    function(c){return '<svg class="spawned" viewBox="0 0 100 100" style="width:70px"><path d="M50 2 61 18 79 10 80 30 99 33 87 49 100 63 81 69 85 89 66 84 59 100 50 84 41 100 34 84 15 89 19 69 0 63 13 49 1 33 20 30 21 10 39 18Z" fill="'+c+'"/><text x="50" y="58" text-anchor="middle" font-family="Barlow Condensed,Arial" font-weight="900" font-size="18" fill="#141311">#14</text></svg>';},
+    function(c){return '<svg class="spawned" viewBox="0 0 120 44" style="width:96px"><rect width="120" height="44" fill="'+c+'"/><text x="60" y="30" text-anchor="middle" font-family="Permanent Marker" font-size="18" fill="#141311">wax the curb</text></svg>';}
+  ];
+  var cols = ['#ffd400','#d0271d','#f2efe7'];
+  var slapCount = 0;
+  document.addEventListener('click', function(ev){
+    if(ev.target.closest('a, button, input, textarea, .sticker')) return;
+    if(slapCount > 40) return;
+    slapCount++;
+    var host = document.createElement('div');
+    var col = cols[Math.floor(Math.random()*cols.length)];
+    host.innerHTML = slaps[Math.floor(Math.random()*slaps.length)](col);
+    var el = host.firstChild;
+    var rot = (Math.random()*44 - 22).toFixed(1);
+    el.style.left = (ev.clientX - 40) + 'px';
+    el.style.top = (ev.clientY - 30) + 'px';
+    el.style.position = 'absolute';
+    el.style.transform = 'rotate('+rot+'deg) scale(1.6)';
+    /* absolute within page: convert to document coords */
+    el.style.left = (ev.pageX - 40) + 'px';
+    el.style.top = (ev.pageY - 30) + 'px';
+    el.classList.add('spawned');
+    el.style.zIndex = 55;
+    document.body.appendChild(el);
+    /* harsh slap: two frames, no easing */
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        el.style.transform = 'rotate('+rot+'deg) scale(1)';
+      });
+    });
+  });
+  /* spawned stickers scroll with page */
+  var style = document.createElement('style');
+  style.textContent = '.spawned{position:absolute!important;pointer-events:none}';
+  document.head.appendChild(style);
+
+  /* marker toast when sticker-spamming */
+  var toasted = false;
+  document.addEventListener('click', function(){
+    if(slapCount === 12 && !toasted){
+      toasted = true;
+      var t = document.createElement('div');
+      t.textContent = "ok save some stickers for issue #15";
+      t.style.cssText = 'position:fixed;left:50%;bottom:34px;transform:translateX(-50%) rotate(-2deg);z-index:70;font-family:Permanent Marker,cursive;font-size:clamp(17px,2.4vw,26px);background:#141311;color:#ffd400;padding:12px 22px;box-shadow:5px 6px 0 #d0271d;pointer-events:none';
+      document.body.appendChild(t);
+      setTimeout(function(){ t.remove(); }, 3200);
+    }
+  });
+
+  /* harsh quantized hero parallax (snaps in 4px steps, no easing) */
+  if(!reduced && matchMedia('(pointer:fine)').matches){
+    var hero = document.querySelector('.hero');
+    var photo = document.querySelector('.hero-photo');
+    var heroStickers = document.querySelectorAll('.hero .sticker');
+    var raf = null;
+    hero.addEventListener('pointermove', function(e){
+      if(raf) return;
+      raf = requestAnimationFrame(function(){
+        raf = null;
+        var r = hero.getBoundingClientRect();
+        var nx = (e.clientX - r.left)/r.width - .5;
+        var ny = (e.clientY - r.top)/r.height - .5;
+        var q = function(v){ return Math.round(v/4)*4; };
+        if(photo){ photo.style.translate = q(nx*-14)+'px '+q(ny*-10)+'px'; }
+        heroStickers.forEach(function(s,i){
+          var d = (i%3)+1;
+          s.style.setProperty('--px', q(nx*8*d)+'px');
+          s.style.setProperty('--py', q(ny*6*d)+'px');
+          s.style.translate = 'var(--px) var(--py)';
+        });
+      });
+    });
+    hero.addEventListener('pointerleave', function(){
+      if(photo) photo.style.translate = '0px 0px';
+      heroStickers.forEach(function(s){ s.style.translate = '0px 0px'; });
+    });
+  }
+})();
+</script>
+</body>
+</html>

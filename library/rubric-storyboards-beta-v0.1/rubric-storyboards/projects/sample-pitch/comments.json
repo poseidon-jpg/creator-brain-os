@@ -1,0 +1,27 @@
+[
+ {
+  "id": "ex-pin-1",
+  "target": "board",
+  "panel": "can",
+  "v": null,
+  "t": 6.8,
+  "x": 50,
+  "y": 45,
+  "text": "Example comment: make the can a little bigger so the name reads on a phone.",
+  "created": "2026-09-29T02:00:00.000Z",
+  "status": "open",
+  "appliedIn": null
+ },
+ {
+  "id": "ex-overall-1",
+  "target": "video",
+  "v": null,
+  "t": null,
+  "x": null,
+  "y": null,
+  "text": "Example comment: this could work at 15 seconds. Try shot 3 at 3 seconds and see if it still lands.",
+  "created": "2026-09-29T02:01:00.000Z",
+  "status": "open",
+  "appliedIn": null
+ }
+]

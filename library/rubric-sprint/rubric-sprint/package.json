@@ -1,0 +1,12 @@
+{
+  "name": "rubric-sprint-backlog",
+  "version": "1.0.0",
+  "description": "RUBRIC Sprint & Backlog - task management for AI agent teams",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["rubric", "sprint", "backlog", "task-management", "ai-agents"],
+  "license": "MIT"
+}

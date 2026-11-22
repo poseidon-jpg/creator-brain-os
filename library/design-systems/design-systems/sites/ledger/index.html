@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEDGERLINE - Finance AI, Audit-Ready</title>
+<meta name="description" content="LEDGERLINE is a finance and accounting AI consultancy. Month-end close automation, AP/AR agents, rolling forecasts, and AI controls your auditors will sign off on.">
+<meta property="og:title" content="LEDGERLINE - Finance AI, Audit-Ready">
+<meta property="og:description" content="Close in days, not weeks. AI agents for close, AP/AR, and forecasting, with controls built for the audit file.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23faf8f4'/%3E%3Cpath d='M8 6h3v17h13v3H8z' fill='%23141412'/%3E%3Cpath d='M14 16l4-5 3 3 5-7' stroke='%230f7a4d' stroke-width='2.4' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#faf8f4;
+  --paper-2:#f3f0e9;
+  --ink:#141412;
+  --ink-soft:#4a4842;
+  --ink-faint:#8a867c;
+  --hair:#d9d4c8;
+  --hair-dark:#b9b3a4;
+  --green:#0f7a4d;
+  --green-deep:#0a5c3a;
+  --red:#b0342b;
+  --serif:'Newsreader',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:18px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--green);color:var(--paper)}
+img{max-width:100%;display:block}
+a{color:inherit}
+.mono{font-family:var(--mono)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--green)}
+.dn{color:var(--red)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 40px}
+@media(max-width:768px){.wrap{padding:0 22px}}
+
+/* ---------- top rule + ticker ---------- */
+.rulebar{height:3px;background:var(--ink)}
+.ticker{
+  border-bottom:1px solid var(--hair);
+  background:var(--paper);
+  overflow:hidden;
+  white-space:nowrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.02em;
+  padding:8px 0;
+  position:relative;
+}
+.ticker-track{display:inline-block;animation:tick 46s linear infinite;padding-left:100%}
+@keyframes tick{to{transform:translateX(-100%)}}
+.ticker span{margin-right:44px;color:var(--ink-soft)}
+.ticker b{font-weight:500;color:var(--ink)}
+@media(prefers-reduced-motion:reduce){
+  .ticker-track{animation:none;padding-left:0}
+}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(250,248,244,.94);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--hair-dark);
+}
+.masthead{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:18px 0 14px;
+  gap:24px;
+}
+.wordmark{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:26px;
+  letter-spacing:.06em;
+  text-decoration:none;
+}
+.wordmark .tick{color:var(--green)}
+nav{display:flex;gap:28px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{text-decoration:none;color:var(--ink-soft);padding-bottom:2px;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+nav a:hover{color:var(--green-deep);border-color:var(--green)}
+.hdr-cta{
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);
+  padding:10px 18px;text-decoration:none;
+  transition:background .2s;
+  white-space:nowrap;
+}
+.hdr-cta:hover{background:var(--green-deep)}
+@media(max-width:900px){nav{display:none}}
+@media(max-width:480px){.hdr-cta{padding:8px 12px;font-size:11px}.wordmark{font-size:21px}}
+
+/* ---------- hero ---------- */
+.hero{border-bottom:1px solid var(--hair-dark)}
+.hero-grid{
+  display:grid;grid-template-columns:7fr 5fr;gap:0;
+  align-items:stretch;
+}
+.hero-copy{padding:72px 56px 64px 0;border-right:1px solid var(--hair)}
+.kicker{
+  font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green-deep);margin-bottom:22px;display:flex;align-items:center;gap:10px;
+}
+.kicker::before{content:"";display:inline-block;width:26px;height:1px;background:var(--green)}
+h1{
+  font-weight:500;font-size:clamp(38px,4.6vw,64px);
+  line-height:1.06;letter-spacing:-.012em;
+  margin-bottom:24px;
+}
+h1 em{font-style:italic;font-weight:500;color:var(--green-deep)}
+.lede{font-size:20px;color:var(--ink-soft);max-width:52ch;margin-bottom:34px}
+.cta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.btn{
+  font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  padding:15px 26px;text-decoration:none;display:inline-block;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.btn-ink{background:var(--ink);color:var(--paper);border:1px solid var(--ink)}
+.btn-ink:hover{background:var(--green-deep);border-color:var(--green-deep)}
+.btn-ghost{border:1px solid var(--hair-dark);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--green);color:var(--green-deep)}
+.hero-foot{
+  margin-top:46px;padding-top:20px;border-top:1px solid var(--hair);
+  display:flex;gap:36px;flex-wrap:wrap;
+}
+.hf-item .num{font-size:24px;font-weight:600}
+.hf-item small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-top:4px}
+
+/* hero board (signature) */
+.hero-board{padding:48px 0 48px 44px;display:flex;flex-direction:column;gap:0}
+.board-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);padding-bottom:10px;border-bottom:2px solid var(--ink);
+}
+.board-head b{color:var(--ink);font-weight:600}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 2s ease-in-out infinite;vertical-align:1px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.spark-row{
+  display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;
+  padding:13px 0;border-bottom:1px solid var(--hair);
+}
+.spark-label{font-family:var(--mono);font-size:12.5px;letter-spacing:.02em}
+.spark-label small{display:block;color:var(--ink-faint);font-size:10.5px;margin-top:2px;letter-spacing:.05em}
+.spark-row canvas{width:120px;height:30px}
+.spark-val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;text-align:right;min-width:86px}
+.spark-val small{display:block;font-size:11px;margin-top:1px}
+.board-chart{margin-top:22px}
+.board-chart-title{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:10px;display:flex;justify-content:space-between;
+}
+#closeChart{width:100%;height:150px}
+.board-note{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:10px;letter-spacing:.03em}
+@media(max-width:1000px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-copy{border-right:none;padding:56px 0 44px;border-bottom:1px solid var(--hair)}
+  .hero-board{padding:40px 0 48px}
+}
+
+/* ---------- section scaffolding ---------- */
+section{border-bottom:1px solid var(--hair-dark)}
+.sec-pad{padding:88px 0}
+@media(max-width:768px){.sec-pad{padding:60px 0}}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:52px;flex-wrap:wrap}
+h2{font-weight:500;font-size:clamp(30px,3.4vw,44px);letter-spacing:-.01em;line-height:1.1}
+h2 em{font-style:italic;color:var(--green-deep)}
+.sec-no{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+.sec-no b{color:var(--green-deep);font-weight:500}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- credibility strip ---------- */
+.cred{background:var(--paper-2)}
+.cred-grid{display:grid;grid-template-columns:repeat(4,1fr);padding:34px 0}
+.cred-item{padding:0 28px;border-left:1px solid var(--hair-dark)}
+.cred-item:first-child{border-left:none;padding-left:0}
+.cred-item .num{font-size:30px;font-weight:600;letter-spacing:-.02em}
+.cred-item .num sup{font-size:14px;color:var(--green);font-weight:500}
+.cred-item p{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px;line-height:1.5}
+@media(max-width:900px){
+  .cred-grid{grid-template-columns:repeat(2,1fr);gap:28px 0}
+  .cred-item:nth-child(3){border-left:none;padding-left:0}
+}
+
+/* ---------- services ---------- */
+.svc{display:grid;grid-template-columns:repeat(2,1fr);border-top:2px solid var(--ink)}
+.svc-card{
+  padding:38px 40px 42px;border-bottom:1px solid var(--hair);
+  position:relative;transition:background .25s;
+}
+.svc-card:nth-child(odd){border-right:1px solid var(--hair)}
+.svc-card:hover{background:#fdfcf9}
+.svc-no{font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.1em}
+.svc-card h3{font-size:27px;font-weight:500;margin:14px 0 6px;letter-spacing:-.01em}
+.svc-tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-deep);margin-bottom:16px}
+.svc-card p{color:var(--ink-soft);font-size:16.5px;max-width:56ch}
+.svc-win{
+  margin-top:18px;padding:14px 16px;background:var(--paper-2);
+  border-left:2px solid var(--green);font-size:15.5px;
+}
+.svc-win b{font-weight:600;font-style:italic}
+.svc-tools{margin-top:16px;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.02em;line-height:1.7}
+.svc-tools b{color:var(--ink-soft);font-weight:500;text-transform:uppercase;letter-spacing:.09em;font-size:10.5px}
+@media(max-width:900px){
+  .svc{grid-template-columns:1fr}
+  .svc-card:nth-child(odd){border-right:none}
+  .svc-card{padding:32px 0 36px}
+  .svc-card:hover{background:transparent}
+}
+
+/* ---------- governance ---------- */
+.gov{background:var(--ink);color:var(--paper);border-bottom:none}
+.gov .sec-no{color:#8a867c}
+.gov .sec-no b{color:#3fae7d}
+.gov h2 em{color:#4cc08c}
+.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.gov-copy p{color:#c9c5ba;font-size:17.5px;margin-bottom:20px;max-width:54ch}
+.gov-list{list-style:none;margin-top:34px;border-top:1px solid #33322e}
+.gov-list li{
+  padding:17px 0;border-bottom:1px solid #33322e;
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:baseline;
+}
+.gov-list .mk{font-family:var(--mono);font-size:12px;color:#4cc08c;letter-spacing:.08em}
+.gov-list b{font-weight:500;font-size:17px;display:block;margin-bottom:3px;color:var(--paper)}
+.gov-list span{color:#a5a196;font-size:15px;line-height:1.5;display:block}
+.gov-visual{position:relative}
+.gov-visual img{
+  width:100%;aspect-ratio:16/10;object-fit:cover;
+  filter:grayscale(.25) contrast(1.04);
+  border:1px solid #33322e;
+}
+.gov-cap{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:#8a867c;
+  margin-top:10px;display:flex;justify-content:space-between;text-transform:uppercase;
+}
+.gov-stamp{
+  position:absolute;top:18px;right:18px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid #4cc08c;color:#4cc08c;padding:6px 10px;
+  background:rgba(20,20,18,.75);backdrop-filter:blur(3px);
+}
+@media(max-width:1000px){.gov-grid{grid-template-columns:1fr;gap:44px}}
+
+/* ---------- process ---------- */
+.proc{counter-reset:step}
+.proc-row{
+  display:grid;grid-template-columns:120px 1fr 2fr auto;gap:32px;align-items:baseline;
+  padding:30px 0;border-bottom:1px solid var(--hair);
+  transition:background .2s;
+}
+.proc-row:first-of-type{border-top:2px solid var(--ink)}
+.proc-row:hover{background:#fdfcf9}
+.proc-no{font-family:var(--mono);font-size:13px;color:var(--green-deep);letter-spacing:.08em}
+.proc-row h3{font-size:23px;font-weight:500;letter-spacing:-.01em}
+.proc-row p{color:var(--ink-soft);font-size:16px;max-width:58ch}
+.proc-dur{font-family:var(--mono);font-size:12px;color:var(--ink-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:900px){
+  .proc-row{grid-template-columns:1fr;gap:8px;padding:26px 0}
+  .proc-dur{order:-1}
+}
+
+/* ---------- case studies ---------- */
+.cases{background:var(--paper-2)}
+.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair-dark);border:1px solid var(--hair-dark)}
+.case{background:var(--paper);padding:34px 30px 38px;display:flex;flex-direction:column}
+.case-client{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px;display:flex;justify-content:space-between}
+.case h3{font-size:23px;font-weight:500;line-height:1.22;margin-bottom:14px;letter-spacing:-.01em}
+.case>p{color:var(--ink-soft);font-size:15.5px;margin-bottom:24px}
+.case-table{width:100%;border-collapse:collapse;margin-top:auto}
+.case-table caption{
+  caption-side:top;text-align:left;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
+  padding-bottom:8px;border-bottom:2px solid var(--ink);
+}
+.case-table td{
+  padding:9px 0;border-bottom:1px solid var(--hair);
+  font-size:14.5px;color:var(--ink-soft);vertical-align:baseline;
+}
+.case-table td.v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;
+  text-align:right;font-size:13.5px;color:var(--ink);white-space:nowrap;
+}
+.case-table td.v .arrow{font-size:11px;margin-right:4px}
+.case-quote{margin-top:22px;padding-top:16px;border-top:1px solid var(--hair);font-style:italic;font-size:15.5px;color:var(--ink-soft)}
+.case-quote cite{display:block;font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-top:8px}
+@media(max-width:1000px){.case-grid{grid-template-columns:1fr}}
+
+/* ---------- integrations strip ---------- */
+.integ{background:var(--paper)}
+.integ-inner{padding:40px 0;display:flex;flex-direction:column;gap:18px}
+.integ-label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);text-align:center}
+.integ-row{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:14px 0;
+  font-family:var(--serif);font-size:21px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);
+}
+.integ-row span{padding:0 26px;border-left:1px solid var(--hair-dark);transition:color .2s}
+.integ-row span:first-child{border-left:none}
+.integ-row span:hover{color:var(--green-deep)}
+.integ-note{text-align:center;font-size:15px;color:var(--ink-faint);font-style:italic}
+
+/* ---------- FAQ ---------- */
+.faq-list{border-top:2px solid var(--ink);max-width:880px}
+.faq-list details{border-bottom:1px solid var(--hair)}
+.faq-list summary{
+  cursor:pointer;list-style:none;padding:24px 0;
+  display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  font-size:20px;font-weight:500;letter-spacing:-.005em;
+  transition:color .2s;
+}
+.faq-list summary:hover{color:var(--green-deep)}
+.faq-list summary::-webkit-details-marker{display:none}
+.faq-mark{font-family:var(--mono);font-size:14px;color:var(--green-deep);flex-shrink:0;transition:transform .25s;display:inline-block}
+details[open] .faq-mark{transform:rotate(45deg)}
+.faq-body{padding:0 0 26px;color:var(--ink-soft);font-size:16.5px;max-width:64ch}
+
+/* ---------- final CTA ---------- */
+.final{background:var(--paper-2);text-align:center;border-bottom:none}
+.final h2{font-size:clamp(34px,4vw,54px);margin-bottom:18px}
+.final p{color:var(--ink-soft);font-size:19px;max-width:56ch;margin:0 auto 34px}
+.final-meta{margin-top:26px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-faint)}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:#a5a196;font-size:15px}
+.foot-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;
+  padding:64px 0 48px;border-bottom:1px solid #33322e;
+}
+.foot-grid .wordmark{color:var(--paper);font-size:23px}
+.foot-grid p{margin-top:14px;max-width:36ch;line-height:1.6}
+.foot-col h4{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8a867c;margin-bottom:16px;font-weight:500}
+.foot-col a{display:block;text-decoration:none;padding:5px 0;transition:color .2s}
+.foot-col a:hover{color:#4cc08c}
+.foot-base{
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding:26px 0 34px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;
+}
+.foot-base a{color:#a5a196;transition:color .2s}
+.foot-base a:hover{color:#4cc08c}
+@media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.foot-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="rulebar" aria-hidden="true"></div>
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack">
+    <span><b>CLOSE.DAYS</b> 4.0 <b class="up">&#9650; 66.7%</b></span>
+    <span><b>FORECAST.MAPE</b> 4.8% <b class="up">&#9650; vs 11.2%</b></span>
+    <span><b>AP.TOUCHLESS</b> 87.3% <b class="up">&#9650; 41.6pt</b></span>
+    <span><b>DSO</b> 31.2d <b class="dn">&#9660; 14.8d</b></span>
+    <span><b>RECON.AUTOMATED</b> 92.1% <b class="up">&#9650; 55.0pt</b></span>
+    <span><b>AUDIT.PBC.HRS</b> 118 <b class="dn">&#9660; 61.0%</b></span>
+    <span><b>CLOSE.DAYS</b> 4.0 <b class="up">&#9650; 66.7%</b></span>
+    <span><b>FORECAST.MAPE</b> 4.8% <b class="up">&#9650; vs 11.2%</b></span>
+    <span><b>AP.TOUCHLESS</b> 87.3% <b class="up">&#9650; 41.6pt</b></span>
+    <span><b>DSO</b> 31.2d <b class="dn">&#9660; 14.8d</b></span>
+    <span><b>RECON.AUTOMATED</b> 92.1% <b class="up">&#9650; 55.0pt</b></span>
+    <span><b>AUDIT.PBC.HRS</b> 118 <b class="dn">&#9660; 61.0%</b></span>
+  </div>
+</div>
+
+<header>
+  <div class="wrap masthead">
+    <a class="wordmark" href="#top">LEDGER<span class="tick">LINE</span></a>
+    <nav aria-label="Primary">
+      <a href="#services">Services</a>
+      <a href="#governance">Governance</a>
+      <a href="#process">Process</a>
+      <a href="#results">Results</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="hdr-cta" href="#book">Book an assessment</a>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="kicker">Finance &amp; Accounting AI Consultancy</div>
+      <h1>Close in four days. Forecast within five percent. <em>Prove every number.</em></h1>
+      <p class="lede">LEDGERLINE builds AI agents inside the finance function: month-end close, AP and AR, rolling forecasts. Every agent ships with controls, logs, and evidence your auditors will actually sign off on.</p>
+      <div class="cta-row">
+        <a class="btn btn-ink" href="#book">Book a finance AI assessment</a>
+        <a class="btn btn-ghost" href="#results">See the numbers</a>
+      </div>
+      <div class="hero-foot">
+        <div class="hf-item"><span class="num">38</span><small>Finance teams served</small></div>
+        <div class="hf-item"><span class="num up">-8.2<span style="font-size:15px">d</span></span><small>Avg close reduction</small></div>
+        <div class="hf-item"><span class="num">$412M</span><small>Spend under AI controls</small></div>
+        <div class="hf-item"><span class="num">0</span><small>Audit findings on our agents</small></div>
+      </div>
+    </div>
+
+    <aside class="hero-board" aria-label="Live client metrics board">
+      <div class="board-head"><b><span class="live-dot"></span>Client Metrics Desk</b><span id="boardClock" class="num">--:--:--</span></div>
+
+      <div class="spark-row">
+        <div class="spark-label">Close duration<small>days to hard close, trailing 12 mo</small></div>
+        <canvas class="spark" data-dir="down" data-base="12" data-end="4" width="240" height="60"></canvas>
+        <div class="spark-val num"><span class="dn">&#9660;</span> 4.0d<small class="up">&#9650; 66.7% faster</small></div>
+      </div>
+      <div class="spark-row">
+        <div class="spark-label">Forecast error (MAPE)<small>rolling 13-week cash model</small></div>
+        <canvas class="spark" data-dir="down" data-base="11.2" data-end="4.8" width="240" height="60"></canvas>
+        <div class="spark-val num"><span class="dn">&#9660;</span> 4.8%<small class="up">&#9650; from 11.2%</small></div>
+      </div>
+      <div class="spark-row">
+        <div class="spark-label">Touchless AP rate<small>invoices coded + matched by agent</small></div>
+        <canvas class="spark" data-dir="up" data-base="45" data-end="87" width="240" height="60"></canvas>
+        <div class="spark-val num"><span class="up">&#9650;</span> 87.3%<small class="up">&#9650; 41.6pt</small></div>
+      </div>
+      <div class="spark-row">
+        <div class="spark-label">Days sales outstanding<small>AR agent chasing + reconciling</small></div>
+        <canvas class="spark" data-dir="down" data-base="46" data-end="31.2" width="240" height="60"></canvas>
+        <div class="spark-val num"><span class="dn">&#9660;</span> 31.2d<small class="up">&#9650; 14.8d recovered</small></div>
+      </div>
+
+      <div class="board-chart">
+        <div class="board-chart-title"><span>Close calendar, days by month</span><span id="chartLegend">before 12.0 &#183; now 4.0</span></div>
+        <canvas id="closeChart" width="920" height="300" role="img" aria-label="Bar chart of month-end close duration falling from 12 days to 4 days over twelve months"></canvas>
+        <div class="board-note">Composite of LEDGERLINE engagements, FY25. Live feed simulated for illustration.</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= CREDIBILITY ================= -->
+<section class="cred">
+  <div class="wrap cred-grid">
+    <div class="cred-item rv"><span class="num">4.0<sup>d</sup></span><p>Median close across active clients</p></div>
+    <div class="cred-item rv"><span class="num">87<sup>%</sup></span><p>Touchless AP invoice rate, best client</p></div>
+    <div class="cred-item rv"><span class="num">6,400<sup>h</sup></span><p>Controller hours returned per year</p></div>
+    <div class="cred-item rv"><span class="num">3<sup>&#10003;</sup></span><p>Big-four audits passed with agents in scope</p></div>
+  </div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section class="sec-pad" id="services">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Four practices. One <em>defensible</em> ledger.</h2>
+      <span class="sec-no"><b>01</b> / Services</span>
+    </div>
+    <div class="svc">
+      <article class="svc-card rv">
+        <span class="svc-no">S.01</span>
+        <h3>Month-End Close Automation</h3>
+        <div class="svc-tag">Reconcile &#183; Accrue &#183; Flux</div>
+        <p>Agents run the close checklist: bank and balance-sheet reconciliations, recurring journals, accrual proposals with source citations, and first-draft flux commentary. Your controller reviews exceptions, not spreadsheets.</p>
+        <div class="svc-win"><b>The win:</b> clients cut hard close from 10 to 14 days down to 3 to 5, and the team stops working weekends five nights a month.</div>
+        <div class="svc-tools"><b>Tools</b><br>NetSuite &#183; FloQast &#183; Claude API &#183; custom recon engine</div>
+      </article>
+      <article class="svc-card rv">
+        <span class="svc-no">S.02</span>
+        <h3>AP / AR Agents</h3>
+        <div class="svc-tag">Code &#183; Match &#183; Chase</div>
+        <p>An AP agent that ingests invoices, codes to your chart of accounts, runs 3-way match, and routes only true exceptions. An AR agent that drafts dunning sequences in your tone and reconciles remittances against open invoices.</p>
+        <div class="svc-win"><b>The win:</b> 80 to 90 percent of invoices touchless, DSO down 10 to 15 days, and no lost early-payment discounts.</div>
+        <div class="svc-tools"><b>Tools</b><br>Xero &#183; QuickBooks &#183; Bill.com &#183; Stripe &#183; email + ERP webhooks</div>
+      </article>
+      <article class="svc-card rv">
+        <span class="svc-no">S.03</span>
+        <h3>Rolling Forecast Models</h3>
+        <div class="svc-tag">Drivers &#183; Scenarios &#183; Cash</div>
+        <p>Driver-based 13-week cash and P&amp;L forecasts that re-run themselves when actuals land. Scenario toggles the CFO can move in a board meeting, with every assumption traceable to a source line.</p>
+        <div class="svc-win"><b>The win:</b> forecast error under 5 percent MAPE, and reforecasts that take an afternoon instead of a two-week fire drill.</div>
+        <div class="svc-tools"><b>Tools</b><br>Snowflake &#183; dbt &#183; Python &#183; Claude API &#183; board-pack generator</div>
+      </article>
+      <article class="svc-card rv">
+        <span class="svc-no">S.04</span>
+        <h3>AI Controls &amp; Audit Trail</h3>
+        <div class="svc-tag">Log &#183; Approve &#183; Evidence</div>
+        <p>The layer that makes the rest survivable: immutable action logs, human-approval gates on every posting above threshold, segregation-of-duties mapping, and a PBC evidence pack your auditors can pull themselves.</p>
+        <div class="svc-win"><b>The win:</b> agents pass SOX-style walkthroughs, and audit prep drops from 300 hours to under 120.</div>
+        <div class="svc-tools"><b>Tools</b><br>Append-only event store &#183; SoD matrix &#183; AuditBoard export &#183; SSO/SCIM</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GOVERNANCE ================= -->
+<section class="gov sec-pad" id="governance">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Numbers you can <em>defend.</em></h2>
+      <span class="sec-no"><b>02</b> / Governance</span>
+    </div>
+    <div class="gov-grid">
+      <div class="gov-copy rv">
+        <p>Most finance AI fails at the same fence: it produces a number nobody can stand behind. A forecast with no lineage. A journal with no reviewer. An agent with admin rights and no log.</p>
+        <p>We build the opposite way. Every figure a LEDGERLINE agent touches carries its evidence with it, so when the auditor, the board, or the bank asks "where did this come from," the answer is one click, not one week.</p>
+        <ul class="gov-list">
+          <li><span class="mk">G.01</span><span><b>Immutable action log</b><span>Every read, calculation, and posting recorded to an append-only store. Nothing is edited in place, ever.</span></span></li>
+          <li><span class="mk">G.02</span><span><b>Human gates on materiality</b><span>Agents propose; named approvers post. Thresholds set with your auditors, enforced in code.</span></span></li>
+          <li><span class="mk">G.03</span><span><b>Source-linked figures</b><span>Each number resolves to its ERP transactions, bank lines, or model assumptions. Lineage is a feature, not a report.</span></span></li>
+          <li><span class="mk">G.04</span><span><b>Segregation of duties, mapped</b><span>Agent permissions mirror your SoD matrix. An agent that codes invoices cannot approve them.</span></span></li>
+        </ul>
+      </div>
+      <div class="gov-visual rv">
+        <img src="../../assets/ledger-1.jpg" alt="Elegant market data rendered on a screen, rows of figures and fine chart lines" loading="lazy">
+        <span class="gov-stamp">Audit-ready by design</span>
+        <div class="gov-cap"><span>Fig. 02 - Evidence view, client ledger</span><span class="num">REF 2026.07</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROCESS ================= -->
+<section class="sec-pad" id="process">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>How an engagement <em>runs.</em></h2>
+      <span class="sec-no"><b>03</b> / Process</span>
+    </div>
+    <div class="proc">
+      <div class="proc-row rv">
+        <span class="proc-no">P.01</span>
+        <h3>Finance AI assessment</h3>
+        <p>We map your close calendar, AP/AR volumes, forecast cadence, and control environment. You get a ranked automation plan with payback math, whether or not you hire us.</p>
+        <span class="proc-dur">2 weeks &#183; fixed fee</span>
+      </div>
+      <div class="proc-row rv">
+        <span class="proc-no">P.02</span>
+        <h3>Controls first</h3>
+        <p>Before any agent touches the ledger we stand up the logging, approval gates, and SoD mapping. Your audit partner reviews the design before go-live.</p>
+        <span class="proc-dur">2 to 3 weeks</span>
+      </div>
+      <div class="proc-row rv">
+        <span class="proc-no">P.03</span>
+        <h3>First agent live</h3>
+        <p>One high-volume workflow, usually reconciliations or AP coding, runs in shadow mode against your team's output until accuracy clears 99 percent. Then it takes the wheel.</p>
+        <span class="proc-dur">4 to 6 weeks</span>
+      </div>
+      <div class="proc-row rv">
+        <span class="proc-no">P.04</span>
+        <h3>Scale and hand over</h3>
+        <p>We extend across close, AR, and forecasting, train your team to own the agents, and stay on a light retainer through your next audit cycle.</p>
+        <span class="proc-dur">Quarterly cadence</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section class="cases sec-pad" id="results">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Results, stated <em>plainly.</em></h2>
+      <span class="sec-no"><b>04</b> / Case studies</span>
+    </div>
+    <div class="case-grid">
+      <article class="case rv">
+        <div class="case-client"><span>Meridian Freight Co.</span><span class="num">FY25</span></div>
+        <h3>Close cut from 12 days to 4.</h3>
+        <p>A $180M logistics operator closing on spreadsheets and heroics. We automated 214 recurring reconciliations and accrual drafting, controls first.</p>
+        <table class="case-table">
+          <caption>Engagement figures</caption>
+          <tr><td>Hard close duration</td><td class="v"><span class="arrow dn">&#9660;</span>12.0 &#8594; 4.0 d</td></tr>
+          <tr><td>Reconciliations automated</td><td class="v"><span class="arrow up">&#9650;</span>92.1%</td></tr>
+          <tr><td>Controller overtime, close week</td><td class="v"><span class="arrow dn">&#9660;</span>-38.0 h</td></tr>
+          <tr><td>Audit adjustments, YE</td><td class="v">0</td></tr>
+        </table>
+        <div class="case-quote">"Our auditors asked who built the evidence pack. That has never happened before."<cite>VP Finance, Meridian Freight</cite></div>
+      </article>
+      <article class="case rv">
+        <div class="case-client"><span>Halloway Health Group</span><span class="num">FY25</span></div>
+        <h3>Forecast error down 57 percent.</h3>
+        <p>A multi-site clinic group flying blind between quarterly reforecasts. We shipped a driver-based 13-week cash model that re-runs nightly.</p>
+        <table class="case-table">
+          <caption>Engagement figures</caption>
+          <tr><td>Forecast error (MAPE)</td><td class="v"><span class="arrow dn">&#9660;</span>11.2 &#8594; 4.8%</td></tr>
+          <tr><td>Reforecast cycle</td><td class="v"><span class="arrow dn">&#9660;</span>10 d &#8594; 0.5 d</td></tr>
+          <tr><td>Cash buffer released</td><td class="v"><span class="arrow up">&#9650;</span>$2.4M</td></tr>
+          <tr><td>Scenarios per board pack</td><td class="v"><span class="arrow up">&#9650;</span>1 &#8594; 6</td></tr>
+        </table>
+        <div class="case-quote">"The board stopped debating the number and started debating the decision."<cite>CFO, Halloway Health</cite></div>
+      </article>
+      <article class="case rv">
+        <div class="case-client"><span>Bright&amp;Co Retail</span><span class="num">FY26</span></div>
+        <h3>87 percent of AP, untouched by hands.</h3>
+        <p>An 84-store retailer drowning in 9,000 invoices a month. AP agent codes, matches, and routes exceptions; AR agent chases wholesale accounts.</p>
+        <table class="case-table">
+          <caption>Engagement figures</caption>
+          <tr><td>Touchless invoice rate</td><td class="v"><span class="arrow up">&#9650;</span>45.7 &#8594; 87.3%</td></tr>
+          <tr><td>Days sales outstanding</td><td class="v"><span class="arrow dn">&#9660;</span>46.0 &#8594; 31.2 d</td></tr>
+          <tr><td>Early-payment discounts kept</td><td class="v"><span class="arrow up">&#9650;</span>$310K/yr</td></tr>
+          <tr><td>AP headcount redeployed</td><td class="v">3 FTE</td></tr>
+        </table>
+        <div class="case-quote">"AP went from our loudest team to our quietest. The agent never mis-keys a PO."<cite>Financial Controller, Bright&amp;Co</cite></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INTEGRATIONS ================= -->
+<section class="integ">
+  <div class="wrap integ-inner rv">
+    <span class="integ-label">Works inside the stack you already run</span>
+    <div class="integ-row">
+      <span>NetSuite</span><span>Xero</span><span>QuickBooks</span><span>Bill.com</span><span>Stripe</span><span>Snowflake</span><span>FloQast</span>
+    </div>
+    <p class="integ-note">No rip-and-replace. Agents read and write through your ERP's own APIs, under your permissions.</p>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="sec-pad" id="faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Asked by every <em>CFO.</em></h2>
+      <span class="sec-no"><b>05</b> / FAQ</span>
+    </div>
+    <div class="faq-list rv">
+      <details>
+        <summary>Will our auditors accept AI-prepared work?<span class="faq-mark">+</span></summary>
+        <p class="faq-body">Yes, when the controls are designed for it. Agents prepare; named humans review and approve above materiality thresholds. Three clients have now been through big-four year-end audits with LEDGERLINE agents in scope, with zero findings against agent-performed work. We involve your audit partner during design, not after go-live.</p>
+      </details>
+      <details>
+        <summary>Does the AI post journal entries on its own?<span class="faq-mark">+</span></summary>
+        <p class="faq-body">Not above your thresholds. Agents draft entries with full source citations and queue them for a named approver. Low-risk, high-volume items like standard recurring journals can auto-post if you choose, and every posting is logged either way. You set the line; the system enforces it.</p>
+      </details>
+      <details>
+        <summary>What happens to our data? Is it used to train models?<span class="faq-mark">+</span></summary>
+        <p class="faq-body">Your financial data stays in your environment or a dedicated tenant, encrypted in transit and at rest. We use commercial API agreements with zero training retention, and we will put that in writing in the MSA. Nothing you close with us trains anyone's model.</p>
+      </details>
+      <details>
+        <summary>How fast do we see payback?<span class="faq-mark">+</span></summary>
+        <p class="faq-body">The first agent typically pays for itself within one to two quarters through recovered hours, kept discounts, and reduced audit prep. The assessment gives you the payback math for your volumes before you commit to a build.</p>
+      </details>
+      <details>
+        <summary>We are mid-market, not enterprise. Is this for us?<span class="faq-mark">+</span></summary>
+        <p class="faq-body">Mid-market is our center of gravity: finance teams of 3 to 30 running NetSuite, Xero, or QuickBooks. Big enough that the close hurts, small enough that a controller still touches everything. That is exactly where agents return the most hours.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="final sec-pad" id="book">
+  <div class="wrap rv">
+    <div class="kicker" style="justify-content:center">Fixed fee &#183; 2 weeks &#183; Yours to keep</div>
+    <h2>Book a finance <em>AI assessment.</em></h2>
+    <p>Two weeks inside your close, your AP queue, and your forecast. You get a ranked automation plan with payback math for each move, whether or not we build it together.</p>
+    <a class="btn btn-ink" href="mailto:desk@ledgerline.co">Request the assessment</a>
+    <div class="final-meta num">Next intake: August 2026 &#183; 3 slots &#183; desk@ledgerline.co</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <span class="wordmark">LEDGER<span class="tick" style="color:#4cc08c">LINE</span></span>
+        <p>A finance and accounting AI consultancy. We automate the close, AP/AR, and forecasting, with controls your auditors will sign off on.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Practice</h4>
+        <a href="#services">Close automation</a>
+        <a href="#services">AP / AR agents</a>
+        <a href="#services">Rolling forecasts</a>
+        <a href="#services">AI controls</a>
+      </div>
+      <div class="foot-col">
+        <h4>Firm</h4>
+        <a href="#governance">Governance</a>
+        <a href="#process">Process</a>
+        <a href="#results">Case studies</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <a href="mailto:desk@ledgerline.co">desk@ledgerline.co</a>
+        <a href="#book">Book an assessment</a>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>&#169; 2026 Ledgerline Advisory Pty Ltd. Figures shown are illustrative composites.</span>
+      <a href="../../index.html">Part of the RoboNuggets Design Systems</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var GREEN = '#0f7a4d', INK = '#141412', HAIR = '#d9d4c8', FAINT = '#8a867c', RED = '#b0342b';
+
+  /* ---------- clock ---------- */
+  var clock = document.getElementById('boardClock');
+  function tickClock(){
+    var d = new Date();
+    function p(n){return (n<10?'0':'')+n}
+    clock.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+' AEST';
+  }
+  tickClock(); setInterval(tickClock, 1000);
+
+  /* ---------- sparklines ---------- */
+  function makeSeries(base, end, n){
+    var pts = [], i;
+    for(i=0;i<n;i++){
+      var t = i/(n-1);
+      var eased = 1 - Math.pow(1-t, 2.2);
+      var v = base + (end-base)*eased;
+      v += (Math.sin(i*2.7)*0.5 + Math.sin(i*1.3)*0.35) * Math.abs(base-end) * 0.045;
+      pts.push(v);
+    }
+    return pts;
+  }
+  var sparks = [];
+  document.querySelectorAll('canvas.spark').forEach(function(cv){
+    var base = parseFloat(cv.dataset.base), end = parseFloat(cv.dataset.end);
+    sparks.push({cv:cv, ctx:cv.getContext('2d'), pts:makeSeries(base,end,40), prog:0});
+  });
+  function drawSpark(s, prog){
+    var ctx = s.ctx, W = s.cv.width, H = s.cv.height, pts = s.pts;
+    var min = Math.min.apply(null,pts), max = Math.max.apply(null,pts), span = (max-min)||1;
+    ctx.clearRect(0,0,W,H);
+    /* baseline */
+    ctx.strokeStyle = HAIR; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0,H-2); ctx.lineTo(W,H-2); ctx.stroke();
+    var count = Math.max(2, Math.floor(pts.length*prog));
+    ctx.strokeStyle = GREEN; ctx.lineWidth = 2.5; ctx.lineJoin='round';
+    ctx.beginPath();
+    for(var i=0;i<count;i++){
+      var x = (i/(pts.length-1))*(W-6)+3;
+      var y = H-6 - ((pts[i]-min)/span)*(H-14);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(prog>=1){
+      var lx=(W-6)+3-((pts.length-1-(count-1))/(pts.length-1))*(W-6);
+      var lastX=((count-1)/(pts.length-1))*(W-6)+3;
+      var lastY=H-6-((pts[count-1]-min)/span)*(H-14);
+      ctx.fillStyle=GREEN; ctx.beginPath(); ctx.arc(lastX,lastY,3.4,0,7); ctx.fill();
+    }
+  }
+  if(reduced){ sparks.forEach(function(s){drawSpark(s,1)}); }
+  else{
+    var t0=null;
+    function animSpark(ts){
+      if(!t0)t0=ts;
+      var p=Math.min(1,(ts-t0)/1600);
+      sparks.forEach(function(s){drawSpark(s,p)});
+      if(p<1)requestAnimationFrame(animSpark);
+    }
+    requestAnimationFrame(animSpark);
+  }
+
+  /* ---------- close-days bar chart, live-updating ---------- */
+  var chart = document.getElementById('closeChart');
+  var cctx = chart.getContext('2d');
+  var months = ['J','A','S','O','N','D','J','F','M','A','M','J'];
+  var target = [12.0,11.4,10.2,9.1,7.8,6.9,6.1,5.4,4.9,4.5,4.2,4.0];
+  var current = target.map(function(v,i){ return reduced ? v : v; });
+  var display = target.map(function(){return 0});
+  var jitterPhase = 0;
+
+  function drawChart(){
+    var W = chart.width, H = chart.height;
+    cctx.clearRect(0,0,W,H);
+    var padL = 46, padB = 34, padT = 14, padR = 8;
+    var plotW = W-padL-padR, plotH = H-padT-padB;
+    var maxV = 14;
+    /* gridlines + y labels */
+    cctx.font = '19px IBM Plex Mono, monospace';
+    cctx.fillStyle = FAINT;
+    cctx.strokeStyle = HAIR;
+    cctx.lineWidth = 1;
+    [0,4,8,12].forEach(function(g){
+      var y = padT + plotH - (g/maxV)*plotH;
+      cctx.beginPath(); cctx.moveTo(padL,y); cctx.lineTo(W-padR,y); cctx.stroke();
+      cctx.textAlign='right';
+      cctx.fillText(g+'d', padL-9, y+6);
+    });
+    /* target line at 5d */
+    var ty = padT + plotH - (5/maxV)*plotH;
+    cctx.strokeStyle = RED;
+    cctx.setLineDash([5,5]);
+    cctx.beginPath(); cctx.moveTo(padL,ty); cctx.lineTo(W-padR,ty); cctx.stroke();
+    cctx.setLineDash([]);
+    cctx.fillStyle = RED;
+    cctx.textAlign='left';
+    cctx.fillText('target 5d', padL+6, ty-7);
+    /* bars */
+    var n = display.length;
+    var slot = plotW/n, barW = slot*0.52;
+    for(var i=0;i<n;i++){
+      var v = display[i];
+      var bh = (v/maxV)*plotH;
+      var x = padL + slot*i + (slot-barW)/2;
+      var y = padT + plotH - bh;
+      cctx.fillStyle = (target[i] <= 5) ? GREEN : INK;
+      cctx.fillRect(x, y, barW, bh);
+      cctx.fillStyle = FAINT;
+      cctx.textAlign='center';
+      cctx.fillText(months[i], x+barW/2, H-10);
+    }
+    /* live value pulse on last bar */
+    cctx.fillStyle = GREEN;
+    cctx.textAlign='center';
+    var lx = padL + slot*(n-1) + slot/2;
+    var lv = display[n-1];
+    var lyy = padT + plotH - (lv/maxV)*plotH - 10;
+    cctx.font = '600 20px IBM Plex Mono, monospace';
+    cctx.fillText(lv.toFixed(1), lx, lyy);
+  }
+
+  var chartStarted = false;
+  function startChart(){
+    if(chartStarted) return; chartStarted = true;
+    if(reduced){
+      display = target.slice(); drawChart();
+      return;
+    }
+    var t0=null;
+    function grow(ts){
+      if(!t0)t0=ts;
+      var p=Math.min(1,(ts-t0)/1400);
+      var e=1-Math.pow(1-p,3);
+      display = target.map(function(v){return v*e});
+      drawChart();
+      if(p<1)requestAnimationFrame(grow);
+      else startLive();
+    }
+    requestAnimationFrame(grow);
+  }
+  function startLive(){
+    setInterval(function(){
+      jitterPhase += 1;
+      /* last bar breathes gently around 4.0 like a live feed */
+      var jitter = Math.sin(jitterPhase*0.9)*0.12 + (Math.random()-0.5)*0.06;
+      display = target.slice();
+      display[display.length-1] = 4.0 + jitter;
+      var legend = document.getElementById('chartLegend');
+      legend.innerHTML = 'before 12.0 &#183; now '+display[display.length-1].toFixed(1);
+      drawChart();
+    }, 1200);
+  }
+
+  /* start chart when hero board visible */
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ startChart(); io.disconnect(); } });
+    },{threshold:.2});
+    io.observe(chart);
+  } else { startChart(); }
+
+  /* ---------- scroll reveals ---------- */
+  var rvs = document.querySelectorAll('.rv');
+  if(reduced || !('IntersectionObserver' in window)){
+    rvs.forEach(function(el){el.classList.add('in')});
+  } else {
+    var rio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); rio.unobserve(e.target); }
+      });
+    },{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+    rvs.forEach(function(el){rio.observe(el)});
+  }
+})();
+</script>
+</body>
+</html>

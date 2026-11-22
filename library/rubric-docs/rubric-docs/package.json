@@ -1,0 +1,8 @@
+{
+  "name": "rubric-docs",
+  "version": "1.0.0",
+  "description": "Rubric Docs - file browser, markdown editor, and comment system for AI agent workspaces",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "license": "MIT"
+}

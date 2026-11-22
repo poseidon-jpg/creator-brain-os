@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launch teaser (GSAP example)</title>
+<!-- A 1920x1080 launch teaser built from plain web page elements and animated with one GSAP timeline.
+     It has no renderAt() and no DURATION on purpose: the Element Picker finds the GSAP timeline by itself,
+     pauses it and scrubs it. GSAP is loaded from the local file next to this page (no network). -->
+<style>
+  @font-face { font-family: 'Outfit'; font-weight: 500; src: url(fonts/outfit-500.woff2) format('woff2'); }
+  @font-face { font-family: 'Outfit'; font-weight: 700; src: url(fonts/outfit-700.woff2) format('woff2'); }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0d1020; color: #f4efe6; font-family: 'Outfit', system-ui, sans-serif; }
+  #stage { position: absolute; inset: 0; overflow: hidden; }
+  #bg { position: absolute; inset: -8%; background: radial-gradient(60% 70% at 78% 24%, #2a2f6b 0%, rgba(42, 47, 107, 0) 70%), linear-gradient(160deg, #11142c 0%, #0b0d1c 100%); }
+  .orb { position: absolute; border-radius: 50%; filter: blur(46px); opacity: .55; }
+  #orb1 { left: 120px; top: 90px; width: 520px; height: 520px; background: #ff6b3d; }
+  #orb2 { right: 80px; top: 300px; width: 460px; height: 460px; background: #4b6bff; }
+  #orb3 { left: 780px; bottom: -190px; width: 620px; height: 380px; background: #9a4bff; }
+  #progress { position: absolute; left: 160px; right: 160px; top: 80px; height: 10px; border-radius: 5px; background: rgba(255, 255, 255, .14); }
+  #progress i { display: block; width: 100%; height: 100%; border-radius: 5px; background: #ff6b3d; transform-origin: 0 50%; }
+  #kicker { position: absolute; left: 160px; top: 168px; font-weight: 500; font-size: 26px; letter-spacing: .32em; color: #ff9a6b; }
+  #headline { position: absolute; left: 150px; top: 214px; font-size: 190px; font-weight: 700; line-height: 1.04; letter-spacing: -.03em; white-space: nowrap; }
+  #headline .word { display: inline-block; margin-right: .2em; }
+  #sub { position: absolute; left: 160px; top: 462px; width: 880px; font-size: 42px; line-height: 1.35; color: #c9c4d8; }
+  .cards { position: absolute; left: 160px; bottom: 150px; display: flex; gap: 36px; }
+  .card { width: 360px; height: 250px; box-sizing: border-box; padding: 34px; border-radius: 28px; background: rgba(255, 255, 255, .08); border: 2px solid rgba(255, 255, 255, .18); }
+  .card svg { width: 64px; height: 64px; display: block; }
+  .card h3 { margin: 22px 0 6px; font-size: 38px; font-weight: 700; }
+  .card p { margin: 0; font-size: 26px; color: #c9c4d8; }
+  #badge { position: absolute; right: 200px; top: 130px; width: 240px; height: 240px; }
+  #cta { position: absolute; right: 160px; bottom: 170px; height: 96px; padding: 0 48px; border-radius: 48px; background: #ff6b3d; color: #fff; font-size: 36px; font-weight: 700; display: flex; align-items: center; gap: 20px; }
+  #rocket { position: absolute; left: 1060px; top: 760px; width: 150px; height: 230px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div class="orb" id="orb1"></div>
+  <div class="orb" id="orb2"></div>
+  <div class="orb" id="orb3"></div>
+  <div id="progress"><i></i></div>
+  <div id="kicker">LAUNCH WEEK</div>
+  <h1 id="headline" style="margin:0"><span class="word">Ship</span><span class="word">it</span><span class="word">today.</span></h1>
+  <p id="sub">One page, one timeline, every piece on its own layer, ready to pick and reuse.</p>
+  <div class="cards">
+    <div class="card" id="card1">
+      <svg viewBox="0 0 64 64" fill="none" stroke="#ff9a6b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M32 18v14l9 6"/></svg>
+      <h3>Fast</h3><p>Ready in minutes</p>
+    </div>
+    <div class="card" id="card2">
+      <svg viewBox="0 0 64 64" fill="none" stroke="#7d93ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="12" width="44" height="40" rx="8"/><path d="M10 26h44M22 38h20"/></svg>
+      <h3>Clean</h3><p>One layer per idea</p>
+    </div>
+    <div class="card" id="card3">
+      <svg viewBox="0 0 64 64" fill="none" stroke="#c28bff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 26l17-2z"/></svg>
+      <h3>Yours</h3><p>Reuse any piece</p>
+    </div>
+  </div>
+  <svg id="badge" viewBox="0 0 240 240"><g id="badgeStar"><polygon points="120,14 148,84 224,90 166,138 184,212 120,172 56,212 74,138 16,90 92,84" fill="#ffd25e"/></g><text x="120" y="132" text-anchor="middle" font-family="Outfit" font-weight="700" font-size="40" fill="#0d1020">NEW</text></svg>
+  <div id="cta"><span>Get started</span><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h28M22 8l12 12-12 12"/></svg></div>
+  <svg id="rocket" viewBox="0 0 150 230"><path id="flame" d="M75 160 C50 190 66 214 75 228 C84 214 100 190 75 160Z" fill="#ffb347"/><path id="fins" d="M44 120 L8 176 L52 156Z M106 120 L142 176 L98 156Z" fill="#ff6b3d"/><path id="body" d="M75 6 C112 40 118 100 104 168 L46 168 C32 100 38 40 75 6Z" fill="#f4efe6"/><circle id="window" cx="75" cy="86" r="17" fill="#4b6bff"/></svg>
+</div>
+<script src="gsap.min.js"></script>
+<script>
+  // one master timeline. It repeats, so the picker scrubs its first pass.
+  const tl = gsap.timeline({ repeat: -1, repeatDelay: 1, defaults: { ease: 'power3.out' } });
+  tl.from('#bg', { scale: 1.15, duration: 6, ease: 'none' }, 0)
+    .from('.orb', { scale: 0.3, opacity: 0, duration: 1.2, stagger: 0.2 }, 0)
+    .from('#progress i', { scaleX: 0, duration: 5.4, ease: 'none' }, 0)
+    .from('#kicker', { y: 24, opacity: 0, duration: 0.6 }, 0.3)
+    .from('#headline .word', { y: 120, opacity: 0, rotate: 4, duration: 0.8, stagger: 0.15 }, 0.5)
+    .from('#sub', { y: 30, opacity: 0, duration: 0.7 }, 1.3)
+    .from('.card', { y: 90, opacity: 0, duration: 0.7, stagger: 0.18 }, 1.9)
+    .from('#badge', { scale: 0, rotate: -120, duration: 0.9, ease: 'back.out(1.8)' }, 2.6)
+    .to('#badgeStar', { rotate: 360, transformOrigin: '50% 50%', duration: 5, ease: 'none' }, 0.5)
+    .from('#cta', { x: 120, opacity: 0, duration: 0.7 }, 3.4)
+    .to('#cta', { scale: 1.06, yoyo: true, repeat: 3, duration: 0.3, ease: 'sine.inOut', transformOrigin: '50% 50%' }, 4.2)
+    .fromTo('#rocket', { y: 260, opacity: 0 }, { y: -980, x: 300, opacity: 1, rotate: 16, duration: 2.4, ease: 'power2.in' }, 3.0);
+</script>
+</body>
+</html>

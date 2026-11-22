@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOLD - Origami Paper Studio</title>
+<meta name="description" content="FOLD is an origami paper studio in Kyoto & online. Workshops, a fold library with difficulty ratings, handmade washi paper shop, and paper sculpture commissions.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23FBF7F1'/%3E%3Cpolygon points='12,46 32,12 40,46' fill='%23F2B8C6'/%3E%3Cpolygon points='32,12 40,46 54,40' fill='%23A8CDEB'/%3E%3Cpolygon points='12,46 40,46 30,54' fill='%23BFE5CF'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;1,6..12,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF7F1;
+  --paper-warm:#F6EFE6;
+  --blush:#F2B8C6;
+  --blush-deep:#E493AB;
+  --blush-soft:#F9DCE3;
+  --sky:#A8CDEB;
+  --sky-deep:#7FAFD9;
+  --sky-soft:#DCEAF7;
+  --mint:#BEE3CE;
+  --mint-deep:#8CC9A8;
+  --mint-soft:#E3F3EA;
+  --ink:#42395B;
+  --ink-soft:#6E6584;
+  --shadow-paper: 0 1px 2px rgba(66,57,91,.08), 0 6px 18px rgba(66,57,91,.09), 0 22px 44px rgba(66,57,91,.08);
+  --shadow-lift: 0 2px 4px rgba(66,57,91,.1), 0 14px 30px rgba(66,57,91,.14), 0 34px 70px rgba(66,57,91,.12);
+  --ease-fold: cubic-bezier(.22,1,.36,1);
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'Nunito Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.6;
+  overflow-x:hidden;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.26 0 0 0 0 0.22 0 0 0 0 0.36 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection{background:var(--blush);color:var(--ink)}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+
+/* ---------- fold-on-scroll primitive ---------- */
+.fold{
+  transform:perspective(1400px) rotateX(-58deg);
+  transform-origin:top center;
+  opacity:0;
+  transition:transform 1.1s var(--ease-fold), opacity .7s ease;
+  transition-delay:var(--d,0s);
+  will-change:transform,opacity;
+}
+.fold.from-left{transform:perspective(1400px) rotateY(52deg);transform-origin:left center}
+.fold.from-right{transform:perspective(1400px) rotateY(-52deg);transform-origin:right center}
+.fold.unfolded,.fold.from-left.unfolded,.fold.from-right.unfolded{transform:none;opacity:1}
+
+/* ---------- header ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem clamp(1.2rem,4vw,3rem);
+  background:rgba(251,247,241,.86);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(66,57,91,.07);
+  transition:box-shadow .4s ease;
+}
+header.scrolled{box-shadow:0 6px 24px rgba(66,57,91,.08)}
+.logo{font-family:var(--serif);font-size:1.5rem;letter-spacing:.14em;text-decoration:none;display:flex;align-items:center;gap:.55rem}
+.logo svg{width:26px;height:26px}
+nav{display:flex;gap:clamp(1rem,2.5vw,2.2rem)}
+nav a{
+  text-decoration:none;font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+  position:relative;padding:.2rem 0;transition:color .25s;
+}
+nav a::after{
+  content:"";position:absolute;left:0;bottom:-2px;height:2px;width:100%;
+  background:linear-gradient(90deg,var(--blush-deep),var(--sky-deep));
+  transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease-fold);
+}
+nav a:hover{color:var(--ink)}
+nav a:hover::after{transform:scaleX(1)}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:7rem 1.5rem 8.5rem;overflow:hidden;
+}
+.sheet{position:absolute;border-radius:6px;pointer-events:none;will-change:transform}
+.sheet::after{ /* crease highlight */
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(115deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 42%,rgba(66,57,91,.06) 43%,rgba(66,57,91,0) 60%);
+}
+.sheet-1{width:46vmin;height:46vmin;background:var(--blush-soft);top:6%;left:-9%;transform:rotate(-14deg);box-shadow:var(--shadow-paper)}
+.sheet-2{width:38vmin;height:38vmin;background:var(--sky-soft);top:52%;right:-8%;transform:rotate(11deg);box-shadow:var(--shadow-paper)}
+.sheet-3{width:30vmin;height:30vmin;background:var(--mint-soft);bottom:-6%;left:12%;transform:rotate(21deg);box-shadow:var(--shadow-paper)}
+.sheet-4{width:20vmin;height:20vmin;background:#fff;top:14%;right:14%;transform:rotate(-7deg);box-shadow:var(--shadow-paper)}
+
+.hero-kicker,.hero h1,.hero-sub,.hero-ctas,.crane-stage,.scroll-cue{position:relative;z-index:2}
+.hero-kicker{
+  font-weight:800;font-size:.78rem;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-soft);
+  display:inline-flex;align-items:center;gap:.8rem;margin-bottom:1.4rem;
+}
+.hero-kicker::before,.hero-kicker::after{content:"";width:34px;height:1px;background:currentColor;opacity:.5}
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(4.6rem,17vw,13rem);
+  line-height:.92;letter-spacing:.02em;
+  display:flex;gap:.02em;justify-content:center;
+  perspective:900px;
+}
+.hero h1 span{
+  display:inline-block;transform-origin:bottom center;
+  animation:letterfold 1.15s var(--ease-fold) both;
+  transition:transform .5s var(--ease-fold);
+}
+.hero h1 span:hover{transform:rotateX(26deg)}
+.hero h1 span:nth-child(1){color:var(--blush-deep);animation-delay:.15s}
+.hero h1 span:nth-child(2){color:var(--sky-deep);animation-delay:.3s}
+.hero h1 span:nth-child(3){color:var(--mint-deep);animation-delay:.45s}
+.hero h1 span:nth-child(4){color:var(--ink);animation-delay:.6s}
+@keyframes letterfold{
+  from{transform:rotateX(-92deg);opacity:0}
+  60%{opacity:1}
+  to{transform:rotateX(0);opacity:1}
+}
+.hero-sub{
+  max-width:34rem;margin:1.6rem auto 2.4rem;font-size:clamp(1rem,1.4vw,1.18rem);color:var(--ink-soft);
+  animation:riseIn 1s var(--ease-fold) .95s both;
+}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:riseIn 1s var(--ease-fold) 1.15s both}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.btn{
+  display:inline-block;padding:.85rem 1.9rem;border-radius:999px;text-decoration:none;
+  font-weight:800;font-size:.88rem;letter-spacing:.08em;text-transform:uppercase;
+  transition:transform .3s var(--ease-fold),box-shadow .3s;
+}
+.btn-primary{background:var(--ink);color:var(--paper);box-shadow:0 10px 24px rgba(66,57,91,.28)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(66,57,91,.34)}
+.btn-ghost{border:2px solid var(--ink);color:var(--ink)}
+.btn-ghost:hover{transform:translateY(-3px);background:#fff}
+
+/* crane */
+.crane-stage{position:relative;margin-top:3.2rem;width:min(340px,68vw);cursor:pointer;animation:riseIn 1.1s var(--ease-fold) 1.3s both;-webkit-tap-highlight-color:transparent}
+.crane-stage svg{overflow:visible}
+.crane-float{animation:bob 5.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1.4deg)}}
+.wing-l,.wing-r{transform-box:view-box;transition:transform .5s var(--ease-fold)}
+.wing-l{transform-origin:118px 108px;animation:flapL 5.2s ease-in-out infinite}
+.wing-r{transform-origin:130px 108px;animation:flapR 5.2s ease-in-out infinite}
+@keyframes flapL{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+@keyframes flapR{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+.crane-stage.flap .wing-l{animation:flapHardL .55s var(--ease-fold) 3}
+.crane-stage.flap .wing-r{animation:flapHardR .55s var(--ease-fold) 3}
+@keyframes flapHardL{0%,100%{transform:rotate(0)}45%{transform:rotate(26deg)}}
+@keyframes flapHardR{0%,100%{transform:rotate(0)}45%{transform:rotate(-26deg)}}
+.crane-shadow{animation:shadowPulse 5.2s ease-in-out infinite;transform-box:view-box;transform-origin:center}
+@keyframes shadowPulse{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.82);opacity:.32}}
+.crane-hint{font-size:.75rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin-top:.4rem;opacity:.75}
+.senbazuru{
+  margin-top:.5rem;font-size:.85rem;color:var(--ink-soft);min-height:1.4em;
+  font-feature-settings:"tnum";
+}
+.senbazuru b{color:var(--blush-deep)}
+/* tiny cranes that fly off on click */
+.mini-crane{
+  position:fixed;z-index:90;width:34px;height:26px;pointer-events:none;
+  animation:flyaway 2.6s cubic-bezier(.3,.6,.4,1) forwards;
+}
+@keyframes flyaway{
+  0%{transform:translate(0,0) rotate(0) scale(.6);opacity:0}
+  10%{opacity:1}
+  100%{transform:translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(1.05);opacity:0}
+}
+
+.scroll-cue{
+  position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);
+  font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;font-weight:800;color:var(--ink-soft);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.8;
+  animation:riseIn 1s ease 1.9s both;
+}
+.scroll-cue::after{content:"";width:1px;height:40px;background:linear-gradient(var(--ink-soft),transparent);animation:cueDrop 1.8s ease-in-out infinite}
+@keyframes cueDrop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- washi tape marquee ---------- */
+.tape{
+  overflow:hidden;padding:.85rem 0;user-select:none;pointer-events:none;
+  box-shadow:0 4px 14px rgba(66,57,91,.12);
+  position:relative;z-index:3;
+}
+.tape-blush{background:var(--blush);transform:rotate(-1.4deg) scale(1.02);margin:-.6rem 0}
+.tape-mint{background:var(--mint);transform:rotate(1.2deg) scale(1.02);margin:-.6rem 0}
+.tape-track{display:flex;white-space:nowrap;width:max-content;animation:tape 30s linear infinite}
+.tape-track span{
+  font-weight:800;font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink);
+  padding-right:2.5rem;opacity:.85;
+}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- scroll fold-tracker ---------- */
+.fold-tracker{
+  position:fixed;right:1.1rem;bottom:1.1rem;z-index:95;
+  display:flex;align-items:center;gap:.6rem;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(6px);
+  border:1px solid rgba(66,57,91,.1);border-radius:999px;
+  padding:.45rem .95rem .45rem .5rem;
+  box-shadow:0 8px 22px rgba(66,57,91,.16);
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s ease,transform .5s var(--ease-fold);
+}
+.fold-tracker.show{opacity:1;transform:none}
+.fold-tracker svg{width:30px;height:30px}
+.fold-tracker .ft-stage{display:none}
+.fold-tracker[data-stage="0"] .s0,.fold-tracker[data-stage="1"] .s1,.fold-tracker[data-stage="2"] .s2,
+.fold-tracker[data-stage="3"] .s3,.fold-tracker[data-stage="4"] .s4{display:block;animation:stagePop .45s var(--ease-fold)}
+@keyframes stagePop{from{transform:scale(.6) rotate(-14deg)}to{transform:none}}
+.fold-tracker b em{font-style:normal}
+.fold-tracker b{font-size:.72rem;letter-spacing:.1em;font-weight:800;color:var(--ink-soft);font-feature-settings:"tnum";min-width:6.4em}
+@media (max-width:640px){.fold-tracker{right:.7rem;bottom:.7rem;padding:.35rem .7rem .35rem .4rem}.fold-tracker b{min-width:0}.fold-tracker b em{display:none}}
+
+/* ---------- shared section chrome ---------- */
+section{padding:clamp(4.5rem,9vw,8.5rem) clamp(1.2rem,5vw,4rem);position:relative}
+.wrap{max-width:1180px;margin:0 auto}
+.sec-head{max-width:640px;margin-bottom:clamp(2.4rem,5vw,4rem)}
+.sec-tag{
+  display:inline-block;padding:.32rem 1rem;border-radius:4px 4px 4px 0;
+  font-size:.72rem;font-weight:800;letter-spacing:.26em;text-transform:uppercase;
+  margin-bottom:1.1rem;position:relative;box-shadow:0 3px 8px rgba(66,57,91,.12);
+}
+.sec-tag::after{ /* folded corner of the label */
+  content:"";position:absolute;left:0;bottom:-7px;border-style:solid;border-width:7px 8px 0 0;
+}
+.tag-blush{background:var(--blush);color:var(--ink)}.tag-blush::after{border-color:var(--blush-deep) transparent transparent transparent}
+.tag-sky{background:var(--sky);color:var(--ink)}.tag-sky::after{border-color:var(--sky-deep) transparent transparent transparent}
+.tag-mint{background:var(--mint);color:var(--ink)}.tag-mint::after{border-color:var(--mint-deep) transparent transparent transparent}
+h2{font-family:var(--serif);font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.08;margin-bottom:1rem}
+.sec-head p{color:var(--ink-soft);font-size:1.05rem}
+
+/* ---------- fold library ---------- */
+#library{background:linear-gradient(180deg,transparent, rgba(168,205,235,.1) 30%, rgba(168,205,235,.1) 70%, transparent)}
+.fold-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:clamp(1.2rem,2.5vw,2rem);perspective:1600px}
+.fold-card{
+  background:#fff;border-radius:10px;padding:1.9rem 1.8rem 1.7rem;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-paper);
+  transition:transform .5s var(--ease-fold),box-shadow .5s;
+}
+.fold-card:hover{transform:translateY(-8px) rotate(-.4deg);box-shadow:var(--shadow-lift)}
+.fold-card::before{ /* dog-ear corner that folds down on hover */
+  content:"";position:absolute;top:0;right:0;width:0;height:0;z-index:2;
+  background:linear-gradient(225deg,var(--paper) 0%,var(--paper) 49.5%,var(--corner,var(--blush)) 50%,var(--corner-deep,var(--blush-deep)) 100%);
+  box-shadow:-4px 4px 8px rgba(66,57,91,.15);
+  transition:width .45s var(--ease-fold),height .45s var(--ease-fold);
+  border-bottom-left-radius:8px;
+}
+.fold-card:hover::before{width:56px;height:56px}
+.fold-card .diagram{height:120px;margin-bottom:1.4rem;display:flex;align-items:center;justify-content:center}
+.fold-card .diagram svg{height:100%;transition:transform .6s var(--ease-fold)}
+.fold-card:hover .diagram svg{transform:rotate(-5deg) scale(1.08)}
+.fold-card h3{font-family:var(--serif);font-size:1.5rem;margin-bottom:.15rem}
+.fold-card .jp{font-size:.8rem;letter-spacing:.18em;color:var(--ink-soft);text-transform:uppercase;font-weight:700;margin-bottom:.8rem}
+.fold-card p{font-size:.94rem;color:var(--ink-soft);margin-bottom:1.2rem}
+.meta-row{display:flex;align-items:center;justify-content:space-between;border-top:1px dashed rgba(66,57,91,.2);padding-top:1rem}
+.difficulty{display:flex;gap:4px;align-items:center}
+.difficulty i{
+  width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid rgba(66,57,91,.16);
+}
+.difficulty i.on{border-bottom-color:var(--blush-deep)}
+.steps-count{font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* ---------- workshops ---------- */
+.shop-strip,.workshop-grid{display:grid;gap:clamp(1.2rem,2.5vw,2rem)}
+.workshop-grid{grid-template-columns:repeat(auto-fit,minmax(290px,1fr));perspective:1600px}
+.ws-card{
+  border-radius:12px;padding:2.1rem 1.9rem;position:relative;display:flex;flex-direction:column;
+  box-shadow:var(--shadow-paper);overflow:hidden;
+  transition:transform .5s var(--ease-fold),box-shadow .5s;
+}
+.ws-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lift)}
+.ws-card::after{ /* central crease */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,0) 46%,rgba(66,57,91,.05) 47%,rgba(66,57,91,0) 65%);
+}
+.ws-blush{background:linear-gradient(160deg,#FBE3E9,var(--blush-soft))}
+.ws-sky{background:linear-gradient(160deg,#E7F1FA,var(--sky-soft))}
+.ws-mint{background:linear-gradient(160deg,#EBF7F0,var(--mint-soft))}
+.ws-level{font-size:.72rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.9rem}
+.ws-card h3{font-family:var(--serif);font-size:1.75rem;line-height:1.15;margin-bottom:.7rem}
+.ws-card>p{font-size:.95rem;color:var(--ink-soft);flex:1}
+.ws-facts{list-style:none;margin:1.4rem 0;display:grid;gap:.5rem}
+.ws-facts li{font-size:.9rem;display:flex;gap:.6rem;align-items:baseline}
+.ws-facts li::before{content:"◢";font-size:.6rem;color:var(--ink-soft)}
+.ws-price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:1.2rem;border-top:1px dashed rgba(66,57,91,.25)}
+.ws-price{font-family:var(--serif);font-size:1.9rem}
+.ws-price small{font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--ink-soft)}
+.ws-book{
+  padding:.6rem 1.3rem;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none;
+  font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;transition:transform .3s var(--ease-fold),box-shadow .3s;
+}
+.ws-book:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(66,57,91,.3)}
+
+/* ---------- shop ---------- */
+#shop{background:linear-gradient(180deg,transparent,rgba(190,227,206,.14) 35%,rgba(190,227,206,.14) 70%,transparent)}
+.shop-strip{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));perspective:1600px}
+.paper-item{background:#fff;border-radius:10px;box-shadow:var(--shadow-paper);overflow:hidden;transition:transform .5s var(--ease-fold),box-shadow .5s}
+.paper-item:hover{transform:translateY(-8px) rotate(.5deg);box-shadow:var(--shadow-lift)}
+.stack{height:170px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stack .ream{
+  width:64%;height:56%;border-radius:4px;position:relative;
+  box-shadow:0 1px 0 #fff inset, 0 3px 0 rgba(255,255,255,.75), 0 5px 0 rgba(66,57,91,.08), 0 8px 0 rgba(255,255,255,.7), 0 10px 0 rgba(66,57,91,.08), 0 18px 26px rgba(66,57,91,.22);
+  transform:rotate(-3deg);transition:transform .5s var(--ease-fold);
+}
+.paper-item:hover .ream{transform:rotate(2deg) translateY(-5px)}
+.ream::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,rgba(255,255,255,.5),rgba(255,255,255,0) 55%)}
+.paper-info{padding:1.3rem 1.4rem 1.5rem}
+.paper-info h3{font-family:var(--serif);font-size:1.22rem;margin-bottom:.2rem}
+.paper-info .origin{font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin-bottom:.7rem}
+.paper-info p{font-size:.88rem;color:var(--ink-soft);margin-bottom:1rem}
+.price-line{display:flex;justify-content:space-between;align-items:center}
+.price-line b{font-size:1.05rem}
+.price-line span{font-size:.78rem;color:var(--ink-soft)}
+.gsm{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.12em;background:var(--paper-warm);border-radius:4px;padding:.15rem .5rem;color:var(--ink-soft)}
+
+/* ---------- commissions ---------- */
+.commission{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,4.5rem);align-items:center;
+}
+.commission-copy p{color:var(--ink-soft);margin-bottom:1.1rem}
+.commission-copy .btn{margin-top:.8rem}
+.commission-visual{position:relative;perspective:1400px}
+.quote-sheet{
+  background:#fff;border-radius:10px;padding:2.2rem 2.1rem;box-shadow:var(--shadow-lift);
+  transform:rotate(2deg) rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg));
+  transition:transform .3s ease-out;position:relative;
+}
+.quote-sheet::before{
+  content:"";position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  width:110px;height:30px;background:rgba(168,205,235,.55);border-radius:2px;
+  box-shadow:0 2px 6px rgba(66,57,91,.12);
+}
+.quote-sheet blockquote{font-family:var(--serif);font-size:clamp(1.2rem,1.9vw,1.5rem);line-height:1.4;font-style:italic;margin-bottom:1.2rem}
+.quote-sheet cite{font-style:normal;font-size:.85rem;font-weight:700;color:var(--ink-soft);letter-spacing:.06em}
+.comm-list{list-style:none;margin:1.6rem 0 0;display:grid;gap:1rem}
+.comm-list li{display:flex;gap:1rem;align-items:flex-start}
+.comm-list .dot{
+  flex:0 0 auto;width:38px;height:38px;border-radius:8px;display:grid;place-items:center;
+  font-family:var(--serif);font-size:1.05rem;box-shadow:0 4px 10px rgba(66,57,91,.14);
+}
+.comm-list li:nth-child(1) .dot{background:var(--blush)}
+.comm-list li:nth-child(2) .dot{background:var(--sky)}
+.comm-list li:nth-child(3) .dot{background:var(--mint)}
+.comm-list b{display:block;font-size:.98rem}
+.comm-list span{font-size:.88rem;color:var(--ink-soft)}
+
+/* ---------- studio band ---------- */
+.band{
+  background:var(--ink);color:var(--paper);
+  padding:clamp(3.5rem,7vw,6rem) clamp(1.2rem,5vw,4rem);
+}
+.band .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2.5rem}
+.band h2{color:var(--paper);font-size:clamp(1.9rem,3.4vw,2.6rem)}
+.stat{border-left:2px solid rgba(251,247,241,.25);padding-left:1.3rem}
+.stat .num{font-family:var(--serif);font-size:clamp(2.4rem,4.5vw,3.4rem);line-height:1;color:var(--blush)}
+.stat:nth-child(3) .num{color:var(--sky)}
+.stat:nth-child(4) .num{color:var(--mint)}
+.stat p{font-size:.9rem;opacity:.75;margin-top:.5rem}
+
+/* ---------- footer ---------- */
+footer{padding:clamp(3rem,6vw,5rem) clamp(1.2rem,5vw,4rem) 2rem;background:var(--paper-warm)}
+.foot-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid rgba(66,57,91,.12)}
+.foot-grid h4{font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:1rem;color:var(--ink-soft)}
+.foot-grid ul{list-style:none;display:grid;gap:.55rem}
+.foot-grid a{text-decoration:none;font-size:.92rem;color:var(--ink);opacity:.85}
+.foot-grid a:hover{opacity:1;text-decoration:underline}
+.foot-brand p{font-size:.92rem;color:var(--ink-soft);max-width:26rem;margin-top:.8rem}
+.credit{max-width:1180px;margin:1.6rem auto 0;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.8rem;color:var(--ink-soft)}
+.credit a{color:var(--ink-soft)}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .commission{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  nav{display:none}
+  .hero{min-height:92svh}
+  .sheet-4{display:none}
+  .foot-grid{grid-template-columns:1fr}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important}
+  html{scroll-behavior:auto}
+  .fold,.fold.from-left,.fold.from-right{transform:none;opacity:1}
+  .tape-track{animation:none;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header id="top-bar">
+  <a class="logo" href="#top" aria-label="FOLD home">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="12,46 32,12 40,46" fill="#F2B8C6"/><polygon points="32,12 40,46 54,40" fill="#A8CDEB"/><polygon points="12,46 40,46 30,54" fill="#BEE3CE"/></svg>
+    FOLD
+  </a>
+  <nav aria-label="Primary">
+    <a href="#library">Fold Library</a>
+    <a href="#workshops">Workshops</a>
+    <a href="#shop">Paper Shop</a>
+    <a href="#commissions">Commissions</a>
+  </nav>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top" aria-label="Intro">
+  <div class="sheet sheet-1" data-parallax="0.12"></div>
+  <div class="sheet sheet-2" data-parallax="-0.08"></div>
+  <div class="sheet sheet-3" data-parallax="0.05"></div>
+  <div class="sheet sheet-4" data-parallax="-0.15"></div>
+
+  <p class="hero-kicker">Origami Paper Studio · Kyoto &amp; Online</p>
+  <h1 aria-label="FOLD"><span aria-hidden="true">F</span><span aria-hidden="true">O</span><span aria-hidden="true">L</span><span aria-hidden="true">D</span></h1>
+  <p class="hero-sub">One square. No cuts, no glue. We teach the quiet craft of turning a flat sheet into something that breathes - from a first crane to museum-scale paper sculpture.</p>
+  <div class="hero-ctas">
+    <a class="btn btn-primary" href="#workshops">Book a workshop</a>
+    <a class="btn btn-ghost" href="#library">Browse the folds</a>
+  </div>
+
+  <div class="crane-stage" id="crane" role="button" tabindex="0" aria-label="Fold a paper crane">
+    <svg viewBox="0 0 248 200" aria-hidden="true">
+      <ellipse class="crane-shadow" cx="124" cy="186" rx="62" ry="8" fill="#42395B" opacity=".45"/>
+      <g class="crane-float">
+        <!-- tail -->
+        <polygon points="148,124 192,84 152,140" fill="#86B5DE"/>
+        <polygon points="148,124 192,84 168,112" fill="#A8CDEB"/>
+        <!-- neck + head -->
+        <polygon points="96,122 58,70 92,132" fill="#E493AB"/>
+        <polygon points="96,122 58,70 82,104" fill="#F2B8C6"/>
+        <polygon points="58,70 42,62 56,84" fill="#42395B"/>
+        <!-- wings -->
+        <g class="wing-l">
+          <polygon points="92,120 126,108 62,26" fill="#F2B8C6"/>
+          <polygon points="92,120 62,26 84,116" fill="#E493AB"/>
+        </g>
+        <g class="wing-r">
+          <polygon points="126,108 148,124 182,30" fill="#A8CDEB"/>
+          <polygon points="148,124 182,30 156,120" fill="#86B5DE"/>
+        </g>
+        <!-- body -->
+        <polygon points="96,122 126,108 148,124 120,152" fill="#FBF7F1" stroke="#E8E0D3" stroke-width="1"/>
+        <polygon points="96,122 120,152 108,136" fill="#F0E9DE"/>
+      </g>
+    </svg>
+    <p class="crane-hint">tap the crane</p>
+    <p class="senbazuru" id="senbazuru" aria-live="polite">Senbazuru wall: <b>612</b> / 1000 cranes folded</p>
+  </div>
+
+  <div class="scroll-cue">Unfold</div>
+</section>
+
+<!-- ================= FOLD LIBRARY ================= -->
+<section id="library">
+  <div class="wrap">
+    <div class="sec-head fold">
+      <span class="sec-tag tag-blush">Fold Library</span>
+      <h2>Six folds, a lifetime of paper.</h2>
+      <p>Every model in our library starts with a 15&nbsp;cm square. Difficulty is rated in mountains - one for a first evening, five for a month of quiet frustration and joy.</p>
+    </div>
+
+    <div class="fold-grid">
+      <article class="fold-card fold" style="--d:.05s;--corner:#F2B8C6;--corner-deep:#E493AB">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="20,80 60,15 74,80" fill="#F9DCE3"/><polygon points="60,15 74,80 100,70" fill="#F2B8C6"/><line x1="60" y1="15" x2="74" y2="80" stroke="#E493AB" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Classic Crane</h3>
+        <p class="jp">Orizuru · the first fold</p>
+        <p>The one everyone begins with. Petal folds, a bird base, and the moment the wings pull apart and the body inflates with a single breath.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+          <span class="steps-count">22 steps · 40 min</span>
+        </div>
+      </article>
+
+      <article class="fold-card fold" style="--d:.12s;--corner:#A8CDEB;--corner-deep:#7FAFD9">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="15,75 60,25 105,75" fill="#DCEAF7"/><polygon points="38,75 60,25 82,75" fill="#A8CDEB"/><line x1="60" y1="25" x2="60" y2="75" stroke="#7FAFD9" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Waterbomb</h3>
+        <p class="jp">Fūsen · the balloon</p>
+        <p>A sealed cube you inflate at the last step. Our favourite first lesson in 3D thinking - the fold that teaches paper to hold air.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <span class="steps-count">14 steps · 20 min</span>
+        </div>
+      </article>
+
+      <article class="fold-card fold" style="--d:.19s;--corner:#BEE3CE;--corner-deep:#8CC9A8">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="20,70 50,30 80,70" fill="#E3F3EA"/><polygon points="50,30 80,70 108,55" fill="#BEE3CE"/><polygon points="20,70 80,70 60,88" fill="#8CC9A8"/><line x1="50" y1="30" x2="80" y2="70" stroke="#8CC9A8" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Jumping Frog</h3>
+        <p class="jp">Kaeru · the party trick</p>
+        <p>Press the back crease and it leaps. Built on the frog base, it hides more engineering than anything else in a beginner class.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+          <span class="steps-count">18 steps · 30 min</span>
+        </div>
+      </article>
+
+      <article class="fold-card fold" style="--d:.05s;--corner:#A8CDEB;--corner-deep:#7FAFD9">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="10,72 45,20 66,72" fill="#DCEAF7"/><polygon points="45,20 66,72 96,60" fill="#A8CDEB"/><polygon points="96,60 66,72 112,78" fill="#7FAFD9"/><line x1="45" y1="20" x2="66" y2="72" stroke="#7FAFD9" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Kawasaki Rose</h3>
+        <p class="jp">Bara · the spiral</p>
+        <p>A twist-fold rose that curls into itself like the real flower. The collapse at step 31 is the closest paper gets to magic.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          <span class="steps-count">47 steps · 2.5 hrs</span>
+        </div>
+      </article>
+
+      <article class="fold-card fold" style="--d:.12s;--corner:#F2B8C6;--corner-deep:#E493AB">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="14,78 40,26 60,78" fill="#F9DCE3"/><polygon points="40,26 60,78 86,32" fill="#F2B8C6"/><polygon points="86,32 60,78 106,74" fill="#E493AB"/><line x1="40" y1="26" x2="86" y2="32" stroke="#E493AB" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Flapping Bird</h3>
+        <p class="jp">Habataku tori · the toy</p>
+        <p>Pull the tail and the wings beat. A crane with a mechanism inside - the fold we use to explain tension and stored energy.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+          <span class="steps-count">26 steps · 50 min</span>
+        </div>
+      </article>
+
+      <article class="fold-card fold" style="--d:.19s;--corner:#BEE3CE;--corner-deep:#8CC9A8">
+        <div class="diagram">
+          <svg viewBox="0 0 120 100"><polygon points="8,70 34,30 52,70" fill="#E3F3EA"/><polygon points="34,30 52,70 72,26" fill="#BEE3CE"/><polygon points="72,26 52,70 92,66" fill="#8CC9A8"/><polygon points="92,66 72,26 114,58" fill="#BEE3CE"/><line x1="34" y1="30" x2="92" y2="66" stroke="#8CC9A8" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+        </div>
+        <h3>Ryūjin Dragon</h3>
+        <p class="jp">Ryūjin 3.5 · the summit</p>
+        <p>Satoshi Kamiya's sea dragon: 275 steps, thousands of scales, one uncut square. Nobody finishes it fast. Some never finish it at all.</p>
+        <div class="meta-row">
+          <div class="difficulty" aria-label="Difficulty 5 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <span class="steps-count">275 steps · ~1 month</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="tape tape-blush" aria-hidden="true">
+  <div class="tape-track">
+    <span>Valley fold · Mountain fold · Squash fold · Petal fold · Inside reverse · Outside reverse · Sink fold · Crimp · Pleat · Rabbit ear ·&nbsp;</span><span>Valley fold · Mountain fold · Squash fold · Petal fold · Inside reverse · Outside reverse · Sink fold · Crimp · Pleat · Rabbit ear ·&nbsp;</span>
+  </div>
+</div>
+
+<!-- ================= WORKSHOPS ================= -->
+<section id="workshops">
+  <div class="wrap">
+    <div class="sec-head fold">
+      <span class="sec-tag tag-sky">Workshops</span>
+      <h2>Learn with your hands, not a screen.</h2>
+      <p>Small tables, good light, unlimited paper. Every session runs twice: in the studio on Sanjō-dōri, Kyoto, and live online with a kit posted to your door.</p>
+    </div>
+
+    <div class="workshop-grid">
+      <article class="ws-card ws-blush fold" style="--d:.05s">
+        <p class="ws-level">Beginner · 2 hours</p>
+        <h3>First Crease</h3>
+        <p>Zero experience needed. You'll leave with a crane, a balloon, a jumping frog - and hands that finally trust the paper.</p>
+        <ul class="ws-facts">
+          <li>Every Saturday, 10:00 &amp; 14:00 JST</li>
+          <li>Next date: Sat 18 July 2026</li>
+          <li>8 seats · kit with 30 sheets included</li>
+        </ul>
+        <div class="ws-price-row">
+          <span class="ws-price">¥4,800 <small>/ $32</small></span>
+          <a class="ws-book" href="#commissions">Book</a>
+        </div>
+      </article>
+
+      <article class="ws-card ws-sky fold" style="--d:.13s">
+        <p class="ws-level">Intermediate · 3 hours</p>
+        <h3>Wet-Folding Animals</h3>
+        <p>Dampen the sheet and paper becomes clay. Sculpt an elephant and a sitting fox with soft, curved creases in the style of Akira Yoshizawa.</p>
+        <ul class="ws-facts">
+          <li>First Sunday monthly, 13:00 JST</li>
+          <li>Next date: Sun 2 August 2026</li>
+          <li>6 seats · 90&nbsp;gsm handmade washi provided</li>
+        </ul>
+        <div class="ws-price-row">
+          <span class="ws-price">¥9,500 <small>/ $63</small></span>
+          <a class="ws-book" href="#commissions">Book</a>
+        </div>
+      </article>
+
+      <article class="ws-card ws-mint fold" style="--d:.21s">
+        <p class="ws-level">Advanced · 6 weeks</p>
+        <h3>Tessellation Lab</h3>
+        <p>Corrugations, twist grids, and light. Six evenings building geometric surfaces that fold flat and bloom open - ending in a group show in our window.</p>
+        <ul class="ws-facts">
+          <li>Thursdays 19:00 JST, from 10 Sept 2026</li>
+          <li>Cohort of 10 · online + studio hybrid</li>
+          <li>Includes 50-sheet elephant-hide pack</li>
+        </ul>
+        <div class="ws-price-row">
+          <span class="ws-price">¥38,000 <small>/ $252</small></span>
+          <a class="ws-book" href="#commissions">Book</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS BAND ================= -->
+<section class="band" aria-label="Studio in numbers">
+  <div class="wrap">
+    <div class="fold" style="--d:0s">
+      <h2>A studio measured in creases.</h2>
+      <p style="opacity:.72;margin-top:.6rem;font-size:.95rem">Founded 2019 by Mei Takahara, former aerospace engineer who swapped satellite solar arrays for paper. Same math, softer material.</p>
+    </div>
+    <div class="stat fold" style="--d:.1s"><span class="num" data-count="12400">0</span><p>students taught a first crane, in 41 countries</p></div>
+    <div class="stat fold" style="--d:.18s"><span class="num" data-count="275">0</span><p>steps in the hardest fold we've completed on camera</p></div>
+    <div class="stat fold" style="--d:.26s"><span class="num" data-count="0">0</span><p>cuts or drops of glue used since we opened</p></div>
+  </div>
+</section>
+
+<!-- ================= PAPER SHOP ================= -->
+<section id="shop">
+  <div class="wrap">
+    <div class="sec-head fold">
+      <span class="sec-tag tag-mint">Paper Shop</span>
+      <h2>Paper worth the crease.</h2>
+      <p>We stock what we fold with. Cut square, packed flat, shipped worldwide from Kyoto every Tuesday. Free shipping over ¥6,000.</p>
+    </div>
+
+    <div class="shop-strip">
+      <article class="paper-item fold" style="--d:.04s">
+        <div class="stack" style="background:linear-gradient(160deg,#FBE9EE,#F6DEE6)"><div class="ream" style="background:#F2B8C6"></div></div>
+        <div class="paper-info">
+          <h3>Sakura Kami</h3>
+          <p class="origin">Machine kami · 15 cm · 100 sheets</p>
+          <p>Crisp everyday folding paper in blossom pink. Holds a crease like a promise; forgiving enough to unfold and retry.</p>
+          <div class="price-line"><b>¥1,200</b><span class="gsm">70 gsm</span></div>
+        </div>
+      </article>
+
+      <article class="paper-item fold" style="--d:.1s">
+        <div class="stack" style="background:linear-gradient(160deg,#E9F2FA,#DCEAF7)"><div class="ream" style="background:#A8CDEB"></div></div>
+        <div class="paper-info">
+          <h3>Sora Washi</h3>
+          <p class="origin">Handmade in Echizen · 24 cm · 20 sheets</p>
+          <p>Sky-blue kōzo washi with visible fibre. Wet-folds beautifully - the sheet we use for every Yoshizawa-style animal.</p>
+          <div class="price-line"><b>¥3,400</b><span class="gsm">90 gsm</span></div>
+        </div>
+      </article>
+
+      <article class="paper-item fold" style="--d:.16s">
+        <div class="stack" style="background:linear-gradient(160deg,#EDF7F1,#E3F3EA)"><div class="ream" style="background:#BEE3CE"></div></div>
+        <div class="paper-info">
+          <h3>Wakaba Duo</h3>
+          <p class="origin">Duo kami, mint/white · 15 cm · 60 sheets</p>
+          <p>A different colour on each face, for models that turn the paper inside out. Our tessellation students' default sheet.</p>
+          <div class="price-line"><b>¥1,800</b><span class="gsm">64 gsm</span></div>
+        </div>
+      </article>
+
+      <article class="paper-item fold" style="--d:.22s">
+        <div class="stack" style="background:linear-gradient(160deg,#F4F0E8,#ECE6DA)"><div class="ream" style="background:#FBF7F1;box-shadow:0 1px 0 #fff inset,0 3px 0 rgba(255,255,255,.75),0 5px 0 rgba(66,57,91,.08),0 8px 0 rgba(255,255,255,.7),0 10px 0 rgba(66,57,91,.08),0 18px 26px rgba(66,57,91,.22);border:1px solid #E8E0D3"></div></div>
+        <div class="paper-info">
+          <h3>Zō-hide 52</h3>
+          <p class="origin">Elephant hide · 35 cm · 10 sheets</p>
+          <p>The complex-folder's armour: takes hundreds of creases without splitting. Required for Ryūjin. Respect it.</p>
+          <div class="price-line"><b>¥4,600</b><span class="gsm">110 gsm</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="tape tape-mint" aria-hidden="true">
+  <div class="tape-track">
+    <span>Kōzo · Mitsumata · Gampi · Elephant hide · Duo kami · Tissue foil · Wet fold · Dry fold · 15 cm square · No cuts, no glue ·&nbsp;</span><span>Kōzo · Mitsumata · Gampi · Elephant hide · Duo kami · Tissue foil · Wet fold · Dry fold · 15 cm square · No cuts, no glue ·&nbsp;</span>
+  </div>
+</div>
+
+<!-- ================= COMMISSIONS ================= -->
+<section id="commissions">
+  <div class="wrap commission">
+    <div class="commission-copy fold from-left">
+      <span class="sec-tag tag-blush">Commissions</span>
+      <h2>Paper, at any scale.</h2>
+      <p>We build origami for windows, weddings, film sets, and lobbies - from a single two-metre crane to ten thousand suspended butterflies. Everything folded by hand in the studio, installed anywhere in the world.</p>
+      <p>Recent work: the 3,000-crane ceiling at Hotel Kanade Ginza, the folding title sequence for the film <em>Paper Moon Over Osaka</em>, and a wind-responsive facade study with Studio Arata Architects.</p>
+      <ul class="comm-list">
+        <li><span class="dot">1</span><div><b>Tell us the space</b><span> Send dimensions, light, and mood - a phone photo is enough to start.</span></div></li>
+        <li><span class="dot">2</span><div><b>We fold a maquette</b><span> A scale study ships to you within three weeks, yours to keep.</span></div></li>
+        <li><span class="dot">3</span><div><b>Install day</b><span> Our team hangs, lights, and photographs the finished piece.</span></div></li>
+      </ul>
+      <a class="btn btn-primary" href="mailto:studio@fold.jp">studio@fold.jp - start a commission</a>
+    </div>
+    <div class="commission-visual fold from-right" style="--d:.15s">
+      <div class="quote-sheet">
+        <blockquote>"They folded our entire lobby out of a material we used to throw away. Guests stand under the cranes and just… go quiet."</blockquote>
+        <cite>- Rina Kobayashi, GM, Hotel Kanade Ginza · installation of 3,000 cranes, March 2026</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="logo" href="#top">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="12,46 32,12 40,46" fill="#F2B8C6"/><polygon points="32,12 40,46 54,40" fill="#A8CDEB"/><polygon points="12,46 40,46 30,54" fill="#BEE3CE"/></svg>
+        FOLD
+      </a>
+      <p>Origami paper studio. 2-41 Sanjō-dōri, Nakagyō-ku, Kyoto 604-8004 · Open Tue–Sun, 10:00–18:00 JST. One square, no cuts, no glue.</p>
+    </div>
+    <div>
+      <h4>Studio</h4>
+      <ul>
+        <li><a href="#library">Fold Library</a></li>
+        <li><a href="#workshops">Workshops</a></li>
+        <li><a href="#commissions">Commissions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#shop">Kami &amp; Washi</a></li>
+        <li><a href="#shop">Elephant Hide</a></li>
+        <li><a href="#shop">Gift Kits</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:studio@fold.jp">studio@fold.jp</a></li>
+        <li><a href="tel:+81757501182">+81 75 750 1182</a></li>
+        <li><a href="#top">@fold.studio</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="credit">
+    <span>© 2026 FOLD Paper Studio, Kyoto. All folds reversible.</span>
+    <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+  </div>
+</footer>
+
+<div class="fold-tracker" id="fold-tracker" data-stage="0" aria-hidden="true">
+  <svg class="ft-stage s0" viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="2" fill="#F9DCE3" stroke="#E493AB" stroke-width="1.5"/><line x1="6" y1="34" x2="34" y2="6" stroke="#E493AB" stroke-width="1" stroke-dasharray="3 3"/></svg>
+  <svg class="ft-stage s1" viewBox="0 0 40 40"><polygon points="6,34 34,6 34,34" fill="#F2B8C6" stroke="#E493AB" stroke-width="1.5"/><line x1="20" y1="34" x2="34" y2="20" stroke="#E493AB" stroke-width="1" stroke-dasharray="3 3"/></svg>
+  <svg class="ft-stage s2" viewBox="0 0 40 40"><polygon points="8,34 20,8 32,34" fill="#A8CDEB" stroke="#7FAFD9" stroke-width="1.5"/><line x1="20" y1="8" x2="20" y2="34" stroke="#7FAFD9" stroke-width="1" stroke-dasharray="3 3"/></svg>
+  <svg class="ft-stage s3" viewBox="0 0 40 40"><polygon points="12,36 20,6 28,36" fill="#BEE3CE" stroke="#8CC9A8" stroke-width="1.5"/><polygon points="12,36 20,22 28,36" fill="#E3F3EA" stroke="#8CC9A8" stroke-width="1"/></svg>
+  <svg class="ft-stage s4" viewBox="0 0 248 200"><polygon points="148,124 192,84 152,140" fill="#86B5DE"/><polygon points="96,122 58,70 92,132" fill="#E493AB"/><polygon points="58,70 42,62 56,84" fill="#42395B"/><polygon points="92,120 126,108 62,26" fill="#F2B8C6"/><polygon points="126,108 148,124 182,30" fill="#A8CDEB"/><polygon points="96,122 126,108 148,124 120,152" fill="#FBF7F1" stroke="#E8E0D3" stroke-width="2"/></svg>
+  <b><span id="ft-pct">0%</span><em> folded</em></b>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* header shadow */
+  var header = document.getElementById("top-bar");
+
+  /* fold-on-scroll */
+  var folds = Array.prototype.slice.call(document.querySelectorAll(".fold"));
+  if ("IntersectionObserver" in window && !reduceMotion){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add("unfolded"); io.unobserve(e.target); }
+      });
+    }, {threshold:.18, rootMargin:"0px 0px -6% 0px"});
+    folds.forEach(function(f){ io.observe(f); });
+  } else {
+    folds.forEach(function(f){ f.classList.add("unfolded"); });
+  }
+
+  /* stat counters */
+  var counters = Array.prototype.slice.call(document.querySelectorAll("[data-count]"));
+  function runCounter(el){
+    var target = parseInt(el.getAttribute("data-count"), 10);
+    if (reduceMotion || target === 0){ el.textContent = target.toLocaleString("en-US"); return; }
+    var start = null, dur = 1600;
+    function tick(ts){
+      if (!start) start = ts;
+      var p = Math.min((ts - start)/dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target*eased).toLocaleString("en-US");
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  if ("IntersectionObserver" in window){
+    var cio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ runCounter(e.target); cio.unobserve(e.target); }
+      });
+    }, {threshold:.6});
+    counters.forEach(function(c){ cio.observe(c); });
+  } else { counters.forEach(runCounter); }
+
+  /* hero sheet parallax + header shadow, one rAF loop */
+  var sheets = Array.prototype.slice.call(document.querySelectorAll("[data-parallax]"));
+  var baseRot = [-14, 11, 21, -7];
+  var tracker = document.getElementById("fold-tracker");
+  var trackerPct = document.getElementById("ft-pct");
+  var ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var y = window.scrollY || window.pageYOffset;
+      header.classList.toggle("scrolled", y > 8);
+      if (!reduceMotion){
+        sheets.forEach(function(s, i){
+          var f = parseFloat(s.getAttribute("data-parallax"));
+          s.style.transform = "translateY(" + (y*f).toFixed(1) + "px) rotate(" + baseRot[i] + "deg)";
+        });
+      }
+      /* fold tracker: square folds into a crane as you read */
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? Math.min(Math.max(y / max, 0), 1) : 0;
+      tracker.classList.toggle("show", y > window.innerHeight * 0.5);
+      var stage = p >= 0.97 ? 4 : Math.min(Math.floor(p * 5), 4);
+      if (tracker.getAttribute("data-stage") !== String(stage)) tracker.setAttribute("data-stage", String(stage));
+      trackerPct.textContent = Math.round(p * 100) + "%";
+      ticking = false;
+    });
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  /* crane: flap + senbazuru counter + flying mini cranes */
+  var crane = document.getElementById("crane");
+  var senbazuru = document.getElementById("senbazuru");
+  var count = 612;
+  var miniSVG = '<svg viewBox="0 0 248 200" xmlns="http://www.w3.org/2000/svg">' +
+    '<polygon points="148,124 192,84 152,140" fill="#86B5DE"/>' +
+    '<polygon points="96,122 58,70 92,132" fill="#E493AB"/>' +
+    '<polygon points="92,120 126,108 62,26" fill="#F2B8C6"/>' +
+    '<polygon points="126,108 148,124 182,30" fill="#A8CDEB"/>' +
+    '<polygon points="96,122 126,108 148,124 120,152" fill="#FBF7F1"/></svg>';
+  function foldCrane(){
+    count = Math.min(count + 1, 1000);
+    senbazuru.innerHTML = count >= 1000
+      ? "Senbazuru complete - <b>1000</b> cranes. Your wish is filed."
+      : "Senbazuru wall: <b>" + count + "</b> / 1000 cranes folded";
+    if (reduceMotion) return;
+    crane.classList.remove("flap");
+    void crane.offsetWidth; /* restart animation */
+    crane.classList.add("flap");
+    var rect = crane.getBoundingClientRect();
+    for (var i = 0; i < 3; i++){
+      var m = document.createElement("div");
+      m.className = "mini-crane";
+      m.innerHTML = miniSVG;
+      m.style.left = (rect.left + rect.width/2 - 17) + "px";
+      m.style.top = (rect.top + 30) + "px";
+      m.style.setProperty("--fx", ((Math.random()*2 - 1) * 320).toFixed(0) + "px");
+      m.style.setProperty("--fy", (-(140 + Math.random()*260)).toFixed(0) + "px");
+      m.style.setProperty("--fr", ((Math.random()*2 - 1) * 50).toFixed(0) + "deg");
+      m.style.animationDelay = (i * 0.09) + "s";
+      document.body.appendChild(m);
+      (function(node){ setTimeout(function(){ node.remove(); }, 3000); })(m);
+    }
+  }
+  crane.addEventListener("click", foldCrane);
+  crane.addEventListener("keydown", function(e){
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); foldCrane(); }
+  });
+
+  /* quote sheet: paper leans toward the cursor */
+  var visual = document.querySelector(".commission-visual");
+  var sheet = document.querySelector(".quote-sheet");
+  if (visual && sheet && !reduceMotion && window.matchMedia("(pointer: fine)").matches){
+    visual.addEventListener("mousemove", function(e){
+      var r = visual.getBoundingClientRect();
+      var dx = (e.clientX - r.left) / r.width - 0.5;
+      var dy = (e.clientY - r.top) / r.height - 0.5;
+      sheet.style.setProperty("--ty", (dx * 10).toFixed(2) + "deg");
+      sheet.style.setProperty("--tx", (-dy * 8).toFixed(2) + "deg");
+    });
+    visual.addEventListener("mouseleave", function(){
+      sheet.style.setProperty("--ty", "0deg");
+      sheet.style.setProperty("--tx", "0deg");
+    });
+  }
+})();
+</script>
+</body>
+</html>

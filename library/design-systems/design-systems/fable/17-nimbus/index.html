@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIMBUS - A Museum of Clouds</title>
+<meta name="description" content="NIMBUS is a museum of clouds - permanent collection of ten thousand skies, current exhibition The Architecture of Cumulus. Open wherever there is sky.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23aebcf0'/%3E%3Cellipse cx='26' cy='38' rx='14' ry='10' fill='%23fff6ec'/%3E%3Cellipse cx='40' cy='34' rx='12' ry='9' fill='%23ffe3cf'/%3E%3Cellipse cx='33' cy='42' rx='18' ry='8' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-top:#aebcf0; --sky-mid:#f6c9c4; --sky-bot:#ffdcb8;
+  --ink:#453a64; --ink-soft:rgba(69,58,100,.68);
+  --glass:rgba(255,255,255,.38); --glass-strong:rgba(255,255,255,.55);
+  --glass-border:rgba(255,255,255,.55); --line:rgba(69,58,100,.22);
+  --accent:#e8896a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Jost',sans-serif;font-weight:300;color:var(--ink);
+  line-height:1.65;overflow-x:hidden;background:#aebcf0;
+  transition:color .2s linear;
+}
+::selection{background:rgba(232,137,106,.35)}
+h1,h2,h3,.serif{font-family:'Cormorant',serif;font-weight:500;line-height:1.08}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+/* ---------- fixed sky ---------- */
+.sky{
+  position:fixed;inset:0;z-index:-3;
+  background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-bot) 100%);
+}
+.orb{
+  position:fixed;z-index:-2;width:min(22vw,190px);height:min(22vw,190px);border-radius:50%;
+  left:12%;top:60%;pointer-events:none;
+  background:radial-gradient(circle at 42% 40%, #fff8e8 0%, #ffd9a8 38%, rgba(255,205,150,.35) 62%, rgba(255,205,150,0) 72%);
+  filter:blur(2px);
+  box-shadow:0 0 120px 60px rgba(255,214,160,.35);
+}
+.moon{
+  position:fixed;z-index:-2;width:min(11vw,92px);height:min(11vw,92px);border-radius:50%;
+  right:14%;top:16%;opacity:0;pointer-events:none;
+  background:radial-gradient(circle at 38% 35%, #fdfbff 0%, #d9d4f2 55%, rgba(217,212,242,0) 74%);
+  box-shadow:0 0 70px 26px rgba(226,220,255,.30);
+}
+.stars{position:fixed;inset:0;z-index:-2;opacity:0;pointer-events:none}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff}
+
+/* ---------- parallax cloud layers ---------- */
+.cloud-layer{position:fixed;inset:0;z-index:-1;pointer-events:none;will-change:transform}
+.cloud-layer svg{position:absolute;overflow:visible}
+.drift-a{animation:driftA 90s linear infinite}
+.drift-b{animation:driftB 130s linear infinite}
+.drift-c{animation:driftC 170s linear infinite}
+@keyframes driftA{from{transform:translateX(-12vw)}to{transform:translateX(112vw)}}
+@keyframes driftB{from{transform:translateX(110vw)}to{transform:translateX(-30vw)}}
+@keyframes driftC{from{transform:translateX(-25vw)}to{transform:translateX(115vw)}}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.1rem clamp(1.2rem,4vw,3rem);
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+}
+.wordmark{font-family:'Cormorant',serif;font-weight:600;font-size:1.35rem;letter-spacing:.42em;text-decoration:none}
+nav ul{display:flex;gap:clamp(1rem,3vw,2.4rem);list-style:none}
+nav ul a{text-decoration:none;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;opacity:.8;transition:opacity .25s}
+nav ul a:hover{opacity:1}
+.daylabel{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;opacity:.65;min-width:6.5em;text-align:right}
+@media(max-width:768px){nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:7rem clamp(1.2rem,5vw,3rem) 4rem;position:relative}
+.hero .eyebrow{font-size:.78rem;letter-spacing:.5em;text-transform:uppercase;opacity:0;animation:rise 1.2s .2s cubic-bezier(.22,.9,.3,1) forwards}
+.hero h1{
+  font-size:clamp(4.2rem,17vw,13rem);font-weight:500;letter-spacing:.09em;
+  margin:.5rem 0 .8rem;opacity:0;animation:rise 1.4s .45s cubic-bezier(.22,.9,.3,1) forwards;
+}
+.hero h1 span{display:inline-block;animation:float 7s ease-in-out infinite}
+.hero h1 span:nth-child(2n){animation-delay:-2.2s}
+.hero h1 span:nth-child(3n){animation-delay:-4.5s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.hero .sub{font-family:'Cormorant',serif;font-style:italic;font-size:clamp(1.25rem,3vw,1.8rem);opacity:0;animation:rise 1.4s .7s cubic-bezier(.22,.9,.3,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:translateY(0)}}
+.hero-media{
+  margin-top:clamp(2rem,5vh,3.5rem);width:min(860px,92vw);aspect-ratio:16/9;
+  border-radius:26px;overflow:hidden;position:relative;
+  border:1px solid var(--glass-border);
+  box-shadow:0 40px 90px -30px rgba(70,60,120,.45);
+  opacity:0;animation:rise 1.6s .95s cubic-bezier(.22,.9,.3,1) forwards;
+}
+.hero-media img,.hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-media .plate{
+  position:absolute;left:14px;bottom:14px;padding:.35rem .9rem;border-radius:100px;
+  background:rgba(255,255,255,.5);backdrop-filter:blur(10px);
+  font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:#4a3f6d;white-space:nowrap;
+}
+@media(max-width:640px){.hero-media .plate{font-size:.58rem;letter-spacing:.14em;padding:.3rem .7rem}.hero-media .plate .long{display:none}}
+.scrollcue{position:absolute;bottom:1.6rem;left:50%;transform:translateX(-50%);font-size:.68rem;letter-spacing:.35em;text-transform:uppercase;opacity:.6;animation:cue 2.6s ease-in-out infinite}
+@keyframes cue{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* ---------- ticker ---------- */
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:.85rem 0;white-space:nowrap}
+.ticker-inner{display:inline-block;animation:tick 40s linear infinite;font-size:.78rem;letter-spacing:.26em;text-transform:uppercase;opacity:.75}
+.ticker-inner span{margin:0 2.2rem}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- layout primitives ---------- */
+section{padding:clamp(4.5rem,10vh,8.5rem) clamp(1.2rem,5vw,3rem);position:relative}
+.wrap{max-width:1180px;margin:0 auto}
+.kicker{font-size:.74rem;letter-spacing:.44em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;font-weight:400}
+.h-big{font-size:clamp(2.4rem,6vw,4.4rem);margin-bottom:1.4rem}
+.lede{font-family:'Cormorant',serif;font-size:clamp(1.2rem,2.2vw,1.55rem);font-style:italic;max-width:44ch;color:var(--ink);opacity:.82}
+.glass{
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--glass-border);border-radius:26px;
+  transition:background .2s linear,border-color .2s linear;
+}
+.reveal{opacity:0;transform:translateY(44px);transition:opacity 1s cubic-bezier(.22,.9,.3,1),transform 1s cubic-bezier(.22,.9,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- exhibition ---------- */
+.exhibit-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.6rem,4vw,3.5rem);align-items:center}
+.exhibit-grid figure{border-radius:26px;overflow:hidden;position:relative;box-shadow:0 40px 80px -34px rgba(70,60,120,.5)}
+.exhibit-grid figure img{transition:transform 1.4s cubic-bezier(.22,.9,.3,1)}
+.exhibit-grid figure:hover img{transform:scale(1.05)}
+figcaption{position:absolute;left:16px;bottom:16px;padding:.4rem 1rem;border-radius:100px;background:rgba(255,255,255,.5);backdrop-filter:blur(10px);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#4a3f6d}
+.meta-row{display:flex;flex-wrap:wrap;gap:1.8rem;margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.meta-row div b{display:block;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;opacity:.55;font-weight:400;margin-bottom:.2rem}
+.meta-row div span{font-family:'Cormorant',serif;font-size:1.15rem}
+@media(max-width:860px){.exhibit-grid{grid-template-columns:1fr}}
+
+/* ---------- collection cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,2.4vw,1.8rem);margin-top:3rem}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.cards{grid-template-columns:1fr}}
+.card{
+  padding:1.9rem 1.7rem 1.7rem;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .6s cubic-bezier(.22,.9,.3,1),box-shadow .6s cubic-bezier(.22,.9,.3,1),background .2s linear,border-color .2s linear;
+}
+.card:hover{transform:translateY(-10px);box-shadow:0 34px 60px -28px rgba(70,60,120,.45)}
+.card svg{width:74px;height:48px;margin-bottom:1.1rem;transition:transform .8s cubic-bezier(.22,.9,.3,1)}
+.card:hover svg{transform:translateY(-6px) scale(1.06)}
+.card h3{font-size:1.75rem;margin-bottom:.1rem}
+.card .latin{font-family:'Cormorant',serif;font-style:italic;font-size:1.02rem;color:var(--accent);margin-bottom:.8rem}
+.card p{font-size:.92rem;color:var(--ink-soft)}
+.card .alt{
+  margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;opacity:.7;
+}
+.card .num{position:absolute;top:1.2rem;right:1.4rem;font-family:'Cormorant',serif;font-style:italic;font-size:1rem;opacity:.45}
+.rain{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s}
+.rain.on{opacity:1}
+.rain i{position:absolute;top:-14px;width:1.5px;height:13px;border-radius:2px;background:linear-gradient(rgba(120,140,220,0),rgba(120,140,220,.85));animation:drop 1s linear infinite}
+@keyframes drop{to{transform:translateY(125%)}}
+.rain-hint{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;opacity:.45;margin-top:.8rem}
+
+/* ---------- wings (image duo) ---------- */
+.wings{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,3vw,2rem);margin-top:3.4rem}
+@media(max-width:760px){.wings{grid-template-columns:1fr}}
+.wing{border-radius:26px;overflow:hidden;position:relative;aspect-ratio:16/10}
+.wing img{width:100%;height:100%;object-fit:cover;transition:transform 1.6s cubic-bezier(.22,.9,.3,1)}
+.wing:hover img{transform:scale(1.06)}
+.wing .tag{position:absolute;left:16px;bottom:16px;right:16px;padding:.9rem 1.2rem;border-radius:18px;background:rgba(255,255,255,.42);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.5);color:#3f3560}
+.wing .tag b{font-family:'Cormorant',serif;font-weight:600;font-size:1.25rem;display:block}
+.wing .tag span{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75}
+
+/* ---------- altitude atlas ---------- */
+.atlas{display:grid;grid-template-columns:96px 1fr;gap:0;margin-top:3rem;border-radius:26px;overflow:hidden}
+.atlas .scale{display:flex;flex-direction:column;justify-content:space-between;padding:1.4rem .8rem;font-size:.68rem;letter-spacing:.14em;text-align:right;opacity:.65;border-right:1px solid var(--line)}
+.bands{display:flex;flex-direction:column}
+.band{padding:1.5rem clamp(1rem,3vw,2.2rem);display:flex;justify-content:space-between;align-items:baseline;gap:1rem;border-bottom:1px solid var(--line);transition:background .4s,padding-left .5s cubic-bezier(.22,.9,.3,1)}
+.band:last-child{border-bottom:none}
+.band:hover{background:rgba(255,255,255,.22);padding-left:clamp(1.6rem,4vw,3rem)}
+.band h3{font-size:1.5rem}
+.band .latin{font-style:italic;font-family:'Cormorant',serif;color:var(--accent);font-size:.98rem}
+.band .residents{font-size:.8rem;letter-spacing:.06em;color:var(--ink-soft);text-align:right}
+@media(max-width:620px){.atlas{grid-template-columns:64px 1fr}.band{flex-direction:column;gap:.2rem}.band .residents{text-align:left}}
+
+/* ---------- visiting ---------- */
+.visit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,2.4vw,1.8rem);margin-top:3rem}
+@media(max-width:860px){.visit-grid{grid-template-columns:1fr}}
+.visit-card{padding:2rem 1.8rem;transition:background .2s linear,border-color .2s linear}
+.visit-card h3{font-size:1.65rem;margin-bottom:.9rem}
+.visit-card ul{list-style:none}
+.visit-card li{display:flex;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.visit-card li:last-child{border-bottom:none}
+.visit-card li em{font-style:normal;color:var(--ink-soft)}
+.visit-note{margin-top:2.6rem;text-align:center}
+.visit-note p{font-family:'Cormorant',serif;font-style:italic;font-size:clamp(1.3rem,3vw,1.9rem);max-width:34ch;margin:0 auto}
+
+/* ---------- day progress rail ---------- */
+.rail{position:fixed;right:1.4rem;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.rail .track{width:2px;height:34vh;background:var(--line);border-radius:2px;position:relative}
+.rail .dot{position:absolute;left:50%;top:0;width:11px;height:11px;border-radius:50%;transform:translate(-50%,-50%);background:var(--accent);box-shadow:0 0 12px 2px var(--accent);transition:top .1s linear}
+.rail span{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;opacity:.55;writing-mode:vertical-rl}
+@media(max-width:900px){.rail{display:none}}
+
+/* ---------- card sheen ---------- */
+.card::after{
+  content:'';position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.36),transparent);
+  transform:skewX(-18deg);transition:left .9s cubic-bezier(.22,.9,.3,1);
+}
+.card:hover::after{left:130%}
+.ticker:hover .ticker-inner{animation-play-state:paused}
+.wing .tag{transition:transform .6s cubic-bezier(.22,.9,.3,1)}
+.wing:hover .tag{transform:translateY(-6px)}
+.hero-media{will-change:transform}
+
+/* ---------- footer ---------- */
+footer{padding:3.5rem clamp(1.2rem,5vw,3rem) 2.2rem;border-top:1px solid var(--line)}
+.foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;max-width:1180px;margin:0 auto 2.6rem}
+.foot-top .fm{font-family:'Cormorant',serif;font-weight:600;font-size:1.8rem;letter-spacing:.4em}
+.foot-cols{display:flex;gap:clamp(2rem,6vw,5rem);flex-wrap:wrap}
+.foot-cols div b{display:block;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;opacity:.55;font-weight:400;margin-bottom:.6rem}
+.foot-cols a{display:block;text-decoration:none;font-size:.9rem;padding:.16rem 0;opacity:.85}
+.foot-cols a:hover{opacity:1}
+.credit{max-width:1180px;margin:0 auto;padding-top:1.6rem;border-top:1px solid var(--line);font-size:.78rem;opacity:.65;display:flex;flex-wrap:wrap;gap:.6rem;justify-content:space-between}
+.credit a{text-decoration:underline;text-underline-offset:3px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+  .hero .eyebrow,.hero h1,.hero .sub,.hero-media{opacity:1;animation:none}
+  .cloud-layer{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"></div>
+<div class="orb" id="orb" aria-hidden="true"></div>
+<div class="moon" id="moon" aria-hidden="true"></div>
+<div class="stars" id="stars" aria-hidden="true"></div>
+
+<!-- parallax cloud layers -->
+<div class="cloud-layer" id="layerFar" aria-hidden="true">
+  <svg class="drift-b" style="top:12%;left:0;width:34vw;opacity:.5" viewBox="0 0 300 100"><g fill="#ffffff"><ellipse cx="90" cy="66" rx="80" ry="26"/><ellipse cx="160" cy="52" rx="60" ry="30"/><ellipse cx="220" cy="68" rx="70" ry="22"/></g></svg>
+  <svg class="drift-c" style="top:46%;left:0;width:26vw;opacity:.38" viewBox="0 0 300 100"><g fill="#ffffff"><ellipse cx="100" cy="64" rx="86" ry="24"/><ellipse cx="180" cy="50" rx="58" ry="28"/></g></svg>
+</div>
+<div class="cloud-layer" id="layerMid" aria-hidden="true">
+  <svg class="drift-a" style="top:26%;left:0;width:44vw;opacity:.66;filter:blur(1px)" viewBox="0 0 300 100"><g fill="#ffffff"><ellipse cx="80" cy="68" rx="76" ry="26"/><ellipse cx="150" cy="48" rx="64" ry="32"/><ellipse cx="225" cy="66" rx="72" ry="24"/></g></svg>
+  <svg class="drift-b" style="top:70%;left:0;width:38vw;opacity:.5;filter:blur(1px);animation-delay:-60s" viewBox="0 0 300 100"><g fill="#ffffff"><ellipse cx="95" cy="62" rx="82" ry="26"/><ellipse cx="185" cy="52" rx="66" ry="30"/></g></svg>
+</div>
+<div class="cloud-layer" id="layerNear" aria-hidden="true">
+  <svg class="drift-c" style="top:58%;left:0;width:58vw;opacity:.8;filter:blur(3px);animation-delay:-90s" viewBox="0 0 300 100"><g fill="#ffffff"><ellipse cx="90" cy="66" rx="88" ry="30"/><ellipse cx="170" cy="46" rx="70" ry="36"/><ellipse cx="240" cy="64" rx="64" ry="26"/></g></svg>
+</div>
+
+<div class="rail" aria-hidden="true">
+  <span>dawn</span>
+  <div class="track"><div class="dot" id="railDot"></div></div>
+  <span>dusk</span>
+</div>
+
+<nav>
+  <a class="wordmark" href="#top">NIMBUS</a>
+  <ul>
+    <li><a href="#exhibition">Exhibition</a></li>
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#atlas">Atlas</a></li>
+    <li><a href="#visit">Visit</a></li>
+  </ul>
+  <div class="daylabel" id="daylabel">Dawn</div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="eyebrow">A museum of clouds</p>
+  <h1 aria-label="NIMBUS"><span>N</span><span>I</span><span>M</span><span>B</span><span>U</span><span>S</span></h1>
+  <p class="sub">Ten thousand skies. No walls. Keep scrolling until dusk.</p>
+  <div class="hero-media">
+    <img src="/assets/nimbus-1.jpg" alt="Towering cumulonimbus at golden hour, seen from above the cloud layer">
+    <video id="heroVideo" autoplay muted loop playsinline poster="/assets/nimbus-1.jpg">
+      <source src="/assets/nimbus-hero.mp4" type="video/mp4">
+    </video>
+    <span class="plate">Gallery I - Cumulonimbus<span class="long"> incus, 11,300 m</span></span>
+  </div>
+  <div class="scrollcue">Scroll toward dusk ↓</div>
+</header>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-inner" id="ticker">
+    <span>Now drifting over Gallery III: Altocumulus lenticularis</span><span>·</span>
+    <span>Sunset viewing tonight, 19:42 local, all latitudes</span><span>·</span>
+    <span>New acquisition: Noctilucent veil, 83 km, mesosphere wing</span><span>·</span>
+    <span>Admission is and will always be free</span><span>·</span>
+  </div>
+</div>
+
+<section id="exhibition">
+  <div class="wrap">
+    <div class="exhibit-grid">
+      <div class="reveal">
+        <p class="kicker">Current exhibition</p>
+        <h2 class="h-big">The Architecture of Cumulus</h2>
+        <p class="lede">How warm air, given nothing but an afternoon, builds cathedrals nine kilometres tall - and lets them fall by evening.</p>
+        <p style="margin-top:1.4rem;max-width:52ch;color:var(--ink-soft)">
+          Curated by Dr. Mariel Voss, the exhibition traces a single cumulus tower from its first thermal at 09:14 to its
+          anvil-topped collapse at 18:51. Forty-one suspended studies, a live convection room, and the museum's largest
+          commission to date: a full-scale cumulonimbus, on loan from the troposphere.
+        </p>
+        <div class="meta-row">
+          <div><b>Dates</b><span>Mar 21 - Sep 22, 2026</span></div>
+          <div><b>Galleries</b><span>I, II &amp; the Open Roof</span></div>
+          <div><b>Admission</b><span>Free, as always</span></div>
+        </div>
+      </div>
+      <figure class="reveal">
+        <img src="/assets/nimbus-1.jpg" alt="Cumulonimbus tower rising through golden light above a sea of cloud">
+        <figcaption>Study 27 - The Anvil Hour</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="collection">
+  <div class="wrap">
+    <p class="kicker reveal">Permanent collection</p>
+    <h2 class="h-big reveal">Exhibits in Constant Rotation</h2>
+    <p class="lede reveal">Every piece is an original. No cloud has ever been shown twice.</p>
+
+    <div class="cards">
+      <article class="card glass reveal">
+        <span class="num">No. 01</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g fill="rgba(255,255,255,.95)"><ellipse cx="24" cy="32" rx="20" ry="11"/><ellipse cx="42" cy="24" rx="16" ry="13"/><ellipse cx="54" cy="33" rx="16" ry="9"/></g></svg>
+        <h3>Cumulus</h3>
+        <p class="latin">Cumulus humilis</p>
+        <p>The fair-weather original. Flat-based, cauliflower-topped, gone by dinner. The museum keeps between forty and four thousand on view, depending on the afternoon.</p>
+        <div class="alt"><span>Altitude</span><span>500 - 2,000 m</span></div>
+      </article>
+
+      <article class="card glass reveal">
+        <span class="num">No. 02</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g stroke="rgba(255,255,255,.95)" stroke-width="3" stroke-linecap="round" fill="none"><path d="M8 18 C 26 12, 44 14, 66 8"/><path d="M14 30 C 30 26, 48 28, 62 22"/><path d="M22 40 C 34 37, 46 38, 56 34"/></g></svg>
+        <h3>Cirrus</h3>
+        <p class="latin">Cirrus fibratus</p>
+        <p>Ice combed into handwriting. Painted at altitudes where the air forgets to be weather. Best viewed at twilight, when it holds light the ground has already lost.</p>
+        <div class="alt"><span>Altitude</span><span>6,000 - 13,000 m</span></div>
+      </article>
+
+      <article class="card glass reveal" id="cbCard" title="Tap for weather">
+        <span class="num">No. 03</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g fill="rgba(255,255,255,.95)"><rect x="14" y="8" width="46" height="9" rx="4.5"/><ellipse cx="30" cy="24" rx="14" ry="10"/><ellipse cx="45" cy="26" rx="13" ry="11"/><ellipse cx="37" cy="34" rx="20" ry="9"/></g><path d="M34 38 L41 38 L36 48" fill="#f5c66a"/></svg>
+        <h3>Cumulonimbus</h3>
+        <p class="latin">Cumulonimbus incus</p>
+        <p>The collection's only violent work. Eleven kilometres of ambition wearing an anvil for a crown. Contains hail, lightning, and roughly a million tonnes of lifted water.</p>
+        <div class="alt"><span>Altitude</span><span>600 - 12,000 m</span></div>
+        <p class="rain-hint">· tap to make it rain ·</p>
+        <div class="rain" id="rainBox" aria-hidden="true"></div>
+      </article>
+
+      <article class="card glass reveal">
+        <span class="num">No. 04</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g fill="rgba(255,255,255,.92)"><rect x="6" y="16" width="62" height="8" rx="4"/><rect x="10" y="28" width="54" height="8" rx="4" opacity=".8"/></g></svg>
+        <h3>Stratus</h3>
+        <p class="latin">Stratus nebulosus</p>
+        <p>The minimalist wing. A single grey field, edge to edge, no beginning and no signature. Critics call it featureless; the museum calls it committed.</p>
+        <div class="alt"><span>Altitude</span><span>0 - 1,200 m</span></div>
+      </article>
+
+      <article class="card glass reveal">
+        <span class="num">No. 05</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g fill="rgba(255,255,255,.95)"><ellipse cx="37" cy="24" rx="30" ry="8"/><ellipse cx="37" cy="16" rx="20" ry="5" opacity=".75"/><ellipse cx="37" cy="33" rx="22" ry="5" opacity=".65"/></g></svg>
+        <h3>Lenticularis</h3>
+        <p class="latin">Altocumulus lenticularis</p>
+        <p>A lens ground by mountain wind, hovering perfectly still while the whole sky moves around it. Frequently reported as something else. The museum makes no comment.</p>
+        <div class="alt"><span>Altitude</span><span>2,000 - 7,000 m</span></div>
+      </article>
+
+      <article class="card glass reveal">
+        <span class="num">No. 06</span>
+        <svg viewBox="0 0 74 48" aria-hidden="true"><g stroke="rgba(255,255,255,.95)" stroke-width="3" stroke-linecap="round" fill="none"><path d="M8 14 C 24 8, 50 10, 66 6"/><path d="M6 26 C 28 20, 46 24, 68 18"/><path d="M10 38 C 26 32, 52 36, 64 30"/></g></svg>
+        <h3>Noctilucent</h3>
+        <p class="latin">Polar mesospheric veil</p>
+        <p>The highest work ever hung: ice dust at the edge of space, visible only after the sun has left the room. Acquired June 2026 for the museum's new mesosphere wing.</p>
+        <div class="alt"><span>Altitude</span><span>76,000 - 85,000 m</span></div>
+      </article>
+    </div>
+
+    <div class="wings">
+      <figure class="wing reveal">
+        <img src="/assets/nimbus-2.jpg" alt="Wispy cirrus streaks across a periwinkle twilight with a faint moon">
+        <div class="tag"><b>The Twilight Wing</b><span>Cirrus &amp; the last light - opens nightly</span></div>
+      </figure>
+      <figure class="wing reveal">
+        <img src="/assets/nimbus-3.jpg" alt="A smooth lenticular cloud hovering over a calm pastel sea">
+        <div class="tag"><b>The Still Room</b><span>Lenticularis over water - by appointment with the wind</span></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="atlas">
+  <div class="wrap">
+    <p class="kicker reveal">Floor plan</p>
+    <h2 class="h-big reveal">The Vertical Atlas</h2>
+    <p class="lede reveal">The museum has one hallway. It is twelve kilometres tall.</p>
+
+    <div class="atlas glass reveal">
+      <div class="scale"><span>13 km</span><span>7 km</span><span>2 km</span><span>0 km</span></div>
+      <div class="bands">
+        <div class="band">
+          <div><h3>High Floor</h3><p class="latin">Cirro-</p></div>
+          <p class="residents">Cirrus · Cirrostratus · Cirrocumulus<br>Ice only. Bring nothing that needs to breathe.</p>
+        </div>
+        <div class="band">
+          <div><h3>Middle Floor</h3><p class="latin">Alto-</p></div>
+          <p class="residents">Altocumulus · Altostratus · Lenticularis<br>Mixed media: water and ice, mostly rumour.</p>
+        </div>
+        <div class="band">
+          <div><h3>Low Floor</h3><p class="latin">Strato-</p></div>
+          <p class="residents">Stratus · Stratocumulus · Cumulus<br>Where the collection touches the visitors.</p>
+        </div>
+        <div class="band">
+          <div><h3>Ground Level</h3><p class="latin">Nebula terrae</p></div>
+          <p class="residents">Fog: the only exhibit you may walk through.<br>Please do not take pieces home. You will anyway.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <p class="kicker reveal">Plan your visit</p>
+    <h2 class="h-big reveal">Open Wherever There Is Sky</h2>
+
+    <div class="visit-grid">
+      <div class="visit-card glass reveal">
+        <h3>Hours</h3>
+        <ul>
+          <li>Dawn viewing<em>from first light</em></li>
+          <li>Main galleries<em>all daylight hours</em></li>
+          <li>Twilight Wing<em>sunset - last blue</em></li>
+          <li>Mesosphere Wing<em>summer nights only</em></li>
+          <li>Closed<em>never</em></li>
+        </ul>
+      </div>
+      <div class="visit-card glass reveal">
+        <h3>Admission</h3>
+        <ul>
+          <li>General entry<em>free</em></li>
+          <li>Children &amp; daydreamers<em>free</em></li>
+          <li>Meteorologists<em>free, with opinions</em></li>
+          <li>Lifetime membership<em>look up</em></li>
+        </ul>
+      </div>
+      <div class="visit-card glass reveal">
+        <h3>Getting Here</h3>
+        <ul>
+          <li>By foot<em>step outside</em></li>
+          <li>By window<em>any, upper floors best</em></li>
+          <li>By aircraft<em>you're inside the collection</em></li>
+          <li>Coordinates<em>everywhere above 0 m</em></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="visit-note reveal">
+      <p>"No two visits are the same exhibition. The collection rearranges itself hourly, and the curators - wind, water, light - accept no requests."</p>
+      <p style="font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;margin-top:1.2rem;opacity:.6;font-family:'Jost',sans-serif;font-style:normal">- Visitor's Guide, p. 1</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-top">
+    <div>
+      <div class="fm">NIMBUS</div>
+      <p style="max-width:30ch;margin-top:.8rem;font-size:.9rem;color:var(--ink-soft)">A museum of clouds.<br>Est. whenever water first met warm air.</p>
+    </div>
+    <div class="foot-cols">
+      <div>
+        <b>Museum</b>
+        <a href="#exhibition">Current exhibition</a>
+        <a href="#collection">Collection</a>
+        <a href="#atlas">Vertical Atlas</a>
+      </div>
+      <div>
+        <b>Visit</b>
+        <a href="#visit">Hours &amp; admission</a>
+        <a href="#top">Membership</a>
+        <a href="#top">Group skygazing</a>
+      </div>
+      <div>
+        <b>Field notes</b>
+        <a href="#top">The Anvil Hour (essay)</a>
+        <a href="#top">A defence of Stratus</a>
+        <a href="#top">Sunset calendar 2026</a>
+      </div>
+    </div>
+  </div>
+  <div class="credit">
+    <span>© 2026 NIMBUS. All clouds remain the property of the sky.</span>
+    <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* seamless ticker loop */
+  var tk=document.getElementById('ticker');
+  if (tk) tk.innerHTML += tk.innerHTML;
+
+  /* hero video: hide if the mp4 is absent */
+  var v = document.getElementById('heroVideo');
+  if (v){
+    v.addEventListener('error', function(){ v.style.display='none'; }, true);
+    var s = v.querySelector('source');
+    if (s) s.addEventListener('error', function(){ v.style.display='none'; });
+  }
+
+  /* ---------- scroll-linked sky: dawn -> dusk -> night ---------- */
+  function hx(h){ h=h.replace('#',''); return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]; }
+  function mix(a,b,t){ return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)]; }
+  function css(c){ return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+  function cssA(c,a){ return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+
+  /* stops: t, top, mid, bottom, ink, glassColor, glassAlpha, lineInk, accent, label */
+  var stops = [
+    {t:0.00, top:hx('#aebcf0'), mid:hx('#f6c9c4'), bot:hx('#ffdcb8'), ink:hx('#453a64'), gl:hx('#ffffff'), ga:0.38, ac:hx('#e8896a'), label:'Dawn'},
+    {t:0.30, top:hx('#93b1f0'), mid:hx('#c4d3f8'), bot:hx('#f3e4d8'), ink:hx('#3d3c68'), gl:hx('#ffffff'), ga:0.40, ac:hx('#e07a5f'), label:'Morning'},
+    {t:0.52, top:hx('#8fa0ec'), mid:hx('#c2b2ef'), bot:hx('#f6d2df'), ink:hx('#42386b'), gl:hx('#ffffff'), ga:0.38, ac:hx('#d96a6a'), label:'Afternoon'},
+    {t:0.64, top:hx('#7a7cc6'), mid:hx('#b391d4'), bot:hx('#f4b795'), ink:hx('#3a3160'), gl:hx('#ffffff'), ga:0.30, ac:hx('#e8896a'), label:'Golden hour'},
+    {t:0.78, top:hx('#4c4c88'), mid:hx('#8f6fb4'), bot:hx('#ee9f85'), ink:hx('#fdf3e9'), gl:hx('#2e2a52'), ga:0.42, ac:hx('#ffb28a'), label:'Dusk'},
+    {t:1.00, top:hx('#2b2c52'), mid:hx('#45417a'), bot:hx('#77659f'), ink:hx('#ece7ff'), gl:hx('#232043'), ga:0.52, ac:hx('#f2a98e'), label:'Nightfall'}
+  ];
+
+  var root = document.documentElement.style;
+  var orb = document.getElementById('orb');
+  var moon = document.getElementById('moon');
+  var starsEl = document.getElementById('stars');
+  var dayLabel = document.getElementById('daylabel');
+  var railDot = document.getElementById('railDot');
+  var heroMedia = document.querySelector('.hero-media');
+  if (heroMedia) heroMedia.addEventListener('animationend', function(){
+    heroMedia.style.opacity='1'; heroMedia.style.animation='none';
+  });
+  var layers = [
+    {el:document.getElementById('layerFar'),  k:0.05},
+    {el:document.getElementById('layerMid'),  k:0.12},
+    {el:document.getElementById('layerNear'), k:0.22}
+  ];
+
+  /* stars */
+  for (var i=0;i<70;i++){
+    var st=document.createElement('i');
+    st.style.left=(Math.random()*100)+'%';
+    st.style.top=(Math.random()*100)+'%';
+    st.style.opacity=(0.25+Math.random()*0.75).toFixed(2);
+    var sz=(Math.random()<0.2?2.5:1.5); st.style.width=sz+'px'; st.style.height=sz+'px';
+    starsEl.appendChild(st);
+  }
+
+  function apply(t){
+    var a=stops[0], b=stops[stops.length-1];
+    for (var i=0;i<stops.length-1;i++){
+      if (t>=stops[i].t && t<=stops[i+1].t){ a=stops[i]; b=stops[i+1]; break; }
+    }
+    var f = (b.t===a.t)?0:(t-a.t)/(b.t-a.t);
+    f = f<0?0:(f>1?1:f);
+    var ink = mix(a.ink,b.ink,f), gl = mix(a.gl,b.gl,f), ga = a.ga+(b.ga-a.ga)*f;
+    root.setProperty('--sky-top', css(mix(a.top,b.top,f)));
+    root.setProperty('--sky-mid', css(mix(a.mid,b.mid,f)));
+    root.setProperty('--sky-bot', css(mix(a.bot,b.bot,f)));
+    root.setProperty('--ink', css(ink));
+    root.setProperty('--ink-soft', cssA(ink,0.70));
+    root.setProperty('--line', cssA(ink,0.22));
+    root.setProperty('--glass', cssA(gl,ga));
+    root.setProperty('--glass-strong', cssA(gl,Math.min(ga+0.17,0.9)));
+    root.setProperty('--glass-border', cssA(mix(gl,[255,255,255],0.5),0.45));
+    root.setProperty('--accent', css(mix(a.ac,b.ac,f)));
+    dayLabel.textContent = (f<0.5?a.label:b.label);
+
+    /* sun arc: rises left, peaks, sets right and sinks */
+    var sunT = Math.min(t/0.82,1);
+    orb.style.left = (8+sunT*76)+'%';
+    orb.style.top  = (62-Math.sin(sunT*Math.PI)*44 + Math.max(0,(t-0.72))*160)+'%';
+    orb.style.opacity = t>0.86 ? Math.max(0,1-(t-0.86)/0.1) : 1;
+    /* moon + stars fade in after dusk */
+    var night = Math.max(0,(t-0.72)/0.28);
+    moon.style.opacity = night;
+    moon.style.top = (26-night*10)+'%';
+    starsEl.style.opacity = night*0.9;
+  }
+
+  var ticking=false;
+  function onScroll(){
+    if (ticking) return; ticking=true;
+    requestAnimationFrame(function(){
+      var doc=document.documentElement;
+      var max=doc.scrollHeight-window.innerHeight;
+      var t=max>0?(window.scrollY/max):0;
+      apply(t);
+      if (railDot) railDot.style.top=(t*100)+'%';
+      if (!reduced){
+        for (var i=0;i<layers.length;i++){
+          layers[i].el.style.transform='translateY('+(-window.scrollY*layers[i].k)+'px)';
+        }
+        if (heroMedia) heroMedia.style.transform='translateY('+(window.scrollY*0.08)+'px)';
+      }
+      ticking=false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  apply(0); onScroll();
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el,i){
+    el.style.transitionDelay=(i%3)*0.12+'s';
+    io.observe(el);
+  });
+
+  /* ---------- easter egg: cumulonimbus rain ---------- */
+  var cb=document.getElementById('cbCard'), rain=document.getElementById('rainBox'), rainOn=false;
+  if (cb && rain){
+    for (var r=0;r<34;r++){
+      var d=document.createElement('i');
+      d.style.left=(Math.random()*100)+'%';
+      d.style.animationDelay=(Math.random()*1)+'s';
+      d.style.animationDuration=(0.6+Math.random()*0.7)+'s';
+      rain.appendChild(d);
+    }
+    cb.addEventListener('click', function(){
+      rainOn=!rainOn;
+      rain.classList.toggle('on',rainOn);
+      cb.style.background = rainOn ? 'rgba(120,130,190,0.30)' : '';
+    });
+  }
+})();
+</script>
+</body>
+</html>

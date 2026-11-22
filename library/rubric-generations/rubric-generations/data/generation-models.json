@@ -1,0 +1,76 @@
+[
+  {
+    "id": "gpt-image-1.5",
+    "name": "GPT Image 1.5",
+    "type": "image",
+    "provider": "Kie AI",
+    "docs": "https://kie.ai",
+    "aspect": "1:1 | 2:3 | 3:2",
+    "resolution": "n/a",
+    "mode": "medium | high",
+    "duration": "n/a",
+    "features": [
+      { "label": "Quality", "detail": "medium=balanced, high=slow+detailed" }
+    ]
+  },
+  {
+    "id": "kling-3.0",
+    "name": "Kling 3.0",
+    "type": "video",
+    "provider": "Kie AI",
+    "docs": "https://docs.kie.ai/market/kling/kling-3-0",
+    "aspect": "16:9 | 9:16 | 1:1",
+    "resolution": "std=720p | pro=1080p",
+    "mode": "std | pro",
+    "duration": "3 - 15s",
+    "features": [
+      { "label": "Frame Control", "detail": "first frame + last frame" },
+      { "label": "Sound", "detail": "multi-language, lip sync" },
+      { "label": "Multi-shot", "detail": "multiple angles, first frame only" },
+      { "label": "Elements", "detail": "reference visual assets (max 3)" }
+    ]
+  },
+  {
+    "id": "veo-3.1",
+    "name": "Veo 3.1",
+    "type": "video",
+    "provider": "Google",
+    "docs": "https://ai.google.dev/api/generate-videos",
+    "aspect": "16:9 | 9:16",
+    "resolution": "720p",
+    "mode": "n/a",
+    "duration": "8s",
+    "features": [
+      { "label": "Image to Video", "detail": "start frame" },
+      { "label": "Samples", "detail": "1 - 4 per request" }
+    ]
+  },
+  {
+    "id": "nano-banana-2",
+    "name": "Nano Banana 2",
+    "type": "image",
+    "provider": "Google",
+    "docs": "https://ai.google.dev/gemini-api/docs/image-generation",
+    "aspect": "1:1 | 2:3 | 3:2 | 3:4 | 4:3 | 4:5 | 5:4 | 9:16 | 16:9 | 21:9",
+    "resolution": "512 | 1K | 2K | 4K",
+    "mode": "n/a",
+    "duration": "n/a",
+    "features": [
+      { "label": "Ref Images", "detail": "style + composition guide" }
+    ]
+  },
+  {
+    "id": "nano-banana-pro",
+    "name": "Nano Banana Pro",
+    "type": "image",
+    "provider": "Kie AI",
+    "docs": "https://docs.kie.ai",
+    "aspect": "9:16 | 16:9 | 1:1",
+    "resolution": "1K | 2K | 4K",
+    "mode": "n/a",
+    "duration": "n/a",
+    "features": [
+      { "label": "Ref Images", "detail": "style + composition guide" }
+    ]
+  }
+]

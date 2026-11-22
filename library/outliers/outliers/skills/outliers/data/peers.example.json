@@ -1,0 +1,8 @@
+{
+  "_note": "Copy this file to peers.json in the same folder, then swap the placeholders for real public accounts in your niche: creators or businesses your size or a step ahead, about 10 a platform. youtube takes channel handles (@name) or channel ids and is scanned on every YouTube run. tiktok, instagram and x take handles (no @ needed). linkedin takes in/name for a person or company/name for a page; a full profile link works too. The last four are scanned with scan-social.mjs --peers. Delete a platform's placeholders if you don't use it. Keys starting with an underscore are notes and are ignored.",
+  "youtube": ["@channel_handle_one", "@channel_handle_two", "@channel_handle_three"],
+  "tiktok": ["creator_handle_one", "creator_handle_two", "creator_handle_three"],
+  "instagram": ["creator_handle_one", "creator_handle_two", "creator_handle_three"],
+  "x": ["creator_handle_one", "creator_handle_two", "creator_handle_three"],
+  "linkedin": ["in/creator-name-one", "in/creator-name-two", "company/business-page-one"]
+}

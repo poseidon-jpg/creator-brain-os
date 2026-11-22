@@ -1,0 +1,50 @@
+{
+  "_note": "root is relative to this folder (tools/rubric-second-brain); all other paths are relative to root.",
+  "root": "../..",
+  "memoryDir": "memory",
+  "memoryIndex": "MEMORY.md",
+  "skillDirs": [
+    ".claude/skills"
+  ],
+  "projectsDir": "_unused_projects",
+  "sharedPrefixes": [],
+  "followLinks": [],
+  "visibleRoots": [
+    "",
+    "shop",
+    "studio",
+    "creative",
+    "analytics",
+    "memory",
+    ".claude",
+    ".claude/skills"
+  ],
+  "routing": {
+    "CLAUDE.md": [
+      "rule",
+      "rules",
+      "workspace",
+      "folder",
+      "folders",
+      "map",
+      "department",
+      "departments",
+      "layout",
+      "where",
+      "hub"
+    ],
+    "docs/ai-ambition-thesis.md": [
+      "ambition",
+      "ambitious",
+      "thesis",
+      "altitude",
+      "depth",
+      "range",
+      "expert",
+      "crew",
+      "judge",
+      "outcome",
+      "felix"
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+{
+ "app": "rubric-scripts",
+ "format": 1,
+ "owner": "Jay",
+ "scripts": [
+  {
+   "id": "rank",
+   "keyword": "RANK",
+   "title": "3 plugins that turn Claude Code into an SEO expert",
+   "tags": ["Claude Code", "SEO"],
+   "icon": "<path d=\"M5 41h26\"/><path d=\"M10 36v-7\"/><path d=\"M17 36v-12\"/><path d=\"M24 36v-17\"/><circle class=\"a\" cx=\"34\" cy=\"15\" r=\"8\"/><path class=\"a\" d=\"M40 21l5 5\"/>",
+   "created": "2026-09-22T10:00:00",
+   "updated": "2026-09-22T18:00:00",
+   "hooks": [
+    { "id": "h1", "note": "First draft", "text": "You don't need an expensive SEO subscription anymore. These three plugins turn Claude Code into an SEO tool." },
+    { "id": "h2", "note": "Recorded", "text": "You don't need to pay for expensive SEO tools anymore, because these three plugins turn Claude Code into an SEO expert." },
+    { "id": "h3", "note": "Title style", "text": "Three plugins that turn Claude Code into an SEO expert." }
+   ],
+   "hook": "h2",
+   "body": "The first is GEO Optimizer, which checks your website against the new AI search rules, so ChatGPT, Claude and Google's AI Overviews can actually read your site, and it gives you a score out of a hundred and a list of what to fix.\n\nThe second is the Search Console MCP, which connects Claude directly to your Google Search Console, meaning it can study your real search data, find the keywords you're close to ranking for, and tell you exactly what to change to move up.\n\nAnd finally there's OpenSEO, which is an open source alternative to Ahrefs and Semrush that handles your keyword research, your rank tracking, your backlinks and your site audits, starting at ten US dollars a month.\n\nSo if you want to try all three, just comment RANK down below and I'll send you the links directly.",
+   "caption": "You don't need expensive SEO tools anymore. These 3 plugins turn Claude Code into an SEO expert.\n\n- GEO Optimizer checks your site against the new AI search rules and gives you a score out of 100 plus a list of fixes\n- the Search Console MCP connects Claude to your real Google search data and finds the keywords you're close to ranking for\n- OpenSEO is an open source Ahrefs and Semrush alternative for keyword research, rank tracking and backlinks, from US$10 a month\n\nQuestions we answered:\nHow do I use Claude Code for SEO?\nHow do I get my website read by ChatGPT and AI Overviews?\nIs there a cheaper alternative to Ahrefs?\n\n#seo #claudecode #aitools #smallbusiness #robonuggets",
+   "references": [
+    { "label": "Nick Saraev reel, 17 Sep", "url": "https://www.instagram.com/reel/DdZPRfiStXv/", "note": "the structure this script follows: 144 words, 42 seconds, 134K plays" },
+    { "label": "GEO Optimizer", "url": "https://github.com/Auriti-Labs/geo-optimizer-skill", "note": "free, scores your site 0 to 100 on AI search readiness" },
+    { "label": "geoready.dev", "url": "https://geoready.dev", "note": "free report, no account needed" },
+    { "label": "Search Console MCP", "url": "https://github.com/AminForou/mcp-gsc", "note": "needs a Google Cloud project and sign-in first, about 15 minutes" },
+    { "label": "OpenSEO", "url": "https://github.com/every-app/open-seo", "note": "open source Ahrefs and Semrush alternative, MIT" },
+    { "label": "OpenSEO pricing", "url": "https://openseo.so/pricing", "note": "starts at US$10 a month" }
+   ],
+   "video": null,
+   "channels": ["tiktok", "instagram", "threads", "youtube-shorts"]
+  },
+  {
+   "id": "modes",
+   "keyword": "MODES",
+   "title": "4 words that change how ChatGPT answers you",
+   "tags": ["ChatGPT", "Prompts"],
+   "icon": "<path d=\"M9 8h30a3 3 0 0 1 3 3v19a3 3 0 0 1-3 3H22l-9 7v-7H9a3 3 0 0 1-3-3V11a3 3 0 0 1 3-3z\"/><path class=\"a\" d=\"M27 12l-7 10h7l-4 8\"/>",
+   "created": "2026-09-22T10:05:00",
+   "updated": "2026-09-22T18:05:00",
+   "hooks": [
+    { "id": "h1", "note": "Title style", "text": "Four words that change how ChatGPT answers you." },
+    { "id": "h2", "note": "Short", "text": "Four power words for ChatGPT." },
+    { "id": "h3", "note": "Recorded", "text": "These are four words that will 10x your ChatGPT experience." }
+   ],
+   "hook": "h3",
+   "body": "Number one is red team. Type this and ChatGPT argues against your plan, so you find the holes first.\n\nNumber two is ELI ten. Put it anywhere and ChatGPT explains the whole thing like you're ten years old.\n\nNumber three is truth mode. Put this before your prompt and ChatGPT stops agreeing with you and tells you what's wrong.\n\nNumber four is Socrates. Add this and ChatGPT teaches you by asking you questions instead of handing you the answer.\n\nFor the full list, hit follow and comment MODES.",
+   "caption": "These are 4 words that will 10x your ChatGPT. Put one at the start of your message.\n\n- red team: it argues against your plan, so you find the holes first\n- ELI 10: it explains the whole thing like you're 10\n- truth mode: it stops agreeing with you and tells you what's wrong\n- Socrates: it teaches you by asking questions instead of handing you the answer\n\nQuestions we answered:\nWhat are the best ChatGPT prompt tricks?\nHow do I make ChatGPT stop agreeing with me?\nHow do I get simpler answers from ChatGPT?\n\n#chatgpt #prompts #aitips #productivity #robonuggets",
+   "references": [
+    { "label": "Sabrina Ramonov reel, 19 Sep", "url": "https://www.instagram.com/reel/DdeOrD3jVhh/", "note": "the structure this script follows: 107 words, 32 seconds, 170K plays" },
+    { "label": "Sabrina Ramonov, 10 secret codes", "url": "https://www.instagram.com/reel/DdSRBJkAjmP/", "note": "where Socrates came from" },
+    { "label": "", "url": "", "note": "Nothing to check at a maker's page: these are plain instructions any model follows" }
+   ],
+   "video": null,
+   "channels": ["tiktok", "instagram", "threads", "youtube-shorts"]
+  },
+  {
+   "id": "prompts",
+   "keyword": "PROMPTS",
+   "title": "4 GPT-6 prompts that can run parts of your business",
+   "tags": ["ChatGPT", "Prompts"],
+   "icon": "<rect x=\"5\" y=\"15\" width=\"38\" height=\"25\" rx=\"3\"/><path d=\"M18 15v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4\"/><path class=\"a\" d=\"M13 23l5 4-5 4\"/><path class=\"a\" d=\"M22 32h10\"/>",
+   "created": "2026-09-16T10:00:00",
+   "updated": "2026-09-22T18:10:00",
+   "hooks": [
+    { "id": "h1", "note": "First draft", "text": "Four GPT-6 Astra prompts that can transform your work and business." },
+    { "id": "h2", "note": "Recorded", "text": "These are four GPT-6 prompts that can transform your work and your business." },
+    { "id": "h3", "note": "Title style", "text": "Four GPT-6 prompts that can run parts of your business." }
+   ],
+   "hook": "h2",
+   "body": "Number one is the agent audit. Tell Astra to look at how your business runs and find the tasks you should hand to agents before you hire another person.\n\nNumber two is the dashboard. It reads your docs, your Stripe exports and your customer calls, and tells you what's making money and what's wasting time.\n\nNumber three is the bill negotiator. Tell it to go through your internet, phone and software bills, jump into each provider's chat support, and get them down or cancel what you're not using.\n\nNumber four is nightly QA. It runs your checkout on a phone every night and screenshots anything that's broken.\n\nThese are from Greg Isenberg. If you want all nine, hit follow and comment PROMPTS and I'll DM you.",
+   "caption": "4 GPT-6 prompts that can transform your work and your business, from Greg Isenberg's list of 9.\n\n- the agent audit: find the tasks to hand to agents before you hire another person\n- the dashboard: it reads your docs, Stripe exports and customer calls and shows what makes money\n- the bill negotiator: it chats with each provider to get your bills down or cancel what you don't use\n- nightly QA: it runs your checkout on a phone every night and screenshots anything broken\n\nQuestions we answered:\nWhat are the best GPT-6 prompts?\nWhat can GPT-6 do for a small business?\nCan ChatGPT negotiate my bills?\n\n#gpt6 #chatgpt #aiprompts #smallbusiness #robonuggets",
+   "references": [
+    { "label": "Greg Isenberg on X, 4 Sep", "url": "https://x.com/gregisenberg/status/2095854071580156338", "note": "the 9 GPT-6 Astra prompts: 1.07M views, 12K bookmarks" },
+    { "label": "", "url": "", "note": "Greg Isenberg's YouTube episode (10 Sep) says Greg Brockman reposted the prompts" },
+    { "label": "", "url": "", "note": "Structure: Sabrina Ramonov's numbered reels, the follow ask comes first in the close" }
+   ],
+   "video": null,
+   "channels": ["tiktok", "instagram", "threads", "youtube-shorts"]
+  }
+ ]
+}

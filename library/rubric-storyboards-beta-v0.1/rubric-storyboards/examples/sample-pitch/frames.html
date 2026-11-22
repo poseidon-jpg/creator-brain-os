@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample pitch frames · Harbor Cold Brew</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Key frames for the sample pitch. One 1920x1080 stage, scaled to the window; show(n) picks the shot.
+     render.py screenshots each shot into frames/NN.jpg; make-pitch.mjs turns them into a board. */
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; font-family: 'Outfit', system-ui, sans-serif; color: #e8e2d2; }
+  .shot { position: absolute; inset: 0; display: none; overflow: hidden; background: #15140f; }
+  .shot.on { display: block; }
+  .dots::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(rgba(232,226,210,.08) 2px, transparent 2.5px); background-size: 44px 44px; }
+  .kick { position: absolute; left: 110px; top: 96px; font-size: 22px; letter-spacing: 8px; text-transform: uppercase; color: #8d8775; }
+  .orange { color: #ff6b1a; }
+
+  /* 1 · Monday, 7:00 */
+  .clock { position: absolute; left: 110px; top: 190px; font-size: 300px; font-weight: 600; letter-spacing: -12px; line-height: 1; }
+  .clock span { color: #ff6b1a; }
+  .line1 { position: absolute; left: 116px; top: 560px; font-size: 120px; font-weight: 500; letter-spacing: -4px; line-height: 1; }
+  .mug { position: absolute; left: 1180px; top: 560px; width: 230px; height: 260px; border: 10px solid #e8e2d2; border-radius: 0 0 46px 46px; border-top: 0; opacity: .85; }
+  .mug::after { content: ''; position: absolute; right: -86px; top: 50px; width: 70px; height: 110px; border: 10px solid #e8e2d2; border-left: 0; border-radius: 0 60px 60px 0; }
+  .todo { position: absolute; left: 1520px; top: 190px; width: 300px; }
+  .todo div { height: 18px; margin: 0 0 30px; border-radius: 9px; background: rgba(232,226,210,.16); }
+  .todo div:nth-child(odd) { width: 86%; } .todo div:nth-child(3n) { width: 62%; }
+  .desk { position: absolute; left: 0; right: 0; top: 830px; height: 4px; background: rgba(232,226,210,.22); }
+
+  /* 2 · Meet Harbor */
+  .s2 { background: #ff6b1a; }
+  .s2.dots::before { background-image: radial-gradient(rgba(19,19,17,.14) 2px, transparent 2.5px); }
+  .s2 .kick { color: rgba(19,19,17,.6); }
+  .can { position: absolute; left: 790px; top: 170px; width: 340px; height: 640px; border-radius: 48px; background: linear-gradient(90deg, #d9d4c7, #f4f1ea 38%, #cfc9bb); box-shadow: 30px 30px 0 rgba(19,19,17,.9); }
+  .can::before { content: ''; position: absolute; left: 30px; right: 30px; top: -18px; height: 36px; border-radius: 50%; background: #bdb7a8; }
+  .band { position: absolute; left: 0; right: 0; top: 190px; height: 250px; background: #131311; display: grid; place-items: center; }
+  .band b { font-size: 58px; font-weight: 700; letter-spacing: 5px; color: #ff6b1a; }
+  .band i { position: absolute; bottom: 34px; font-style: normal; font-size: 26px; letter-spacing: 6px; color: #e8e2d2; text-transform: uppercase; }
+  .drop { position: absolute; width: 16px; height: 22px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: rgba(255,255,255,.75); }
+  .meet { position: absolute; left: 110px; top: 860px; font-size: 110px; font-weight: 600; letter-spacing: -4px; color: #131311; line-height: 1; }
+
+  /* 3 · Three reasons */
+  .cards { position: absolute; left: 110px; right: 110px; top: 250px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; }
+  .card { height: 520px; background: #24221c; border-radius: 22px; padding: 56px 50px; box-sizing: border-box; box-shadow: 16px 16px 0 #000; position: relative; }
+  .card.hot { box-shadow: 16px 16px 0 #ff6b1a; }
+  .icon { width: 140px; height: 140px; border: 10px solid #ff6b1a; box-sizing: border-box; margin-bottom: 70px; }
+  .icon.round { border-radius: 50%; }
+  .icon.drop2 { border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+  .icon.bolt { border: 0; width: 140px; height: 140px; background: #ff6b1a; clip-path: polygon(58% 0, 10% 58%, 44% 58%, 34% 100%, 90% 38%, 54% 38%); }
+  .card b { display: block; font-size: 64px; font-weight: 600; letter-spacing: -2px; line-height: 1.05; }
+  .card span { display: block; margin-top: 20px; font-size: 30px; color: #8d8775; }
+
+  /* 4 · Your first can */
+  .word { position: absolute; left: 0; right: 0; top: 250px; text-align: center; font-size: 150px; font-weight: 700; letter-spacing: -5px; }
+  .offer { position: absolute; left: 0; right: 0; top: 470px; text-align: center; font-size: 64px; font-weight: 400; color: #e8e2d2; }
+  .btn { position: absolute; left: 50%; top: 640px; transform: translateX(-50%); padding: 34px 78px; border-radius: 18px; background: #ff6b1a; color: #fff; font-size: 52px; font-weight: 600; box-shadow: 14px 14px 0 #000; }
+  .small { position: absolute; left: 0; right: 0; top: 880px; text-align: center; font-size: 28px; letter-spacing: 6px; color: #8d8775; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <section class="shot dots" data-n="1">
+    <div class="kick">Shot 01 · the slump</div>
+    <div class="clock">7<span>:</span>00</div>
+    <div class="line1">Monday. <span class="orange">Again.</span></div>
+    <div class="mug"></div>
+    <div class="todo"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <div class="desk"></div>
+  </section>
+
+  <section class="shot s2 dots" data-n="2">
+    <div class="kick">Shot 02 · the can</div>
+    <div class="can"><div class="band"><b>HARBOR</b><i>oat cold brew</i></div></div>
+    <div class="drop" style="left:840px;top:230px"></div><div class="drop" style="left:1080px;top:300px"></div>
+    <div class="drop" style="left:860px;top:680px"></div><div class="drop" style="left:1060px;top:720px"></div>
+    <div class="drop" style="left:1010px;top:250px;transform:scale(.7)"></div><div class="drop" style="left:900px;top:760px;transform:scale(.8)"></div>
+    <div class="meet">Meet Harbor.</div>
+  </section>
+
+  <section class="shot dots" data-n="3">
+    <div class="kick">Shot 03 · three reasons</div>
+    <div class="cards">
+      <div class="card"><div class="icon round"></div><b>Oat milk</b><span>Smooth, no dairy</span></div>
+      <div class="card"><div class="icon drop2"></div><b>No added sugar</b><span>Just coffee and oats</span></div>
+      <div class="card hot"><div class="icon bolt"></div><b>Twice the kick</b><span>For the 7 AM start</span></div>
+    </div>
+  </section>
+
+  <section class="shot dots" data-n="4">
+    <div class="kick">Shot 04 · the offer</div>
+    <div class="word">Harbor <span class="orange">Cold Brew</span></div>
+    <div class="offer">Your first can is on us.</div>
+    <div class="btn">Order now</div>
+    <div class="small">harbor.example</div>
+  </section>
+</div>
+<script>
+  const stage = document.getElementById('stage');
+  function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `translate(${(innerWidth - 1920 * s) / 2}px, ${(innerHeight - 1080 * s) / 2}px) scale(${s})`; }
+  /** Shows shot n (1 to 4). */
+  function show(n) { document.querySelectorAll('.shot').forEach(el => el.classList.toggle('on', +el.dataset.n === n)); }
+  window.show = show;
+  addEventListener('resize', fit);
+  fit(); show(Number(location.hash.slice(1)) || 1);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { window.__ready = true; });
+</script>
+</body>
+</html>

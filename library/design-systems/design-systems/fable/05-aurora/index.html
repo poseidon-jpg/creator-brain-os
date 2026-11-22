@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA LAB - Arctic Climate Research Station 78°N</title>
+<meta name="description" content="AURORA LAB is a fictional Arctic climate research station at 78.92°N. Live station telemetry, magnetospheric research programs, ice core science and the expedition log - under a real-time aurora sky.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060b22'/%3E%3Cpath d='M8 44 Q20 18 32 30 T56 22' stroke='%2357f2c8' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 52 Q22 30 34 40 T56 34' stroke='%238b7bff' stroke-width='4' fill='none' stroke-linecap='round' opacity='.8'/%3E%3Ccircle cx='50' cy='12' r='2.5' fill='%23eaf6ff'/%3E%3Ccircle cx='14' cy='16' r='1.5' fill='%23eaf6ff' opacity='.7'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#050a1e">
+<meta property="og:title" content="AURORA LAB - Arctic Climate Research Station 78°N">
+<meta property="og:description" content="Twelve scientists, four research programs, one question: how fast is the top of the world changing?">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-a:#050a1e; --bg-b:#03101c;
+  --ice:#eaf6ff; --ice-dim:rgba(234,246,255,.62); --ice-faint:rgba(234,246,255,.38);
+  --teal:#57f2c8; --violet:#8b7bff; --navy:#0a1230;
+  --glass:rgba(140,190,255,.055); --glass-edge:rgba(160,210,255,.14);
+  --accent:var(--teal);
+  --max:1180px;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  color:var(--ice);
+  background:#050a1e;
+  overflow-x:hidden;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(87,242,200,.28);color:#fff}
+
+/* ---- fixed color-temperature backdrop (scroll-linked) ---- */
+#tempwash{position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,var(--bg-a),var(--bg-b));transition:none}
+#grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ---- nav ---- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px clamp(20px,4vw,48px);
+  background:linear-gradient(180deg,rgba(4,8,24,.72),rgba(4,8,24,0));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ice)}
+.brand svg{width:30px;height:30px;flex:none}
+.brand b{font-weight:700;letter-spacing:.14em;font-size:.95rem}
+.brand span{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--ice-faint);letter-spacing:.1em;display:block;margin-top:1px}
+.navlinks{display:flex;gap:26px}
+.navlinks a{color:var(--ice-dim);text-decoration:none;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500;transition:color .3s}
+.navlinks a:hover,.navlinks a.on{color:var(--teal)}
+nav.scrolled{background:rgba(4,8,24,.82);border-bottom:1px solid rgba(160,210,255,.08)}
+@media(max-width:768px){.navlinks{display:none}}
+
+/* ---- hero ---- */
+header{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+#stars,#aurora{position:absolute;inset:0;width:100%;height:100%;display:block}
+#aurora{filter:blur(9px) saturate(1.25);opacity:.95;transform:translateZ(0)}
+#stars{opacity:.9}
+.hero-fade{position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(180deg,transparent,#050a1e 92%);pointer-events:none}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:var(--max);margin:0 auto;padding:0 clamp(20px,4vw,48px) clamp(56px,9vh,110px)}
+.coords{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.22em;color:var(--teal);text-transform:uppercase;display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.coords .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+h1{
+  font-size:clamp(2.9rem,9vw,7rem);
+  font-weight:700;line-height:.95;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#fff 20%,#9be9d8 45%,#a99bff 78%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{max-width:520px;margin-top:26px;color:var(--ice-dim);font-size:clamp(.95rem,1.4vw,1.08rem);font-weight:300}
+.hero-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px}
+.hero-row>div:first-child{flex:1 1 540px;min-width:min(100%,300px)}
+.hero-meta{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--ice-faint);text-align:right;line-height:2;letter-spacing:.08em;margin-left:auto;padding-bottom:4px;border-right:1px solid rgba(87,242,200,.35);padding-right:16px}
+.hero-meta b{color:var(--ice)}
+@media(max-width:900px){.hero-meta{text-align:left;margin-left:0;border-right:none;border-left:1px solid rgba(87,242,200,.35);padding-right:0;padding-left:16px}}
+.scrollcue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:3;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.3em;color:var(--ice-faint);display:flex;flex-direction:column;align-items:center;gap:8px}
+.scrollcue::after{content:"";width:1px;height:34px;background:linear-gradient(180deg,var(--teal),transparent);animation:drop 2s var(--ease) infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@media(max-width:768px){.scrollcue{display:none}}
+
+/* ---- section anchors clear the fixed nav ---- */
+section{scroll-margin-top:72px}
+
+/* ---- sections ---- */
+section{position:relative;padding:clamp(70px,11vh,130px) clamp(20px,4vw,48px)}
+.wrap{max-width:var(--max);margin:0 auto}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:26px;height:1px;background:var(--accent)}
+h2{font-size:clamp(1.7rem,3.6vw,2.7rem);font-weight:600;letter-spacing:-.015em;line-height:1.15;max-width:640px}
+.lede{color:var(--ice-dim);max-width:560px;margin-top:16px;font-weight:300}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;transform:none}
+
+/* ---- telemetry ---- */
+.telegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:48px}
+@media(max-width:1000px){.telegrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.telegrid{grid-template-columns:1fr}}
+.card{
+  position:relative;border-radius:18px;padding:24px 22px;
+  background:var(--glass);
+  border:1px solid var(--glass-edge);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  overflow:hidden;
+  transition:transform .5s var(--ease),border-color .5s,box-shadow .5s;
+}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 180px at var(--mx,50%) -20%,rgba(87,242,200,.13),transparent 70%);opacity:0;transition:opacity .5s}
+.card:hover{transform:translateY(-4px);border-color:rgba(87,242,200,.35);box-shadow:0 18px 44px -18px rgba(87,242,200,.18)}
+.card:hover::before{opacity:1}
+.card .lbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ice-faint);display:flex;justify-content:space-between;align-items:center}
+.card .lbl i{font-style:normal;color:var(--teal)}
+.card .val{font-size:clamp(1.9rem,3vw,2.5rem);font-weight:600;letter-spacing:-.02em;margin-top:10px;font-variant-numeric:tabular-nums}
+.card .val small{font-size:.45em;color:var(--ice-faint);font-weight:400;margin-left:4px}
+.card .sub{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--ice-faint);margin-top:8px}
+.card .spark{position:absolute;right:16px;bottom:18px;opacity:.75;pointer-events:none}
+#kpcard{cursor:pointer}
+#kpcard .sub b{color:var(--violet)}
+.tele-foot{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--ice-faint);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tele-foot .live{color:var(--teal)}
+.tele-foot .live::before{content:"●";margin-right:6px;animation:pulse 2s infinite}
+
+/* ---- programs ---- */
+.programs{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:52px}
+@media(max-width:840px){.programs{grid-template-columns:1fr}}
+.prog{padding:34px 30px;border-radius:20px;background:var(--glass);border:1px solid var(--glass-edge);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .5s var(--ease),border-color .5s}
+.prog:hover{transform:translateY(-5px);border-color:rgba(139,123,255,.4)}
+.prog .code{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.2em;color:var(--violet)}
+.prog h3{font-size:1.35rem;font-weight:600;margin:12px 0 12px;letter-spacing:-.01em}
+.prog p{color:var(--ice-dim);font-size:.92rem;font-weight:300}
+.prog .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.prog .tags span{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;padding:5px 10px;border-radius:99px;border:1px solid var(--glass-edge);color:var(--ice-faint)}
+.prog .glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(70px);opacity:.14;pointer-events:none;right:-80px;top:-80px;transition:opacity .6s}
+.prog:hover .glow{opacity:.3}
+
+/* ---- team ---- */
+.team{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
+@media(max-width:900px){.team{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.team{grid-template-columns:1fr}}
+.member{display:flex;gap:16px;align-items:center;padding:20px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-edge);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .45s var(--ease),border-color .45s}
+.member:hover{transform:translateY(-3px);border-color:rgba(87,242,200,.3)}
+.ava{width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:600;font-size:.9rem;letter-spacing:.05em;color:#04101c;position:relative}
+.member h4{font-size:.98rem;font-weight:600}
+.member p{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.12em;color:var(--ice-faint);text-transform:uppercase;margin-top:3px}
+
+/* ---- log ---- */
+.log{margin-top:52px;position:relative;padding-left:34px}
+.log::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,var(--teal),var(--violet) 70%,transparent)}
+.entry{position:relative;padding:0 0 44px 22px;max-width:640px}
+.entry:last-child{padding-bottom:0}
+.entry::before{content:"";position:absolute;left:-30px;top:7px;width:11px;height:11px;border-radius:50%;background:#050a1e;border:2px solid var(--teal);box-shadow:0 0 12px rgba(87,242,200,.5)}
+.entry:nth-child(even)::before{border-color:var(--violet);box-shadow:0 0 12px rgba(139,123,255,.5)}
+.entry .date{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.2em;color:var(--teal)}
+.entry:nth-child(even) .date{color:var(--violet)}
+.entry h4{font-size:1.12rem;font-weight:600;margin:8px 0 8px}
+.entry p{color:var(--ice-dim);font-size:.92rem;font-weight:300}
+.entry .sig{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--ice-faint);margin-top:10px}
+.entry{transition:transform .5s var(--ease)}
+.entry::before{transition:box-shadow .5s,transform .5s var(--ease)}
+.entry:hover{transform:translateX(6px)}
+.entry:hover::before{box-shadow:0 0 20px rgba(87,242,200,.9);transform:scale(1.25)}
+.entry:nth-child(even):hover::before{box-shadow:0 0 20px rgba(139,123,255,.9)}
+
+/* ---- CTA band ---- */
+.band{border-radius:24px;border:1px solid var(--glass-edge);background:linear-gradient(120deg,rgba(87,242,200,.07),rgba(139,123,255,.09));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:clamp(36px,6vw,64px);display:flex;flex-wrap:wrap;gap:28px;align-items:center;justify-content:space-between}
+.band h3{font-size:clamp(1.4rem,2.6vw,2rem);font-weight:600;max-width:480px;letter-spacing:-.01em}
+.band p{color:var(--ice-dim);font-size:.9rem;margin-top:10px;max-width:460px;font-weight:300}
+.btn{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#04101c;background:var(--teal);padding:16px 28px;border-radius:99px;text-decoration:none;font-weight:500;transition:transform .4s var(--ease),box-shadow .4s;box-shadow:0 0 0 rgba(87,242,200,0)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 34px -8px rgba(87,242,200,.5)}
+
+/* ---- footer ---- */
+footer{padding:60px clamp(20px,4vw,48px) 40px;border-top:1px solid rgba(160,210,255,.08)}
+.foot{max-width:var(--max);margin:0 auto;display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-end}
+.foot .cols{display:flex;gap:clamp(24px,6vw,80px);flex-wrap:wrap}
+.foot h5{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ice-faint);margin-bottom:12px}
+.foot a,.foot li{display:block;list-style:none;color:var(--ice-dim);text-decoration:none;font-size:.82rem;line-height:2;transition:color .3s}
+.foot a:hover{color:var(--teal)}
+.credit{width:100%;margin-top:44px;padding-top:22px;border-top:1px solid rgba(160,210,255,.07);font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--ice-faint);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.credit a{color:var(--ice-dim);text-decoration:none}
+.credit a:hover{color:var(--teal)}
+
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .scrollcue::after,.coords .dot,.tele-foot .live::before{animation:none}
+  *{transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div id="tempwash"></div>
+<div id="grain"></div>
+
+<nav>
+  <a class="brand" href="#top">
+    <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="rgba(140,190,255,.08)"/><path d="M8 44 Q20 18 32 30 T56 22" stroke="#57f2c8" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M8 52 Q22 30 34 40 T56 34" stroke="#8b7bff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/></svg>
+    <div><b>AURORA&nbsp;LAB</b><span>STATION 78°N - SVALBARD</span></div>
+  </a>
+  <div class="navlinks">
+    <a href="#telemetry">Telemetry</a>
+    <a href="#research">Research</a>
+    <a href="#team">Team</a>
+    <a href="#log">Expedition Log</a>
+  </div>
+</nav>
+
+<header id="top">
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <canvas id="aurora" aria-hidden="true"></canvas>
+  <div class="hero-fade"></div>
+  <div class="hero-inner">
+    <div class="coords"><span class="dot"></span> 78.9241° N · 11.9312° E &nbsp;·&nbsp; POLAR NIGHT DAY 41</div>
+    <div class="hero-row">
+      <div>
+        <h1>Listening to<br>the polar sky.</h1>
+        <p class="hero-sub">AURORA LAB is a year-round Arctic climate research station on the Brøgger Peninsula, Svalbard. Twelve scientists, four research programs, one question: how fast is the top of the world changing?</p>
+      </div>
+      <div class="hero-meta mono">
+        STATION TIME <b id="clock">--:--:-- UTC</b><br>
+        SOLAR ELEVATION <b>−14.2°</b><br>
+        NEXT RESUPPLY <b>KINGS BAY · 09 AUG</b><br>
+        CREW ON STATION <b>12 / 14</b>
+      </div>
+    </div>
+  </div>
+  <div class="scrollcue">DESCEND</div>
+</header>
+
+<!-- TELEMETRY -->
+<section id="telemetry">
+  <div class="wrap">
+    <div class="kicker rv">01 - Station Telemetry</div>
+    <h2 class="rv" style="--d:.08s">Live from the ridge, every fifteen seconds.</h2>
+    <p class="lede rv" style="--d:.16s">Our instrument mast, magnetometer hut and flux tower stream continuously to Longyearbyen and onward to research partners in Tromsø, Kyoto and Boulder.</p>
+    <div class="telegrid">
+      <div class="card rv" style="--d:.05s">
+        <div class="lbl">AIR TEMP <i>MAST 10 M</i></div>
+        <div class="val"><span data-count="-31.4" data-dec="1" data-jit="0.3">0</span><small>°C</small></div>
+        <div class="sub">windchill −44.1 °C</div>
+        <canvas class="spark" width="76" height="26" data-hue="168"></canvas>
+      </div>
+      <div class="card rv" style="--d:.1s">
+        <div class="lbl">WIND <i>NE 042°</i></div>
+        <div class="val"><span data-count="14.2" data-dec="1" data-jit="1.2">0</span><small>m/s</small></div>
+        <div class="sub">gusting 21.7 m/s</div>
+      </div>
+      <div class="card rv" id="kpcard" style="--d:.15s" title="Tap to simulate a substorm">
+        <div class="lbl">KP INDEX <i id="kplab">ACTIVE</i></div>
+        <div class="val"><span id="kpval" data-count="4.3" data-dec="1" data-jit="0.1">0</span></div>
+        <div class="sub">aurora probability <b>87%</b> · tap card</div>
+      </div>
+      <div class="card rv" style="--d:.2s">
+        <div class="lbl">MAGNETOMETER <i>H-COMP</i></div>
+        <div class="val"><span data-count="-142" data-dec="0" data-jit="9">0</span><small>nT</small></div>
+        <div class="sub">baseline deviation, 1-min avg</div>
+        <canvas class="spark" width="76" height="26" data-hue="258"></canvas>
+      </div>
+      <div class="card rv" style="--d:.05s">
+        <div class="lbl">CO₂ <i>FLUX TOWER</i></div>
+        <div class="val"><span data-count="424.8" data-dec="1" data-jit="0.2">0</span><small>ppm</small></div>
+        <div class="sub">+2.6 ppm vs. last July</div>
+      </div>
+      <div class="card rv" style="--d:.1s">
+        <div class="lbl">SOLAR WIND <i>ACE L1</i></div>
+        <div class="val"><span data-count="587" data-dec="0" data-jit="12">0</span><small>km/s</small></div>
+        <div class="sub">density 6.4 p/cm³</div>
+        <canvas class="spark" width="76" height="26" data-hue="196"></canvas>
+      </div>
+      <div class="card rv" style="--d:.15s">
+        <div class="lbl">SNOW DEPTH <i>SITE B</i></div>
+        <div class="val"><span data-count="118" data-dec="0" data-jit="0">0</span><small>cm</small></div>
+        <div class="sub">−23 cm vs. 1991–2020 mean</div>
+      </div>
+      <div class="card rv" style="--d:.2s">
+        <div class="lbl">PERMAFROST <i>BH-7 · 2 M</i></div>
+        <div class="val"><span data-count="-2.1" data-dec="1" data-jit="0">0</span><small>°C</small></div>
+        <div class="sub">warmest on record for this date</div>
+      </div>
+    </div>
+    <div class="tele-foot rv"><span class="live">LIVE</span><span>FEED AL-STN-01 · UPDATED <span id="feedts">15 s AGO</span> · VALUES SIMULATED FOR DEMONSTRATION</span></div>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section id="research">
+  <div class="wrap">
+    <div class="kicker rv">02 - Research Programs</div>
+    <h2 class="rv" style="--d:.08s">Four programs, one changing Arctic.</h2>
+    <p class="lede rv" style="--d:.16s">Funded through 2031 by the Nordheim Polar Trust and a consortium of nine universities.</p>
+    <div class="programs">
+      <div class="prog rv" style="--d:.05s">
+        <div class="glow" style="background:#57f2c8"></div>
+        <div class="code">AL-01 · SINCE 2019</div>
+        <h3>Magnetosphere–Ionosphere Coupling</h3>
+        <p>All-sky cameras, a 64-channel riometer and our fluxgate magnetometer array track how solar wind energy cascades into the upper atmosphere - the same energy that paints the sky above the station nearly every clear night.</p>
+        <div class="tags"><span>ALL-SKY IMAGING</span><span>RIOMETRY</span><span>SUBSTORMS</span></div>
+      </div>
+      <div class="prog rv" style="--d:.1s">
+        <div class="glow" style="background:#8b7bff"></div>
+        <div class="code">AL-02 · SINCE 2021</div>
+        <h3>Ice Core Paleoclimate</h3>
+        <p>The Vestfonna drilling line has recovered 612 metres of ice - a 12,000-year archive. Isotope ratios and trapped air bubbles let us read past summers the way tree rings read forests.</p>
+        <div class="tags"><span>δ¹⁸O ISOTOPES</span><span>GAS CHROMATOGRAPHY</span><span>12 KA RECORD</span></div>
+      </div>
+      <div class="prog rv" style="--d:.15s">
+        <div class="glow" style="background:#3fd0ff"></div>
+        <div class="code">AL-03 · SINCE 2022</div>
+        <h3>Permafrost Carbon Flux</h3>
+        <p>Eleven boreholes and an eddy-covariance tower measure how much ancient carbon the thawing ground exhales. Borehole BH-7 has warmed 1.4 °C at two metres depth since installation.</p>
+        <div class="tags"><span>EDDY COVARIANCE</span><span>CH₄ / CO₂</span><span>11 BOREHOLES</span></div>
+      </div>
+      <div class="prog rv" style="--d:.2s">
+        <div class="glow" style="background:#ff7bd5"></div>
+        <div class="code">AL-04 · SINCE 2024</div>
+        <h3>Polar Night Ecology</h3>
+        <p>Life doesn't stop when the sun sets for four months. Acoustic moorings in Kongsfjorden and low-light drone surveys map an ecosystem that runs on moonlight, starlight - and aurora.</p>
+        <div class="tags"><span>HYDROACOUSTICS</span><span>LOW-LIGHT UAV</span><span>FJORD MOORINGS</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="wrap">
+    <div class="kicker rv">03 - Wintering Crew</div>
+    <h2 class="rv" style="--d:.08s">Twelve people, four months of night.</h2>
+    <p class="lede rv" style="--d:.16s">The 2026 overwintering team - scientists, engineers and one very good station chef.</p>
+    <div class="team">
+      <div class="member rv" style="--d:.04s"><div class="ava" style="background:linear-gradient(135deg,#57f2c8,#3fd0ff)">IH</div><div><h4>Dr. Ingrid Halvorsen</h4><p>Station Leader · Geophysics</p></div></div>
+      <div class="member rv" style="--d:.08s"><div class="ava" style="background:linear-gradient(135deg,#8b7bff,#ff7bd5)">KO</div><div><h4>Dr. Kenji Okabe</h4><p>Aurora Physics · Kyoto Univ.</p></div></div>
+      <div class="member rv" style="--d:.12s"><div class="ava" style="background:linear-gradient(135deg,#3fd0ff,#8b7bff)">MR</div><div><h4>Dr. Mariana Reyes</h4><p>Ice Core Lead · Glaciology</p></div></div>
+      <div class="member rv" style="--d:.16s"><div class="ava" style="background:linear-gradient(135deg,#57f2c8,#8b7bff)">TA</div><div><h4>Tomas Aaskov</h4><p>Instrument Engineer</p></div></div>
+      <div class="member rv" style="--d:.2s"><div class="ava" style="background:linear-gradient(135deg,#ff7bd5,#57f2c8)">SL</div><div><h4>Dr. Sanna Lehtinen</h4><p>Permafrost · Carbon Flux</p></div></div>
+      <div class="member rv" style="--d:.24s"><div class="ava" style="background:linear-gradient(135deg,#3fd0ff,#57f2c8)">PB</div><div><h4>Priya Bhandari</h4><p>Data Systems · Telemetry</p></div></div>
+      <div class="member rv" style="--d:.28s"><div class="ava" style="background:linear-gradient(135deg,#8b7bff,#3fd0ff)">EN</div><div><h4>Dr. Emil Nordvik</h4><p>Polar Night Ecology</p></div></div>
+      <div class="member rv" style="--d:.32s"><div class="ava" style="background:linear-gradient(135deg,#57f2c8,#ff7bd5)">AC</div><div><h4>Alba Cortés</h4><p>UAV Operations · Safety</p></div></div>
+      <div class="member rv" style="--d:.36s"><div class="ava" style="background:linear-gradient(135deg,#ff7bd5,#8b7bff)">JM</div><div><h4>Jonas Møller</h4><p>Station Chef · Morale Officer</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOG -->
+<section id="log">
+  <div class="wrap">
+    <div class="kicker rv">04 - Expedition Log</div>
+    <h2 class="rv" style="--d:.08s">Field notes from the edge of the map.</h2>
+    <div class="log">
+      <div class="entry rv" style="--d:.05s">
+        <div class="date">2026-07-02 · 03:14 UTC</div>
+        <h4>Midnight sun flux campaign, day 9</h4>
+        <p>Nine straight days of 24-hour daylight and the flux tower hasn't blinked. CO₂ uptake over the tundra peaked at 14:00 solar time - the strongest midsummer drawdown we've logged at Site B. Reindeer chewed through a guy-line flag again. The flag lost.</p>
+        <div class="sig">— S. Lehtinen, AL-03</div>
+      </div>
+      <div class="entry rv" style="--d:.1s">
+        <div class="date">2026-06-18 · 22:47 UTC</div>
+        <h4>BH-7 hits a record</h4>
+        <p>Borehole BH-7 read −2.08 °C at two metres - the warmest June figure in our series and 0.3 °C above 2025. We re-ran the calibration twice hoping for an instrument fault. It isn't one.</p>
+        <div class="sig">— I. Halvorsen, Station Leader</div>
+      </div>
+      <div class="entry rv" style="--d:.15s">
+        <div class="date">2026-04-11 · 01:52 UTC</div>
+        <h4>The G3 storm</h4>
+        <p>Kp 7 for six hours. Corona overhead, red lower borders, the whole fjord lit green enough to read by. The all-sky camera captured 14,000 frames; Kenji hasn't slept and refuses to. Magnetometer swung −612 nT at peak.</p>
+        <div class="sig">— K. Okabe, AL-01</div>
+      </div>
+      <div class="entry rv" style="--d:.2s">
+        <div class="date">2026-02-27 · 11:05 UTC</div>
+        <h4>First light</h4>
+        <p>The sun cleared Zeppelinfjellet for four minutes today - first direct light on station since November 3rd. Tradition held: everyone outside, faces south, pancakes after. Vestfonna core segment 588 m arrived intact by snowcat.</p>
+        <div class="sig">— J. Møller, Station Chef</div>
+      </div>
+      <div class="entry rv" style="--d:.25s">
+        <div class="date">2026-01-09 · 14:30 UTC</div>
+        <h4>Acoustic mooring K-2 recovered</h4>
+        <p>Four months of polar-night audio from 40 m depth in Kongsfjorden. First pass: cod choruses under total darkness and a bearded seal that sings, apparently, only during aurora. Emil insists this is coincidence. Emil is checking anyway.</p>
+        <div class="sig">— E. Nordvik, AL-04</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="visit">
+  <div class="wrap">
+    <div class="band rv">
+      <div>
+        <h3>Winter with us, 2027 season.</h3>
+        <p>Applications for the 2027 overwintering crew open 1 September 2026. Two research fellowships, one engineering post, and yes - the chef position is contested.</p>
+      </div>
+      <a class="btn" href="#top">Request the briefing pack</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div class="cols">
+      <div>
+        <h5>Station</h5>
+        <a href="#telemetry">Telemetry</a>
+        <a href="#research">Research programs</a>
+        <a href="#log">Expedition log</a>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <li class="mono" style="font-size:.72rem">ops@auroralab.no</li>
+        <li class="mono" style="font-size:.72rem">VHF CH 12 - "AURORA BASE"</li>
+        <li class="mono" style="font-size:.72rem">78.9241° N, 11.9312° E</li>
+      </div>
+      <div>
+        <h5>Partners</h5>
+        <li>Nordheim Polar Trust</li>
+        <li>Kyoto Aurora Group</li>
+        <li>Boulder Space Weather Lab</li>
+      </div>
+    </div>
+    <div class="credit">
+      <span>AURORA LAB is a fictional research station. All data simulated.</span>
+      <span>Designed &amp; built by Claude Fable · <a href="/">Part of the Fable 25 showcase</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- value noise ---------- */
+const P = new Uint8Array(512);
+(function(){ const p=[...Array(256).keys()]; let s=1337;
+  const rnd=()=>((s=s*16807%2147483647)/2147483647);
+  for(let i=255;i>0;i--){const j=Math.floor(rnd()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
+  for(let i=0;i<512;i++)P[i]=p[i&255];
+})();
+function fade(t){return t*t*(3-2*t);}
+function noise2(x,y){
+  const xi=Math.floor(x)&255, yi=Math.floor(y)&255;
+  const xf=x-Math.floor(x), yf=y-Math.floor(y);
+  const tl=P[P[xi]+yi]/255, tr=P[P[xi+1]+yi]/255;
+  const bl=P[P[xi]+yi+1]/255, br=P[P[xi+1]+yi+1]/255;
+  const u=fade(xf), v=fade(yf);
+  return (tl+(tr-tl)*u)+((bl+(br-bl)*u)-(tl+(tr-tl)*u))*v;
+}
+function fbm(x,y){return .6*noise2(x,y)+.3*noise2(x*2.1,y*2.1)+.1*noise2(x*4.3,y*4.3);}
+
+/* ---------- canvases ---------- */
+const hero=document.querySelector('header');
+const sc=document.getElementById('stars'), scx=sc.getContext('2d');
+const ac=document.getElementById('aurora'), acx=ac.getContext('2d');
+let W=0,H=0,aW=0,aH=0;
+const ASCALE=0.4; // low-res aurora, blurred up by CSS
+let stars=[];
+function resize(){
+  W=hero.clientWidth; H=hero.clientHeight;
+  sc.width=W; sc.height=H;
+  aW=ac.width=Math.max(240,Math.floor(W*ASCALE));
+  aH=ac.height=Math.max(160,Math.floor(H*ASCALE));
+  stars=[];
+  const n=Math.floor(W*H/6500);
+  for(let i=0;i<n;i++){
+    stars.push({x:Math.random()*W,y:Math.random()*H*.85,r:Math.random()*1.3+.2,
+      p:Math.random()*Math.PI*2,s:.3+Math.random()*1.4,b:.35+Math.random()*.65});
+  }
+}
+resize();
+addEventListener('resize',resize);
+
+/* shooting stars */
+let meteor=null,meteorTimer=6;
+function spawnMeteor(){
+  const x=Math.random()*W*.7+W*.15;
+  meteor={x, y:Math.random()*H*.3+20, vx:-(4+Math.random()*4), vy:2+Math.random()*2, life:1};
+}
+
+/* ---------- substorm easter egg ---------- */
+let storm=0, stormTarget=0;
+const kpcard=document.getElementById('kpcard');
+const kpval=document.getElementById('kpval');
+const kplab=document.getElementById('kplab');
+kpcard.addEventListener('click',()=>{
+  stormTarget=1;
+  kplab.textContent='SUBSTORM';
+  kplab.style.color='#ff7bd5';
+  kpval.textContent='7.0';
+  setTimeout(()=>{stormTarget=0;kplab.textContent='ACTIVE';kplab.style.color='';},9000);
+});
+
+/* ---------- aurora curtains ---------- */
+const curtains=[
+  {base:.34,amp:.16,freq:.0035,speed:.045,drift:14,len:.55,hueLo:150,hueHi:265,alpha:.5,seed:0},
+  {base:.5,amp:.13,freq:.005,speed:.03,drift:-10,len:.42,hueLo:160,hueHi:290,alpha:.38,seed:57},
+  {base:.24,amp:.1,freq:.0028,speed:.06,drift:22,len:.34,hueLo:170,hueHi:310,alpha:.3,seed:113}
+];
+function drawAurora(t){
+  acx.globalCompositeOperation='source-over';
+  acx.clearRect(0,0,aW,aH);
+  acx.globalCompositeOperation='lighter';
+  const boost=1+storm*1.6;
+  for(const c of curtains){
+    const step=3;
+    for(let x=0;x<=aW;x+=step){
+      const nx=x*c.freq*(1000/aW)*aW/1000;
+      const n1=fbm(nx*4+c.seed + t*c.speed, c.seed*.7);
+      const n2=fbm(nx*7+c.seed*2 - t*c.speed*1.4, c.seed);
+      const top=(c.base + (n1-.5)*2*c.amp)*aH + Math.sin(t*.2+x*.02+c.seed)*3;
+      const len=(c.len*aH)*(0.45+n2*.9)*(1+storm*.35);
+      const intensity=Math.pow(Math.max(0,n2*1.25-.12),1.5)*c.alpha*boost;
+      if(intensity<=0.01)continue;
+      const g=acx.createLinearGradient(0,top,0,top+len);
+      const hue=c.hueLo+(c.hueHi-c.hueLo)*(n1);
+      g.addColorStop(0,`hsla(${Math.min(hue+60,300)},90%,70%,0)`);
+      g.addColorStop(.25,`hsla(${hue},95%,64%,${intensity*.7})`);
+      g.addColorStop(.75,`hsla(${Math.max(hue-45,140)},95%,58%,${intensity})`);
+      g.addColorStop(1,`hsla(150,100%,60%,0)`);
+      acx.fillStyle=g;
+      acx.fillRect(x+Math.sin(t*.1+c.seed)*c.drift*ASCALE,top,step+1,len);
+    }
+  }
+  /* soft ground glow */
+  const gg=acx.createLinearGradient(0,aH*.65,0,aH);
+  gg.addColorStop(0,'rgba(20,60,80,0)');
+  gg.addColorStop(1,`rgba(30,90,110,${.14+storm*.1})`);
+  acx.globalCompositeOperation='source-over';
+  acx.fillStyle=gg;
+  acx.fillRect(0,0,aW,aH);
+}
+
+/* ---------- stars ---------- */
+function drawStars(t){
+  scx.clearRect(0,0,W,H);
+  for(const s of stars){
+    const a=s.b*(.55+.45*Math.sin(t*s.s+s.p));
+    scx.globalAlpha=a;
+    scx.fillStyle='#eaf6ff';
+    scx.beginPath();scx.arc(s.x,s.y,s.r,0,7);scx.fill();
+  }
+  scx.globalAlpha=1;
+  if(meteor){
+    const m=meteor;
+    const grad=scx.createLinearGradient(m.x,m.y,m.x-m.vx*10,m.y-m.vy*10);
+    grad.addColorStop(0,`rgba(234,246,255,${m.life})`);
+    grad.addColorStop(1,'rgba(234,246,255,0)');
+    scx.strokeStyle=grad;scx.lineWidth=1.6;
+    scx.beginPath();scx.moveTo(m.x,m.y);scx.lineTo(m.x-m.vx*10,m.y-m.vy*10);scx.stroke();
+    m.x+=m.vx;m.y+=m.vy;m.life-=.02;
+    if(m.life<=0)meteor=null;
+  }
+}
+
+/* ---------- main loop ---------- */
+let last=performance.now(), heroVisible=true;
+new IntersectionObserver(e=>{heroVisible=e[0].isIntersecting;},{threshold:0}).observe(hero);
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  storm+= (stormTarget-storm)*dt*1.2;
+  meteorTimer-=dt;
+  if(meteorTimer<=0){spawnMeteor();meteorTimer=7+Math.random()*8;}
+  if(heroVisible){
+    const t=now/1000;
+    drawAurora(t);
+    drawStars(t);
+  }
+  requestAnimationFrame(loop);
+}
+if(!reduced){requestAnimationFrame(loop);}
+else{drawAurora(20);drawStars(20);}
+
+/* ---------- scroll color temperature ---------- */
+const wash=document.getElementById('tempwash');
+const stops=[
+  {a:[5,10,30], b:[3,16,28]},    // navy → hint of teal
+  {a:[3,18,32], b:[4,22,34]},    // teal zone
+  {a:[10,10,38],b:[16,8,40]},    // violet rise
+  {a:[16,8,38], b:[8,6,26]}      // deep violet-night
+];
+function lerp(a,b,t){return a+(b-a)*t;}
+function mix(c1,c2,t){return `rgb(${Math.round(lerp(c1[0],c2[0],t))},${Math.round(lerp(c1[1],c2[1],t))},${Math.round(lerp(c1[2],c2[2],t))})`;}
+let tickPending=false;
+function onScroll(){
+  if(tickPending)return; tickPending=true;
+  requestAnimationFrame(()=>{
+    tickPending=false;
+    const p=Math.min(1,Math.max(0,scrollY/(document.body.scrollHeight-innerHeight)));
+    const seg=Math.min(stops.length-2, Math.floor(p*(stops.length-1)));
+    const t=p*(stops.length-1)-seg;
+    wash.style.background=`linear-gradient(180deg,${mix(stops[seg].a,stops[seg+1].a,t)},${mix(stops[seg].b,stops[seg+1].b,t)})`;
+  });
+}
+addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+
+/* ---------- reveals ---------- */
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+/* ---------- counters ---------- */
+function animateCount(el){
+  const target=parseFloat(el.dataset.count), dec=+el.dataset.dec, jit=parseFloat(el.dataset.jit);
+  const dur=reduced?0:1800, start=performance.now();
+  function step(now){
+    const p=dur?Math.min(1,(now-start)/dur):1;
+    const e=1-Math.pow(1-p,4);
+    el.textContent=(target*e).toFixed(dec);
+    if(p<1)requestAnimationFrame(step);
+    else if(jit>0 && !reduced){
+      setInterval(()=>{
+        if(el.id==='kpval'&&stormTarget)return;
+        el.textContent=(target+(Math.random()-.5)*2*jit).toFixed(dec);
+      },2600+Math.random()*1600);
+    }
+  }
+  requestAnimationFrame(step);
+}
+const cio=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){animateCount(e.target);cio.unobserve(e.target);}});
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* ---------- clock + feed ts ---------- */
+const clock=document.getElementById('clock');
+function tickClock(){
+  const d=new Date();
+  clock.textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+':'+String(d.getUTCSeconds()).padStart(2,'0')+' UTC';
+}
+tickClock(); setInterval(tickClock,1000);
+let feedAge=15;
+setInterval(()=>{feedAge-=1;if(feedAge<=0)feedAge=15;document.getElementById('feedts').textContent=feedAge+' s AGO';},1000);
+
+/* ---------- card cursor glow ---------- */
+document.querySelectorAll('.card').forEach(c=>{
+  c.addEventListener('pointermove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+  });
+});
+
+/* ---------- telemetry sparklines ---------- */
+const sparks=[...document.querySelectorAll('.spark')].map((cv,i)=>({cv,ctx:cv.getContext('2d'),seed:i*31+7,hue:+cv.dataset.hue}));
+let teleVisible=false;
+new IntersectionObserver(e=>{teleVisible=e[0].isIntersecting;},{threshold:.1}).observe(document.getElementById('telemetry'));
+function drawSparks(t){
+  for(const s of sparks){
+    const {ctx,cv}=s, w=cv.width, h=cv.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.beginPath();
+    for(let x=0;x<=w;x+=2){
+      const y=h*.5+(fbm(x*.06+t*.35+s.seed,s.seed)-.5)*h*.9;
+      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=`hsla(${s.hue},90%,66%,.9)`;
+    ctx.lineWidth=1.4;ctx.lineJoin='round';
+    ctx.shadowColor=`hsla(${s.hue},90%,60%,.8)`;ctx.shadowBlur=5;
+    ctx.stroke();ctx.shadowBlur=0;
+  }
+}
+if(!reduced){
+  (function sparkLoop(now){
+    if(teleVisible)drawSparks(now/1000);
+    requestAnimationFrame(sparkLoop);
+  })(performance.now());
+}else{drawSparks(8);}
+
+/* ---------- hero parallax + nav state ---------- */
+const heroInner=document.querySelector('.hero-inner');
+const navEl=document.querySelector('nav');
+const navAs=[...document.querySelectorAll('.navlinks a')];
+const secIds=navAs.map(a=>a.getAttribute('href').slice(1));
+addEventListener('scroll',()=>{
+  navEl.classList.toggle('scrolled',scrollY>40);
+  if(!reduced && scrollY<innerHeight){
+    heroInner.style.transform=`translateY(${scrollY*.22}px)`;
+    heroInner.style.opacity=Math.max(0,1-scrollY/(innerHeight*.85));
+  }
+},{passive:true});
+const navIO=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      navAs.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+    }
+  });
+},{rootMargin:'-40% 0px -55% 0px'});
+secIds.forEach(id=>{const el=document.getElementById(id);if(el)navIO.observe(el);});
+})();
+</script>
+</body>
+</html>

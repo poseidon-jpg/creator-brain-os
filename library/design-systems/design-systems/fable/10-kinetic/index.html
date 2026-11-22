@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC · A Type Foundry in Motion</title>
+<meta name="description" content="KINETIC is an independent type foundry where letters refuse to sit still. Variable typefaces engineered for motion: Molt, Vantage, Softshell and Wonk. Try the live specimen playground.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23ffffff'/%3E%3Ctext x='32' y='50' font-family='Georgia,serif' font-weight='900' font-size='52' text-anchor='middle' fill='%230026ff'%3EK%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,100..900,0..100,0..1;1,9..144,100..900,0..100,0..1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#000000;
+  --paper:#ffffff;
+  --volt:#0026ff;
+  --gutter:clamp(20px,4vw,64px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+::selection{background:var(--volt);color:var(--paper)}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Archivo',sans-serif;
+  font-variation-settings:'wdth' 100,'wght' 400;
+  overflow-x:hidden;
+  cursor:crosshair;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* ---------- NAV ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px var(--gutter);
+  mix-blend-mode:difference;color:#fff;
+}
+nav .logo{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 144,'wght' 900,'SOFT' 0,'WONK' 1;
+  font-size:22px;letter-spacing:-0.02em;
+  transition:font-variation-settings .6s cubic-bezier(.22,1,.36,1);
+}
+nav .logo:hover{font-variation-settings:'opsz' 144,'wght' 300,'SOFT' 100,'WONK' 1}
+nav ul{display:flex;gap:clamp(14px,3vw,36px);list-style:none}
+nav ul a{
+  font-size:12px;text-transform:uppercase;letter-spacing:.14em;
+  font-variation-settings:'wdth' 90,'wght' 500;
+  transition:font-variation-settings .35s ease;
+}
+nav ul a:hover{font-variation-settings:'wdth' 125,'wght' 800}
+
+/* ---------- HERO ---------- */
+.hero{
+  min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;
+  padding:0 var(--gutter);
+}
+.hero-word{
+  font-family:'Archivo',sans-serif;
+  font-weight:900;
+  font-size:clamp(70px,16.5vw,270px);
+  line-height:.86;
+  letter-spacing:-0.03em;
+  display:flex;
+  user-select:none;
+  white-space:nowrap;
+  overflow:hidden;
+  padding-top:.08em;
+}
+.hero-word span{
+  display:inline-block;
+  font-variation-settings:'wdth' 100,'wght' 900;
+  animation:heroin 1s cubic-bezier(.19,1,.22,1) both, weightwave 3.6s ease-in-out infinite;
+  animation-delay:calc(var(--i) * .07s), calc(1s + var(--i) * .18s);
+  will-change:font-variation-settings,transform;
+}
+@keyframes heroin{
+  from{transform:translateY(115%) rotate(4deg);opacity:0}
+  to{transform:translateY(0) rotate(0);opacity:1}
+}
+@keyframes weightwave{
+  0%,100%{font-variation-settings:'wdth' 100,'wght' 900}
+  50%{font-variation-settings:'wdth' 62,'wght' 100}
+}
+.hero-sub{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;
+  margin-top:clamp(24px,4vh,48px);
+  max-width:1600px;
+}
+.hero-sub p{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-variation-settings:'opsz' 40,'wght' 420,'SOFT' 60,'WONK' 0;
+  font-size:clamp(18px,2.2vw,28px);
+  max-width:26ch;line-height:1.25;
+}
+.hero-meta{
+  font-size:11px;text-transform:uppercase;letter-spacing:.16em;
+  font-variation-settings:'wdth' 85,'wght' 500;
+  text-align:right;line-height:1.9;
+}
+.hero-meta b{color:var(--volt);font-variation-settings:'wdth' 85,'wght' 800}
+.scroll-cue{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  animation:cuepulse 2s ease-in-out infinite;
+}
+@keyframes cuepulse{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* ---------- TICKER ---------- */
+.ticker{
+  border-top:2px solid var(--ink);
+  border-bottom:2px solid var(--ink);
+  overflow:hidden;white-space:nowrap;
+  padding:10px 0;
+  background:var(--paper);
+}
+.ticker-track{display:inline-flex;animation:tick 28s linear infinite;will-change:transform}
+.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker-track span{
+  font-family:'Fraunces',serif;
+  font-size:clamp(16px,2vw,24px);
+  padding:0 28px;
+  font-variation-settings:'opsz' 144,'wght' 560,'SOFT' 0,'WONK' 1;
+}
+.ticker-track span:nth-child(even){color:var(--volt);font-style:italic}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- SECTION SHARED ---------- */
+section{padding:clamp(72px,11vh,140px) var(--gutter)}
+.sec-label{
+  font-size:11px;text-transform:uppercase;letter-spacing:.22em;
+  font-variation-settings:'wdth' 80,'wght' 600;
+  color:var(--volt);
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.sec-label::before{content:'';width:34px;height:2px;background:var(--volt)}
+.sec-title{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 144,'wght' 640,'SOFT' 0,'WONK' 0;
+  font-size:clamp(34px,5.4vw,84px);
+  letter-spacing:-0.02em;
+  line-height:1.02;
+  margin-bottom:clamp(30px,6vh,64px);
+  max-width:18ch;
+}
+.sec-title em{font-style:italic;color:var(--volt);font-variation-settings:'opsz' 144,'wght' 400,'SOFT' 100,'WONK' 1}
+
+/* reveal lines */
+.rline{display:block;overflow:hidden}
+.rline > span{display:inline-block;transform:translateY(110%);transition:transform 1s cubic-bezier(.19,1,.22,1)}
+.inview .rline > span{transform:translateY(0)}
+.rline:nth-child(2) > span{transition-delay:.08s}
+.rline:nth-child(3) > span{transition-delay:.16s}
+
+/* ---------- FACES ---------- */
+.faces-grid{display:flex;flex-direction:column;border-top:2px solid var(--ink)}
+.face{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px 24px;
+  align-items:center;
+  border-bottom:2px solid var(--ink);
+  padding:clamp(20px,3.4vh,38px) 0;
+  position:relative;
+  opacity:0;transform:translateY(28px);
+  transition:background .35s ease,color .35s ease,opacity .8s cubic-bezier(.19,1,.22,1),transform .8s cubic-bezier(.19,1,.22,1);
+}
+.faces-grid.inview .face{opacity:1;transform:none}
+.faces-grid.inview .face:nth-child(2){transition-delay:0s,0s,.1s,.1s}
+.faces-grid.inview .face:nth-child(3){transition-delay:0s,0s,.2s,.2s}
+.faces-grid.inview .face:nth-child(4){transition-delay:0s,0s,.3s,.3s}
+.face:hover{background:var(--ink);color:var(--paper)}
+.face-sample{
+  font-size:clamp(40px,7.5vw,110px);
+  line-height:1;
+  letter-spacing:-0.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:clip;
+  transition:font-variation-settings 1.1s cubic-bezier(.22,1,.36,1),color .35s ease;
+  will-change:font-variation-settings;
+}
+.face[data-face="molt"] .face-sample{font-family:'Fraunces',serif;font-variation-settings:'opsz' 144,'wght' 900,'SOFT' 0,'WONK' 0}
+.face[data-face="molt"]:hover .face-sample{font-variation-settings:'opsz' 9,'wght' 200,'SOFT' 0,'WONK' 0}
+.face[data-face="vantage"] .face-sample{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 125,'wght' 800}
+.face[data-face="vantage"]:hover .face-sample{font-variation-settings:'wdth' 62,'wght' 300}
+.face[data-face="softshell"] .face-sample{font-family:'Fraunces',serif;font-variation-settings:'opsz' 60,'wght' 500,'SOFT' 100,'WONK' 0}
+.face[data-face="softshell"]:hover .face-sample{font-variation-settings:'opsz' 144,'wght' 900,'SOFT' 100,'WONK' 0;color:var(--volt)}
+.face[data-face="wonk"] .face-sample{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:'opsz' 144,'wght' 640,'SOFT' 30,'WONK' 1}
+.face[data-face="wonk"]:hover .face-sample{font-variation-settings:'opsz' 144,'wght' 340,'SOFT' 100,'WONK' 1;color:var(--volt)}
+.face-meta{
+  display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.12em;
+  font-variation-settings:'wdth' 85,'wght' 500;
+  text-align:right;
+}
+.face-meta .price{
+  font-variation-settings:'wdth' 100,'wght' 800;
+  font-size:15px;
+}
+.face:hover .price{color:var(--volt)}
+.face-desc{
+  grid-column:1 / -1;
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .55s cubic-bezier(.22,1,.36,1),opacity .4s ease .1s;
+  font-size:14px;line-height:1.6;max-width:64ch;
+  font-variation-settings:'wdth' 96,'wght' 400;
+}
+.face:hover .face-desc{max-height:120px;opacity:1}
+
+/* ---------- MOTION STUDIES ---------- */
+.studies{background:var(--ink);color:var(--paper)}
+.studies .sec-label{color:var(--volt)}
+.studies .sec-label::before{background:var(--volt)}
+.study{
+  padding:clamp(40px,9vh,110px) 0;
+  border-bottom:1px solid rgba(255,255,255,.18);
+  overflow:hidden;
+}
+.study:last-of-type{border-bottom:none}
+.study-tag{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--volt);margin-bottom:18px;
+  font-variation-settings:'wdth' 80,'wght' 600;
+}
+.study-word{
+  font-family:'Archivo',sans-serif;font-weight:900;
+  font-size:clamp(52px,12vw,190px);
+  line-height:.92;letter-spacing:-0.02em;
+  white-space:nowrap;
+  will-change:font-variation-settings,transform;
+}
+#w-stretch{font-variation-settings:'wdth' 62,'wght' 900}
+#w-weight{font-family:'Fraunces',serif;font-weight:normal;font-variation-settings:'opsz' 144,'wght' 100,'SOFT' 0,'WONK' 0}
+#w-cascade span{display:inline-block;will-change:transform,opacity}
+#w-slice{position:relative;color:var(--volt);font-family:'Fraunces',serif;font-weight:normal;font-variation-settings:'opsz' 144,'wght' 900,'SOFT' 0,'WONK' 0}
+.slice-top,.slice-bot{display:block;will-change:transform}
+.slice-top{clip-path:inset(-5% 0 49.5% 0)}
+.slice-bot{position:absolute;inset:0;clip-path:inset(49.5% 0 -5% 0)}
+.study-note{
+  margin-top:22px;font-size:13px;line-height:1.6;max-width:52ch;
+  color:rgba(255,255,255,.65);
+  font-variation-settings:'wdth' 96,'wght' 400;
+}
+.study-note b{color:#fff;font-variation-settings:'wdth' 96,'wght' 700}
+
+/* ---------- PLAYGROUND ---------- */
+.playground{position:relative}
+.pg-stage{
+  border:2px solid var(--ink);
+  min-height:52vh;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  overflow:hidden;
+  background:var(--paper);
+  cursor:none;
+}
+.pg-word{
+  font-family:'Fraunces',serif;
+  font-size:clamp(56px,13vw,200px);
+  line-height:1;
+  font-variation-settings:'opsz' 144,'wght' 500,'SOFT' 0,'WONK' 0;
+  outline:none;white-space:nowrap;
+  will-change:font-variation-settings;
+  user-select:text;
+  cursor:text;caret-color:var(--volt);
+}
+.pg-stage.archivo .pg-word{font-family:'Archivo',sans-serif}
+.pg-cursor{
+  position:absolute;width:14px;height:14px;border-radius:50%;
+  background:var(--volt);pointer-events:none;
+  transform:translate(-50%,-50%);
+  transition:opacity .2s;opacity:0;
+  z-index:5;
+}
+.pg-stage:hover .pg-cursor{opacity:1}
+.pg-readout{
+  position:absolute;left:14px;bottom:12px;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  font-variation-settings:'wdth' 85,'wght' 500;
+  display:flex;gap:22px;
+  pointer-events:none;
+}
+.pg-readout b{color:var(--volt);font-variation-settings:'wdth' 100,'wght' 800;font-variant-numeric:tabular-nums}
+.pg-hint{
+  position:absolute;right:14px;top:12px;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--volt);
+  font-variation-settings:'wdth' 85,'wght' 600;
+  pointer-events:none;
+}
+.pg-controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.pg-controls button{
+  border:2px solid var(--ink);background:var(--paper);color:var(--ink);
+  padding:10px 22px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;
+  font-variation-settings:'wdth' 90,'wght' 600;
+  transition:all .25s ease;
+}
+.pg-controls button:hover{background:var(--volt);border-color:var(--volt);color:var(--paper)}
+.pg-controls button.active{background:var(--ink);color:var(--paper)}
+
+/* ---------- LICENSING ---------- */
+.license-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border:2px solid var(--ink);
+}
+.tier{
+  padding:clamp(24px,3.5vw,44px);
+  border-right:2px solid var(--ink);
+  display:flex;flex-direction:column;gap:18px;
+  transition:background .3s ease,color .3s ease;
+  position:relative;
+}
+.tier:last-child{border-right:none}
+.tier:hover{background:var(--ink);color:var(--paper)}
+.tier.hot{background:var(--volt);color:var(--paper)}
+.tier.hot:hover{background:var(--ink)}
+.tier h3{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 144,'wght' 700,'SOFT' 0,'WONK' 0;
+  font-size:clamp(22px,2.6vw,34px);
+}
+.tier .amt{
+  font-family:'Archivo',sans-serif;font-weight:900;
+  font-size:clamp(38px,4.6vw,64px);line-height:1;
+  font-variation-settings:'wdth' 110,'wght' 900;
+  letter-spacing:-0.02em;
+  transition:font-variation-settings .7s cubic-bezier(.22,1,.36,1);
+}
+.tier:hover .amt{font-variation-settings:'wdth' 62,'wght' 500}
+.tier .amt small{font-size:.35em;font-variation-settings:'wdth' 90,'wght' 500;letter-spacing:.08em}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;line-height:1.5}
+.tier ul li::before{content:'→ ';color:var(--volt)}
+.tier:hover ul li::before,.tier.hot ul li::before{color:currentColor}
+.tier .cta{
+  margin-top:auto;align-self:flex-start;
+  font-size:12px;text-transform:uppercase;letter-spacing:.16em;
+  border-bottom:2px solid currentColor;padding-bottom:3px;
+  font-variation-settings:'wdth' 95,'wght' 700;
+}
+
+/* ---------- ABOUT ---------- */
+.about{background:var(--paper)}
+.about-body{
+  font-family:'Fraunces',serif;
+  font-size:clamp(22px,3.4vw,44px);
+  line-height:1.32;
+  max-width:26ch;
+  font-variation-settings:'opsz' 100,'wght' 420,'SOFT' 20,'WONK' 0;
+}
+.about-body .kw{
+  font-style:italic;color:var(--volt);
+  font-variation-settings:'opsz' 144,'wght' 640,'SOFT' 100,'WONK' 1;
+  transition:font-variation-settings .5s ease;
+}
+.about-body .kw:hover{font-variation-settings:'opsz' 144,'wght' 200,'SOFT' 100,'WONK' 1}
+.about-facts{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+  margin-top:clamp(40px,7vh,80px);
+  background:var(--ink);border:2px solid var(--ink);
+}
+.fact{background:var(--paper);padding:26px 22px}
+.fact .n{
+  font-family:'Archivo',sans-serif;font-weight:900;
+  font-variation-settings:'wdth' 115,'wght' 900;
+  font-size:clamp(30px,4vw,52px);line-height:1;letter-spacing:-0.02em;
+  color:var(--volt);
+}
+.fact .l{font-size:11px;text-transform:uppercase;letter-spacing:.16em;margin-top:10px;font-variation-settings:'wdth' 85,'wght' 500}
+
+/* ---------- FOOTER ---------- */
+footer{
+  background:var(--ink);color:var(--paper);
+  padding:clamp(56px,9vh,110px) var(--gutter) 28px;
+}
+.foot-word{
+  font-family:'Archivo',sans-serif;font-weight:900;
+  font-size:clamp(56px,14.5vw,240px);
+  line-height:.9;letter-spacing:-0.02em;
+  display:flex;user-select:none;white-space:nowrap;
+  margin-bottom:clamp(36px,7vh,72px);
+}
+.foot-word span{
+  display:inline-block;
+  font-variation-settings:'wdth' 100,'wght' 900;
+  transition:font-variation-settings .5s cubic-bezier(.22,1,.36,1),color .3s ease,transform .5s cubic-bezier(.22,1,.36,1);
+}
+.foot-word span:hover{color:var(--volt);font-variation-settings:'wdth' 62,'wght' 100;transform:translateY(-8%)}
+.foot-cols{
+  display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;
+  padding-top:28px;border-top:1px solid rgba(255,255,255,.25);
+  font-size:13px;line-height:1.7;
+}
+.foot-cols h4{
+  font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--volt);
+  margin-bottom:12px;font-variation-settings:'wdth' 85,'wght' 600;
+}
+.foot-cols a{opacity:.75;display:block;transition:opacity .2s,letter-spacing .3s}
+.foot-cols a:hover{opacity:1;letter-spacing:.04em;color:var(--volt)}
+.credit{
+  margin-top:48px;font-size:11px;letter-spacing:.06em;opacity:.55;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.credit a{border-bottom:1px solid rgba(255,255,255,.4)}
+.credit a:hover{color:var(--volt);border-color:var(--volt)}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:900px){
+  .license-grid{grid-template-columns:1fr}
+  .tier{border-right:none;border-bottom:2px solid var(--ink)}
+  .tier:last-child{border-bottom:none}
+  .about-facts{grid-template-columns:1fr}
+  .foot-cols{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){
+  nav ul li:nth-child(3){display:none}
+  .face{grid-template-columns:1fr}
+  .face-meta{align-items:flex-start;text-align:left;flex-direction:row;flex-wrap:wrap;gap:14px}
+  .hero-meta{text-align:left}
+  .foot-cols{grid-template-columns:1fr}
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+  .rline > span{transform:none}
+  .ticker-track{animation:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#top">Kinetic*</a>
+  <ul>
+    <li><a href="#faces">Faces</a></li>
+    <li><a href="#studies">Motion</a></li>
+    <li><a href="#playground">Playground</a></li>
+    <li><a href="#licensing">Licensing</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <h1 class="hero-word" id="heroWord" aria-label="KINETIC"></h1>
+  <div class="hero-sub">
+    <p>A type foundry for letters that refuse to sit&nbsp;still.</p>
+    <div class="hero-meta">
+      Est. 2019 · Rotterdam / Melbourne<br>
+      <b>4 families</b> · 22 styles · 2 axes minimum<br>
+      Every face ships variable. No statics. Ever.
+    </div>
+  </div>
+  <div class="scroll-cue">Scroll - the type moves with you</div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- FACES -->
+<section id="faces">
+  <div class="sec-label">01 / Catalogue</div>
+  <h2 class="sec-title reveal">
+    <span class="rline"><span>Four families.</span></span>
+    <span class="rline"><span>Zero <em>static</em> weights.</span></span>
+  </h2>
+  <div class="faces-grid">
+    <div class="face" data-face="molt">
+      <div class="face-sample">Molt</div>
+      <div class="face-meta">
+        <span>Display Serif · opsz 9–144 · wght 100–900</span>
+        <span>8 styles, one file</span>
+        <span class="price">From $180</span>
+      </div>
+      <p class="face-desc">Our flagship serif sheds its skin across the optical axis: razor hairlines at poster size, sturdy slabs at caption size. Hover to watch it molt from 900 down to 200.</p>
+    </div>
+    <div class="face" data-face="vantage">
+      <div class="face-sample">Vantage</div>
+      <div class="face-meta">
+        <span>Grotesk · wdth 62–125 · wght 100–900</span>
+        <span>6 styles, one file</span>
+        <span class="price">From $140</span>
+      </div>
+      <p class="face-desc">A workhorse grotesk with a 63-point width axis. Compress it into a headline column or let it breathe across a billboard. Same file, same kerning logic.</p>
+    </div>
+    <div class="face" data-face="softshell">
+      <div class="face-sample">Softshell</div>
+      <div class="face-meta">
+        <span>Rounded Serif · SOFT 0–100 · wght 100–900</span>
+        <span>4 styles, one file</span>
+        <span class="price">From $120</span>
+      </div>
+      <p class="face-desc">The softness axis rounds every terminal on a continuum. At SOFT 100 it reads like warm butter; at 0 it cuts like the serif it secretly is.</p>
+    </div>
+    <div class="face" data-face="wonk">
+      <div class="face-sample">Wonk</div>
+      <div class="face-meta">
+        <span>Italic Display · WONK 0–1 · wght 100–900</span>
+        <span>4 styles, one file</span>
+        <span class="price">From $95</span>
+      </div>
+      <p class="face-desc">Flip the wonk bit and the italic goes delightfully crooked: alternating stem angles borrowed from 1920s job-printing. For mastheads with an attitude problem.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MOTION STUDIES -->
+<section class="studies" id="studies">
+  <div class="sec-label">02 / Motion studies</div>
+  <h2 class="sec-title reveal">
+    <span class="rline"><span>Scroll is</span></span>
+    <span class="rline"><span>the <em>animator</em>.</span></span>
+  </h2>
+
+  <div class="study">
+    <div class="study-tag">Study 01 · Width axis / Vantage</div>
+    <div class="study-word" id="w-stretch" data-kinetic="stretch">STRETCH</div>
+    <p class="study-note"><b>wdth 62 → 125.</b> The word widens as it crosses your viewport. No transforms, no scaling - the letterforms themselves are redrawn at every width.</p>
+  </div>
+
+  <div class="study">
+    <div class="study-tag">Study 02 · Weight axis / Molt</div>
+    <div class="study-word" id="w-weight" data-kinetic="weight">gravity</div>
+    <p class="study-note"><b>wght 100 → 900.</b> Hairline to black in one scroll gesture. Optical size pinned at 144 so the contrast stays brutal.</p>
+  </div>
+
+  <div class="study">
+    <div class="study-tag">Study 03 · Cascade / Vantage</div>
+    <div class="study-word" id="w-cascade" data-kinetic="cascade" aria-label="CASCADE">CASCADE</div>
+    <p class="study-note"><b>Per-glyph choreography.</b> Each letter enters on its own curve, offset by 60 milliseconds of scroll distance. Type as a wave, not a block.</p>
+  </div>
+
+  <div class="study">
+    <div class="study-tag">Study 04 · Slice / Molt Black</div>
+    <div class="study-word" id="w-slice" data-kinetic="slice" aria-label="SPLIT">
+      <span class="slice-top">SPLIT</span>
+      <span class="slice-bot" aria-hidden="true">SPLIT</span>
+    </div>
+    <p class="study-note"><b>Clip-path bisection.</b> The word shears into two half-glyphs that slide apart and rejoin as you pass. The baseline never lies; the clipping does.</p>
+  </div>
+</section>
+
+<!-- PLAYGROUND -->
+<section class="playground" id="playground">
+  <div class="sec-label">03 / Specimen playground</div>
+  <h2 class="sec-title reveal">
+    <span class="rline"><span>Your cursor is</span></span>
+    <span class="rline"><span>the <em>slider</em>.</span></span>
+  </h2>
+  <div class="pg-stage" id="pgStage">
+    <div class="pg-cursor" id="pgCursor"></div>
+    <div class="pg-word" id="pgWord" contenteditable="true" spellcheck="false">Rhubarb</div>
+    <div class="pg-readout">
+      <span>wght <b id="roWght">500</b></span>
+      <span id="roAxis2Wrap">opsz <b id="roAxis2">144</b></span>
+    </div>
+    <div class="pg-hint">Move · Click the word to retype it</div>
+  </div>
+  <div class="pg-controls">
+    <button class="active" data-pgface="molt">Molt</button>
+    <button data-pgface="softshell">Softshell</button>
+    <button data-pgface="wonk">Wonk</button>
+    <button data-pgface="vantage">Vantage</button>
+    <button id="pgShuffle" title="New sample word">Shuffle word</button>
+  </div>
+</section>
+
+<!-- LICENSING -->
+<section id="licensing">
+  <div class="sec-label">04 / Licensing</div>
+  <h2 class="sec-title reveal">
+    <span class="rline"><span>Pay once.</span></span>
+    <span class="rline"><span>Move <em>forever</em>.</span></span>
+  </h2>
+  <div class="license-grid">
+    <div class="tier">
+      <h3>Desktop</h3>
+      <div class="amt">$95<small> / family</small></div>
+      <ul>
+        <li>Full variable file, every axis unlocked</li>
+        <li>Up to 3 workstations</li>
+        <li>Print, logo &amp; packaging use</li>
+        <li>Free minor version updates</li>
+      </ul>
+      <a class="cta" href="#licensing">Buy desktop</a>
+    </div>
+    <div class="tier hot">
+      <h3>Web + Motion</h3>
+      <div class="amt">$240<small> / family</small></div>
+      <ul>
+        <li>Everything in Desktop</li>
+        <li>Self-hosted WOFF2, unlimited domains</li>
+        <li>Animation &amp; video rendering rights</li>
+        <li>Up to 1M pageviews / month</li>
+        <li>Axis-animation starter kit (GSAP + CSS)</li>
+      </ul>
+      <a class="cta" href="#licensing">Buy web + motion</a>
+    </div>
+    <div class="tier">
+      <h3>Everything</h3>
+      <div class="amt">$690<small> once</small></div>
+      <ul>
+        <li>All 4 families, all future releases</li>
+        <li>App-embedding &amp; broadcast rights</li>
+        <li>Unlimited traffic, unlimited seats</li>
+        <li>Source-file access on request</li>
+      </ul>
+      <a class="cta" href="#licensing">Buy everything</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="sec-label">05 / The foundry</div>
+  <p class="about-body reveal">
+    <span class="rline"><span>Kinetic was founded on one</span></span>
+    <span class="rline"><span><span class="kw">stubborn</span> belief: a letterform is</span></span>
+    <span class="rline"><span>not a picture, it is a <span class="kw">behaviour</span>.</span></span>
+  </p>
+  <p class="about-body reveal" style="margin-top:1.4em;font-size:clamp(16px,1.6vw,20px);max-width:56ch;font-variation-settings:'opsz' 20,'wght' 440,'SOFT' 20,'WONK' 0;line-height:1.6">
+    Founded by Mara Ilves and Deon Okafor in a former printing house on the Maashaven, Kinetic drew masters for interpolation before drawing single weights. Every family is designed axis-first: we sketch the extremes, then engineer the journey between them. If a face can't survive being animated, it doesn't ship.
+  </p>
+  <div class="about-facts">
+    <div class="fact"><div class="n" data-count="22">0</div><div class="l">Named styles across 4 files</div></div>
+    <div class="fact"><div class="n" data-count="217">0</div><div class="l">Design-axis units, end to end</div></div>
+    <div class="fact"><div class="n" data-count="1400">0</div><div class="l">Glyphs per family, latin ext.</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-word" id="footWord" aria-label="KINETIC"></div>
+  <div class="foot-cols">
+    <div>
+      <h4>Kinetic Type Foundry</h4>
+      <p>Maashaven O.Z. 144, 3072 HS Rotterdam<br>
+      241 Smith Street, Fitzroy VIC 3065<br>
+      hello@kinetic.foundry · trials on request</p>
+    </div>
+    <div>
+      <h4>Catalogue</h4>
+      <a href="#faces">Molt</a>
+      <a href="#faces">Vantage</a>
+      <a href="#faces">Softshell</a>
+      <a href="#faces">Wonk</a>
+    </div>
+    <div>
+      <h4>Foundry</h4>
+      <a href="#about">About</a>
+      <a href="#licensing">Licensing</a>
+      <a href="#playground">Playground</a>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+  <div class="credit">
+    <span>© 2026 Kinetic Type Foundry. All letterforms in motion.</span>
+    <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- split hero + footer words into letter spans ---- */
+  function splitWord(el, word){
+    el.innerHTML = '';
+    [...word].forEach((ch,i)=>{
+      const s = document.createElement('span');
+      s.textContent = ch;
+      s.style.setProperty('--i', i);
+      el.appendChild(s);
+    });
+  }
+  splitWord(document.getElementById('heroWord'),'KINETIC');
+  splitWord(document.getElementById('footWord'),'KINETIC');
+
+  /* ---- hero cursor proximity: letters swell near the pointer ---- */
+  const heroSpans = [...document.querySelectorAll('#heroWord span')];
+  if(!reduced){
+    let mx=-9999,my=-9999,heroRaf=null;
+    window.addEventListener('pointermove',e=>{
+      mx=e.clientX;my=e.clientY;
+      if(!heroRaf){heroRaf=requestAnimationFrame(heroTick);}
+    },{passive:true});
+    function heroTick(){
+      heroRaf=null;
+      heroSpans.forEach(s=>{
+        const r=s.getBoundingClientRect();
+        if(r.bottom<0||r.top>innerHeight)return;
+        const cx=r.left+r.width/2, cy=r.top+r.height/2;
+        const d=Math.hypot(mx-cx,my-cy);
+        const max=280;
+        if(d<max){
+          const t=1-d/max; // 0..1
+          s.style.animationPlayState='paused';
+          s.style.fontVariationSettings=`'wdth' ${100+t*25}, 'wght' ${900-t*0}`;
+          s.style.color = t>0.72 ? '#0026ff' : '';
+        }else{
+          s.style.animationPlayState='';
+          s.style.fontVariationSettings='';
+          s.style.color='';
+        }
+      });
+    }
+  }
+
+  /* ---- ticker ---- */
+  const phrases=['Variable or nothing','Molt · display serif','Vantage · grotesk 62–125','Softshell · SOFT 0–100','Wonk · crooked italics','New: Vantage Hairline','Trials free for 30 days','Letters are behaviours'];
+  const track=document.getElementById('tickerTrack');
+  const half=phrases.map(p=>`<span>${p}</span>`).join('');
+  track.innerHTML=half+half;
+
+  /* ---- reveal on view ---- */
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('inview'); io.unobserve(e.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal, .faces-grid').forEach(el=>io.observe(el));
+
+  /* ---- scroll-driven kinetic studies ---- */
+  const cascade=document.getElementById('w-cascade');
+  splitWord(cascade,'CASCADE');
+  const cascadeSpans=[...cascade.children];
+  const stretch=document.getElementById('w-stretch');
+  const weight=document.getElementById('w-weight');
+  const sliceTop=document.querySelector('.slice-top');
+  const sliceBot=document.querySelector('.slice-bot');
+
+  function progressOf(el){
+    const r=el.getBoundingClientRect();
+    const vh=innerHeight;
+    // 0 when element top hits bottom of viewport, 1 when element bottom hits top... use center travel
+    const p=(vh - r.top) / (vh + r.height);
+    return Math.min(1,Math.max(0,p));
+  }
+  const ease = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+
+  let ticking=false;
+  function kineticTick(){
+    ticking=false;
+    let p;
+    p=ease(progressOf(stretch));
+    stretch.style.fontVariationSettings=`'wdth' ${62+p*63}, 'wght' 900`;
+
+    p=ease(progressOf(weight));
+    weight.style.fontVariationSettings=`'opsz' 144, 'wght' ${100+p*800}, 'SOFT' 0, 'WONK' 0`;
+
+    p=progressOf(cascade);
+    cascadeSpans.forEach((s,i)=>{
+      const lp=Math.min(1,Math.max(0,(p-0.15)-i*0.045)/0.35);
+      const e=ease(Math.min(1,Math.max(0,lp)));
+      s.style.transform=`translateY(${(1-e)*110}%) rotate(${(1-e)*(i%2?9:-9)}deg)`;
+      s.style.opacity=e;
+    });
+
+    p=ease(progressOf(sliceTop.parentElement));
+    const spread=(1-Math.sin(p*Math.PI))*10; // % shear, 0 at mid-viewport
+    sliceTop.style.transform=`translateX(${-spread}%)`;
+    sliceBot.style.transform=`translateX(${spread}%)`;
+  }
+  function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(kineticTick);} }
+  if(!reduced){
+    window.addEventListener('scroll',onScroll,{passive:true});
+    kineticTick();
+  }else{
+    stretch.style.fontVariationSettings="'wdth' 100, 'wght' 900";
+    weight.style.fontVariationSettings="'opsz' 144, 'wght' 700";
+    cascadeSpans.forEach(s=>{s.style.opacity=1;s.style.transform='none';});
+  }
+
+  /* ---- specimen playground ---- */
+  const stage=document.getElementById('pgStage');
+  const word=document.getElementById('pgWord');
+  const dot=document.getElementById('pgCursor');
+  const roW=document.getElementById('roWght');
+  const roA=document.getElementById('roAxis2');
+  const roAWrap=document.getElementById('roAxis2Wrap');
+  const faces={
+    molt:{family:"'Fraunces',serif",italic:false,axis2:'opsz',a2min:9,a2max:144,extra:", 'SOFT' 0, 'WONK' 0"},
+    softshell:{family:"'Fraunces',serif",italic:false,axis2:'SOFT',a2min:0,a2max:100,extra:", 'opsz' 100, 'WONK' 0"},
+    wonk:{family:"'Fraunces',serif",italic:true,axis2:'opsz',a2min:9,a2max:144,extra:", 'SOFT' 40, 'WONK' 1"},
+    vantage:{family:"'Archivo',sans-serif",italic:false,axis2:'wdth',a2min:62,a2max:125,extra:""}
+  };
+  let cur=faces.molt;
+  function applyPG(x,y){
+    const r=stage.getBoundingClientRect();
+    const px=Math.min(1,Math.max(0,(x-r.left)/r.width));
+    const py=Math.min(1,Math.max(0,(y-r.top)/r.height));
+    const w=Math.round(100+px*800);
+    const a2=Math.round(cur.a2min+(1-py)*(cur.a2max-cur.a2min));
+    word.style.fontVariationSettings=`'wght' ${w}, '${cur.axis2}' ${a2}${cur.extra}`;
+    roW.textContent=w;
+    roA.textContent=a2;
+    dot.style.left=(x-r.left)+'px';
+    dot.style.top=(y-r.top)+'px';
+  }
+  stage.addEventListener('pointermove',e=>{ if(!reduced) applyPG(e.clientX,e.clientY); },{passive:true});
+  document.querySelectorAll('[data-pgface]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-pgface]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      cur=faces[btn.dataset.pgface];
+      word.style.fontFamily=cur.family;
+      word.style.fontStyle=cur.italic?'italic':'normal';
+      roAWrap.firstChild.textContent=cur.axis2+' ';
+      word.style.fontVariationSettings=`'wght' 500, '${cur.axis2}' ${Math.round((cur.a2min+cur.a2max)/2)}${cur.extra}`;
+    });
+  });
+  const samples=['Rhubarb','Quixotic','Gnarled','Zephyr','Fjordland','Maelstrom','Bricolage','Hexadecimal','Vermilion','Kinetics'];
+  let si=0;
+  document.getElementById('pgShuffle').addEventListener('click',()=>{
+    si=(si+1)%samples.length;
+    word.textContent=samples[si];
+  });
+  // keep the word to one line-ish: strip newlines on input
+  word.addEventListener('input',()=>{
+    if(word.textContent.length>16) word.textContent=word.textContent.slice(0,16);
+    if(/\n/.test(word.textContent)) word.textContent=word.textContent.replace(/\n/g,'');
+  });
+
+  /* ---- easter egg: type "blue" in the playground → volt inversion ---- */
+  word.addEventListener('input',()=>{
+    if(word.textContent.trim().toLowerCase()==='blue'){
+      document.documentElement.style.setProperty('--paper','#0026ff');
+      document.documentElement.style.setProperty('--volt','#ffffff');
+      setTimeout(()=>{
+        document.documentElement.style.setProperty('--paper','#ffffff');
+        document.documentElement.style.setProperty('--volt','#0026ff');
+      },2200);
+    }
+  });
+
+  /* ---- counters ---- */
+  const cio=new IntersectionObserver(es=>{
+    es.forEach(en=>{
+      if(!en.isIntersecting)return;
+      cio.unobserve(en.target);
+      const el=en.target,end=+el.dataset.count,t0=performance.now(),dur=reduced?1:1400;
+      (function step(t){
+        const p=Math.min(1,(t-t0)/dur);
+        el.textContent=Math.round(end*(1-Math.pow(1-p,3))).toLocaleString();
+        if(p<1)requestAnimationFrame(step);
+      })(t0);
+    });
+  },{threshold:.6});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+})();
+</script>
+</body>
+</html>

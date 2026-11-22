@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "RUBRIC References",
+  "description": "One click saves the site you are on (screenshot + plain-English blurb + tags) to your RUBRIC References inspo wall.",
+  "version": "1.1.0",
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
+  "action": { "default_title": "Save this site to RUBRIC References", "default_popup": "popup.html" },
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://127.0.0.1:5298/*", "http://localhost:5298/*"]
+}

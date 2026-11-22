@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELVETIA 26 · International Congress of Typography &amp; Grid Systems · Basel</title>
+<meta name="description" content="HELVETIA 26 - the International Congress of Typography and Grid Systems. Three days of Swiss precision in Basel, 12 to 14 March 2027. Manifesto, speakers, schedule, tickets.">
+<meta name="theme-color" content="#FF0000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FF0000'/%3E%3Cpath d='M14 12h10v16h16V12h10v40H40V38H24v14H14z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900&family=Archivo+Black&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#FFFFFF;
+  --black:#0A0A0A;
+  --red:#FF0000;
+  --line:rgba(10,10,10,.14);
+  --unit:8px;
+  --gutter:clamp(16px,2.5vw,32px);
+  --pad:clamp(20px,4vw,64px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--white);
+  color:var(--black);
+  font-size:15px;
+  line-height:1.5;
+  letter-spacing:-0.01em;
+  overflow-x:hidden;
+}
+::selection{background:var(--red);color:var(--white)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;background:none;border:none;cursor:pointer;color:inherit}
+
+/* ---------- exposed grid overlay ---------- */
+#gridOverlay{
+  position:fixed;inset:0;z-index:9000;pointer-events:none;
+  opacity:0;transition:opacity .35s cubic-bezier(.22,1,.36,1);
+}
+body.grid-on #gridOverlay{opacity:1}
+#gridOverlay .cols{
+  position:absolute;inset:0;
+  margin:0 var(--pad);
+  display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);
+}
+#gridOverlay .cols i{background:rgba(255,0,0,.06);border-left:1px solid rgba(255,0,0,.35);border-right:1px solid rgba(255,0,0,.35)}
+#gridOverlay .baseline{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent 23px,rgba(255,0,0,.25) 23px,rgba(255,0,0,.25) 24px);
+}
+#gridOverlay .tag{
+  position:fixed;bottom:12px;left:var(--pad);
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;
+  color:var(--red);background:var(--white);border:1px solid var(--red);padding:4px 8px;
+}
+
+/* ---------- header ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:stretch;justify-content:space-between;
+  background:var(--white);border-bottom:2px solid var(--black);
+  height:56px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  padding:0 var(--pad);
+  font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-.02em;
+  border-right:1px solid var(--line);
+  user-select:none;cursor:pointer;
+}
+.logo .sq{width:14px;height:14px;background:var(--red);flex:none}
+nav{display:flex;align-items:stretch}
+nav a,nav button{
+  display:flex;align-items:center;padding:0 clamp(10px,1.6vw,22px);
+  font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  border-left:1px solid var(--line);
+  transition:background .15s,color .15s;
+}
+nav a:hover,nav button:hover{background:var(--black);color:var(--white)}
+nav .ticketsLink{background:var(--red);color:var(--white)}
+nav .ticketsLink:hover{background:var(--black)}
+#gridBtn[aria-pressed="true"]{background:var(--red);color:var(--white)}
+.coords{
+  display:flex;align-items:center;padding:0 14px;border-left:1px solid var(--line);
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:500;letter-spacing:.08em;color:var(--red);
+  min-width:118px;justify-content:flex-end;font-variant-numeric:tabular-nums;
+}
+@media(max-width:760px){
+  nav a.hideM{display:none}
+  .coords{display:none}
+  .logo{border-right:none}
+}
+
+/* ---------- shared section scaffolding ---------- */
+.section{padding:0 var(--pad);border-bottom:2px solid var(--black);position:relative}
+.sec-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:20px 0;border-bottom:1px solid var(--line);
+  font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+}
+.sec-head .no{color:var(--red)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+</style>
+<style>
+/* ---------- hero ---------- */
+.hero{
+  min-height:100svh;
+  padding:calc(56px + clamp(24px,5vh,64px)) var(--pad) 0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  border-bottom:2px solid var(--black);
+  position:relative;overflow:hidden;
+}
+.hero-meta{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);
+  font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  padding-bottom:16px;border-bottom:1px solid var(--line);
+}
+.hero-meta div{grid-column:span 3}
+.hero-meta .lbl{color:var(--red);display:block;margin-bottom:4px;font-size:9px}
+.hero-title{
+  font-family:'Archivo Black',sans-serif;
+  font-size:clamp(64px,17.5vw,264px);
+  line-height:.84;letter-spacing:-.045em;
+  text-transform:uppercase;
+  margin:clamp(16px,4vh,48px) 0 0 -0.06em;
+  user-select:none;
+}
+.hero-title .row{display:flex;align-items:baseline;white-space:nowrap}
+.hero-title .row.r2{justify-content:flex-end}
+.hero-title .ch{display:inline-block;transform:translateY(110%);animation:dropIn .9s cubic-bezier(.16,1,.3,1) forwards}
+.hero-title .row{overflow:hidden}
+@keyframes dropIn{to{transform:translateY(0)}}
+.hero-title .red{color:var(--red)}
+@media (prefers-reduced-motion:reduce){.hero-title .ch{animation:none;transform:none}}
+.hero-sub{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);
+  padding:clamp(20px,4vh,40px) 0;
+  align-items:end;
+}
+.hero-sub .claim{
+  grid-column:1/span 6;
+  font-family:'Archivo',sans-serif;font-weight:500;
+  font-size:clamp(16px,1.8vw,24px);line-height:1.25;letter-spacing:-.02em;max-width:34ch;
+}
+.hero-sub .num26{
+  grid-column:9/span 4;justify-self:end;
+  font-family:'Archivo Black',sans-serif;
+  font-size:clamp(96px,13vw,200px);line-height:.8;letter-spacing:-.04em;color:var(--red);
+  font-variant-numeric:tabular-nums;cursor:pointer;
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+}
+.hero-sub .num26:hover{transform:scaleY(1.06)}
+.hero-scroll{
+  grid-column:7/span 3;align-self:end;padding-bottom:6px;white-space:nowrap;
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--red);
+}
+.hero-scroll::before{content:"↓";display:inline-block;margin-right:8px;animation:nudge 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@media (prefers-reduced-motion:reduce){.hero-scroll::before{animation:none}}
+@media(max-width:760px){
+  .hero-meta div{grid-column:span 6}
+  .hero-meta div:nth-child(n+3){margin-top:12px}
+  .hero-sub .claim{grid-column:1/-1}
+  .hero-sub .num26{grid-column:1/-1;justify-self:start;margin-top:16px}
+  .hero-scroll{display:none}
+}
+
+/* ---------- marquee ---------- */
+.marquee{
+  border-bottom:2px solid var(--black);
+  background:var(--black);color:var(--white);
+  overflow:hidden;white-space:nowrap;padding:14px 0;
+}
+.marquee.red{background:var(--red);border-bottom:2px solid var(--black)}
+.marquee .track{
+  display:inline-flex;gap:0;
+  animation:slide 22s linear infinite;will-change:transform;
+}
+.marquee.rev .track{animation-direction:reverse}
+@keyframes slide{to{transform:translateX(-50%)}}
+.marquee span{
+  font-family:'Archivo Black',sans-serif;font-size:clamp(16px,2vw,26px);
+  letter-spacing:.02em;text-transform:uppercase;padding-right:.75em;
+}
+.marquee .dot{color:var(--red)}
+.marquee.red .dot{color:var(--black)}
+@media (prefers-reduced-motion:reduce){.marquee .track{animation:none}}
+
+/* ---------- manifesto ---------- */
+.mani-item{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);
+  padding:clamp(28px,5vh,56px) 0;border-bottom:1px solid var(--line);
+  transition:background .2s,color .2s;cursor:crosshair;
+}
+.mani-item:last-child{border-bottom:none}
+.mani-item:hover{background:var(--black);color:var(--white)}
+.mani-item:hover .mani-no{color:var(--red)}
+.mani-no{
+  grid-column:1/span 2;
+  font-family:'Archivo Black',sans-serif;font-size:clamp(24px,3vw,44px);line-height:1;color:var(--red);
+  font-variant-numeric:tabular-nums;
+}
+.mani-txt{
+  grid-column:3/span 9;
+  font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+  font-size:clamp(26px,4.6vw,72px);line-height:.98;letter-spacing:-.03em;
+}
+.mani-txt em{font-style:normal;color:var(--red)}
+@media(max-width:760px){
+  .mani-no{grid-column:1/-1;margin-bottom:8px}
+  .mani-txt{grid-column:1/-1}
+}
+</style>
+<style>
+/* ---------- speakers ---------- */
+.spk-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-left:1px solid var(--line);
+}
+.spk{
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:22px 18px 18px;min-height:260px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+  transition:background .18s,color .18s;
+}
+.spk:hover{background:var(--black);color:var(--white)}
+.spk .mono{
+  font-family:'Archivo Black',sans-serif;
+  font-size:clamp(56px,6vw,104px);line-height:.8;letter-spacing:-.05em;
+  color:var(--red);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.spk:hover .mono{transform:translateX(6px) skewX(-6deg)}
+.spk .idx{
+  position:absolute;top:16px;right:16px;
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--red);
+}
+.spk h3{
+  font-family:'Archivo',sans-serif;font-weight:700;font-size:clamp(15px,1.3vw,19px);
+  letter-spacing:-.01em;line-height:1.15;margin-top:auto;text-transform:uppercase;
+}
+.spk .city{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:4px 0 8px}
+.spk p{font-size:12.5px;line-height:1.45;opacity:.72;max-width:30ch}
+@media(max-width:1000px){.spk-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.spk-grid{grid-template-columns:1fr}.spk{min-height:0}}
+
+/* ---------- schedule ---------- */
+.day-tabs{display:flex;border-bottom:1px solid var(--line)}
+.day-tabs button{
+  flex:1;padding:16px 8px;
+  font-family:'Archivo Black',sans-serif;font-size:clamp(13px,1.6vw,20px);text-transform:uppercase;letter-spacing:-.01em;
+  border-right:1px solid var(--line);
+  transition:background .15s,color .15s;
+}
+.day-tabs button:last-child{border-right:none}
+.day-tabs button:hover{background:var(--black);color:var(--white)}
+.day-tabs button[aria-selected="true"]{background:var(--red);color:var(--white)}
+.sched{display:none}
+.sched.active{display:block}
+.slot{
+  display:grid;grid-template-columns:110px 90px 1fr auto;gap:var(--gutter);
+  align-items:baseline;
+  padding:18px 0;border-bottom:1px solid var(--line);
+  transition:background .15s,color .15s;
+}
+.slot:hover{background:var(--black);color:var(--white)}
+.slot:hover .time{color:var(--red)}
+.slot .time{font-family:'Archivo Black',sans-serif;font-size:clamp(14px,1.4vw,18px);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.slot .kind{font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.slot .what{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(14px,1.4vw,17px);letter-spacing:-.01em}
+.slot .what small{display:block;font-weight:400;font-family:'Inter',sans-serif;font-size:12px;opacity:.68;margin-top:2px}
+.slot .room{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
+@media(max-width:760px){
+  .day-tabs{flex-direction:column}
+  .day-tabs button{border-right:none;border-bottom:1px solid var(--line);text-align:left;padding:14px 0}
+  .day-tabs button:last-child{border-bottom:none}
+  .slot{grid-template-columns:70px 1fr;row-gap:4px}
+  .slot .kind{grid-column:2;order:-1}
+  .slot .what{grid-column:1/-1}
+  .slot .room{grid-column:1/-1}
+}
+
+/* ---------- tickets ---------- */
+.tix{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--line)}
+.tik{
+  border-right:1px solid var(--line);padding:28px 22px 26px;
+  display:flex;flex-direction:column;gap:14px;min-height:380px;
+  transition:background .18s,color .18s;position:relative;
+}
+.tik:hover{background:var(--black);color:var(--white)}
+.tik.pat{background:var(--red);color:var(--white)}
+.tik.pat:hover{background:var(--black)}
+.tik .tier{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+.tik .price{
+  font-family:'Archivo Black',sans-serif;font-size:clamp(44px,5vw,76px);line-height:.9;letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;
+}
+.tik .price small{font-size:.32em;letter-spacing:0;vertical-align:top}
+.tik ul{list-style:none;font-size:13px;line-height:1.5;display:grid;gap:8px;margin-top:4px}
+.tik li{padding-left:18px;position:relative}
+.tik li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;background:var(--red)}
+.tik.pat li::before{background:var(--white)}
+.tik.pat:hover li::before{background:var(--red)}
+.tik .buy{
+  margin-top:auto;display:block;text-align:center;
+  border:2px solid currentColor;padding:13px 10px;
+  font-family:'Archivo',sans-serif;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.tik .buy:hover{background:var(--red);border-color:var(--red);color:var(--white)}
+@media(max-width:900px){.tix{grid-template-columns:1fr}.tik{min-height:0;border-bottom:1px solid var(--line)}}
+
+/* ---------- venue strip ---------- */
+.venue{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);padding:clamp(32px,6vh,64px) 0}
+.venue h2{grid-column:1/span 5;font-family:'Archivo Black',sans-serif;font-size:clamp(30px,4vw,58px);line-height:.95;letter-spacing:-.03em;text-transform:uppercase}
+.venue h2 span{color:var(--red)}
+.venue .vmeta{grid-column:7/span 6;display:grid;grid-template-columns:1fr 1fr;gap:var(--gutter);align-content:start}
+.venue .vmeta div{border-top:2px solid var(--black);padding-top:10px}
+.venue .vmeta .lbl{font-family:'Archivo',sans-serif;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:4px}
+.venue .vmeta p{font-family:'Archivo',sans-serif;font-weight:600;font-size:14px;line-height:1.35}
+@media(max-width:760px){.venue h2{grid-column:1/-1}.venue .vmeta{grid-column:1/-1;margin-top:20px}}
+
+/* ---------- footer ---------- */
+footer{background:var(--black);color:var(--white);padding:0 var(--pad)}
+.foot-big{
+  font-family:'Archivo Black',sans-serif;
+  font-size:clamp(48px,13vw,200px);line-height:.84;letter-spacing:-.045em;text-transform:uppercase;
+  padding:clamp(32px,7vh,72px) 0 0;margin-left:-.05em;
+  color:var(--white);user-select:none;
+}
+.foot-big span{color:var(--red)}
+.foot-grid{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);
+  padding:clamp(28px,5vh,48px) 0;border-bottom:1px solid rgba(255,255,255,.2);
+  font-family:'Archivo',sans-serif;font-size:12px;font-weight:500;letter-spacing:.04em;
+}
+.foot-grid div{grid-column:span 3}
+.foot-grid .lbl{display:block;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.foot-grid a{display:block;padding:2px 0;opacity:.85}
+.foot-grid a:hover{color:var(--red);opacity:1}
+.foot-legal{
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:18px 0 22px;
+  font-size:11px;letter-spacing:.04em;opacity:.65;font-family:'Archivo',sans-serif;
+}
+.foot-legal a{text-decoration:underline;text-underline-offset:3px}
+.foot-legal a:hover{color:var(--red)}
+@media(max-width:760px){.foot-grid div{grid-column:span 6;margin-bottom:12px}}
+
+/* inverted easter-egg mode */
+body.inv{background:var(--black);color:var(--white)}
+body.inv header{background:var(--black);color:var(--white);border-bottom-color:var(--white)}
+body.inv .section{border-bottom-color:var(--white)}
+body.inv .mani-item:hover,body.inv .spk:hover,body.inv .slot:hover,body.inv .tik:hover{background:var(--white);color:var(--black)}
+body.inv nav a:hover,body.inv nav button:hover{background:var(--white);color:var(--black)}
+body.inv .hero{border-bottom-color:var(--white)}
+</style>
+<style>
+/* ---------- scroll progress ---------- */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--red);z-index:1200}
+
+/* ---------- type specimen ---------- */
+.specimen{padding-bottom:0;cursor:ew-resize}
+.spec-line{
+  font-family:'Archivo',sans-serif;
+  font-weight:900;font-stretch:125%;
+  font-size:clamp(18px,5.8vw,92px);
+  line-height:1.02;letter-spacing:-.04em;text-transform:uppercase;
+  padding:clamp(28px,6vh,64px) 0;
+  white-space:nowrap;overflow:hidden;
+  font-variation-settings:'wght' var(--sw,900),'wdth' var(--sd,125);
+  transition:font-variation-settings .12s linear;
+  user-select:none;
+}
+.spec-meta{
+  display:flex;justify-content:space-between;gap:16px;
+  padding:0 0 20px;
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);font-variant-numeric:tabular-nums;
+}
+@media (prefers-reduced-motion:reduce){.spec-line{transition:none}}
+
+/* ---------- stats band ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line)}
+.stat{
+  border-right:1px solid var(--line);padding:26px 20px 22px;
+  transition:background .18s,color .18s;
+}
+.stat:hover{background:var(--red);color:var(--white)}
+.stat b{
+  display:block;font-family:'Archivo Black',sans-serif;
+  font-size:clamp(40px,4.6vw,72px);line-height:.9;letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;
+}
+.stat span{
+  display:block;margin-top:10px;
+  font-family:'Archivo',sans-serif;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.stat{border-bottom:1px solid var(--line)}}
+
+/* ---------- pass-2 micro-interactions ---------- */
+.marquee:hover .track{animation-play-state:paused}
+.hero-title .ch:hover{color:var(--red)}
+.slot{border-left:0 solid var(--red);transition:background .15s,color .15s,border-left-width .18s cubic-bezier(.22,1,.36,1),padding-left .18s cubic-bezier(.22,1,.36,1)}
+.slot:hover{border-left-width:6px;padding-left:14px}
+.spk::after{
+  content:"";position:absolute;right:0;bottom:0;width:10px;height:10px;background:var(--red);
+  transform:scale(0);transform-origin:100% 100%;transition:transform .25s cubic-bezier(.22,1,.36,1);
+}
+.spk:hover::after{transform:scale(1)}
+.spk h3{position:relative;display:inline-block}
+.spk h3::after{content:"";position:absolute;left:0;bottom:-3px;height:2px;width:0;background:var(--red);transition:width .3s cubic-bezier(.22,1,.36,1)}
+.spk:hover h3::after{width:100%}
+.foot-big .fl{display:inline-block;color:var(--white);transition:transform .25s cubic-bezier(.34,1.56,.64,1),color .2s;cursor:default}
+.foot-big .fl:hover{transform:translateY(-.08em);color:var(--red)}
+@media (prefers-reduced-motion:reduce){.foot-big .fl,.slot{transition:none}}
+
+/* red corner registration marks on sections */
+.section::before{
+  content:"";position:absolute;top:-1px;left:calc(var(--pad) - 9px);
+  width:8px;height:8px;
+  background:
+    linear-gradient(var(--red),var(--red)) center/8px 1px no-repeat,
+    linear-gradient(var(--red),var(--red)) center/1px 8px no-repeat;
+  opacity:.9;pointer-events:none;
+}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<div id="gridOverlay" aria-hidden="true">
+  <div class="baseline"></div>
+  <div class="cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="tag" id="gridTag">GRID · 12 COL / 24PX BASELINE · Y 0000 · [G]</div>
+</div>
+
+<header>
+  <a class="logo" href="#top" id="logoBtn" title="Double-click to invert">
+    <span class="sq"></span>HELVETIA<span style="color:var(--red)">26</span>
+  </a>
+  <nav>
+    <a href="#manifesto" class="hideM">Manifesto</a>
+    <a href="#speakers" class="hideM">Speakers</a>
+    <a href="#schedule" class="hideM">Schedule</a>
+    <button id="gridBtn" aria-pressed="false" title="Toggle grid (G)">Grid</button>
+    <a href="#tickets" class="ticketsLink">Tickets</a>
+  </nav>
+  <div class="coords" id="coords">X 0000 · Y 0000</div>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-meta">
+    <div><span class="lbl">Congress</span>International Congress of Typography &amp; Grid Systems</div>
+    <div><span class="lbl">Dates</span>12 – 14 March 2027</div>
+    <div><span class="lbl">Venue</span>Messe Basel, Hall 3, Basel CH</div>
+    <div><span class="lbl">Edition</span>No. 26 / Since 2001</div>
+  </div>
+  <h1 class="hero-title" aria-label="HELVETIA">
+    <span class="row r1" id="heroRow1"></span>
+    <span class="row r2" id="heroRow2"></span>
+  </h1>
+  <div class="hero-sub">
+    <p class="claim">Three days on the discipline of the grid. No decoration. No noise. Only type, space, and the courage to leave both alone.</p>
+    <div class="hero-scroll">Scroll · Ordnung muss sein</div>
+    <div class="num26" id="num26" title="Edition 26 · click to expose the grid">26</div>
+  </div>
+</section>
+
+<!-- MARQUEE 1 -->
+<div class="marquee" aria-hidden="true">
+  <div class="track" id="mq1"></div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="section" id="manifesto">
+  <div class="sec-head"><span class="no">01</span><span>Manifesto / Five Theses on Order</span><span>Basel, 2027</span></div>
+  <div class="mani-item rv">
+    <div class="mani-no">§1</div>
+    <div class="mani-txt">The grid is not a cage. It is <em>gravity.</em></div>
+  </div>
+  <div class="mani-item rv">
+    <div class="mani-no">§2</div>
+    <div class="mani-txt">Whitespace is not empty. It is <em>load-bearing.</em></div>
+  </div>
+  <div class="mani-item rv">
+    <div class="mani-no">§3</div>
+    <div class="mani-txt">One typeface, two weights, <em>zero excuses.</em></div>
+  </div>
+  <div class="mani-item rv">
+    <div class="mani-no">§4</div>
+    <div class="mani-txt">Alignment is a moral position. <em>Centre nothing.</em></div>
+  </div>
+  <div class="mani-item rv">
+    <div class="mani-no">§5</div>
+    <div class="mani-txt">If it needs an ornament, <em>it has failed.</em></div>
+  </div>
+</section>
+
+<!-- TYPE SPECIMEN -->
+<section class="section specimen" id="specimen">
+  <div class="sec-head"><span class="no">02</span><span>Specimen / Drag Your Cursor Across the Line</span><span>Archivo Variable</span></div>
+  <div class="spec-line" id="specLine">Grotesk ist Haltung</div>
+  <div class="spec-meta"><span id="specW">WGHT 900</span><span>OPTICAL AXIS LIVE</span><span id="specD">WDTH 125</span></div>
+</section>
+
+<!-- SPEAKERS -->
+<section class="section" id="speakers">
+  <div class="sec-head"><span class="no">03</span><span>Speakers / Twelve Voices, One Grid</span><span>Hall 3</span></div>
+  <div class="spk-grid">
+    <article class="spk rv"><span class="idx">01</span><div class="mono">MB</div><div><h3>Margarethe Brenner</h3><div class="city">Zürich</div><p>Custodian of the Zürich School archive. Opens the congress on why the 1957 grid still wins.</p></div></article>
+    <article class="spk rv"><span class="idx">02</span><div class="mono">KO</div><div><h3>Kenji Okabe</h3><div class="city">Tokyo</div><p>Sets Latin grotesks against kanji grids at Studio Jiku. Speaks on bilingual baseline systems.</p></div></article>
+    <article class="spk rv"><span class="idx">03</span><div class="mono">AF</div><div><h3>Astrid Feldmann</h3><div class="city">Basel</div><p>Type director, Bahnhof Foundry. Releasing "Rheinsans" live on stage, all 18 weights at once.</p></div></article>
+    <article class="spk rv"><span class="idx">04</span><div class="mono">DL</div><div><h3>Dieter Lang</h3><div class="city">Bern</div><p>Signage engineer behind the Swiss federal wayfinding refresh. Talk: legibility at 120 km/h.</p></div></article>
+    <article class="spk rv"><span class="idx">05</span><div class="mono">PC</div><div><h3>Paloma Cruz</h3><div class="city">Barcelona</div><p>Editorial systems lead at La Cuadrícula. Argues the newspaper grid was the first API.</p></div></article>
+    <article class="spk rv"><span class="idx">06</span><div class="mono">RS</div><div><h3>Rutger Smit</h3><div class="city">Amsterdam</div><p>Ex-airline identity chief. On flying one typeface across 214 airports without breaking it.</p></div></article>
+    <article class="spk rv"><span class="idx">07</span><div class="mono">IV</div><div><h3>Ilse Vogt</h3><div class="city">Geneva</div><p>Historian of the International Style. Presents unseen Müller-Brockmann poster proofs.</p></div></article>
+    <article class="spk rv"><span class="idx">08</span><div class="mono">TN</div><div><h3>Théo Nguyen</h3><div class="city">Lausanne</div><p>ECAL researcher rendering baseline grids in WebGL. Live-codes a poster in 20 minutes.</p></div></article>
+    <article class="spk rv"><span class="idx">09</span><div class="mono">GK</div><div><h3>Greta Kaufmann</h3><div class="city">Munich</div><p>Runs the strictest brand programme in German rail. Zero exceptions granted since 2019.</p></div></article>
+    <article class="spk rv"><span class="idx">10</span><div class="mono">SB</div><div><h3>Samuel Baume</h3><div class="city">La Chaux-de-Fonds</div><p>Watch-dial typographer. On kerning at four millimetres and why seconds deserve serifs. They don't.</p></div></article>
+    <article class="spk rv"><span class="idx">11</span><div class="mono">EW</div><div><h3>Edith Wyss</h3><div class="city">St. Gallen</div><p>Book designer, 41 Swiss Design Award entries. Closing keynote: the spread as architecture.</p></div></article>
+    <article class="spk rv"><span class="idx">12</span><div class="mono">JM</div><div><h3>Jonas Meier</h3><div class="city">Basel</div><p>Congress chair. Moderates every panel with a stopwatch and no mercy for overruns.</p></div></article>
+  </div>
+</section>
+
+<!-- MARQUEE 2 -->
+<div class="marquee red rev" aria-hidden="true">
+  <div class="track" id="mq2"></div>
+</div>
+
+<!-- SCHEDULE -->
+<section class="section" id="schedule">
+  <div class="sec-head"><span class="no">04</span><span>Schedule / Punctuality Is Part of the Programme</span><span>CET</span></div>
+  <div class="day-tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-day="d1">Fri 12.03 / Structure</button>
+    <button role="tab" aria-selected="false" data-day="d2">Sat 13.03 / Letterform</button>
+    <button role="tab" aria-selected="false" data-day="d3">Sun 14.03 / Practice</button>
+  </div>
+  <div class="sched active" id="d1">
+    <div class="slot"><span class="time">08:30</span><span class="kind">Doors</span><span class="what">Registration &amp; black coffee<small>Badges set in 8pt Archivo. No lanyard exceptions.</small></span><span class="room">Foyer</span></div>
+    <div class="slot"><span class="time">09:00</span><span class="kind">Keynote</span><span class="what">The 1957 Grid Still Wins<small>Margarethe Brenner / opening address</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">10:45</span><span class="kind">Talk</span><span class="what">The Newspaper Grid Was the First API<small>Paloma Cruz</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">13:30</span><span class="kind">Panel</span><span class="what">Whitespace Economics<small>Vogt · Smit · Kaufmann / chaired by Jonas Meier</small></span><span class="room">Saal B</span></div>
+    <div class="slot"><span class="time">16:00</span><span class="kind">Workshop</span><span class="what">Setting a Poster With Only Two Sizes<small>Bring nothing. Everything is provided, in duplicate.</small></span><span class="room">Atelier 1</span></div>
+    <div class="slot"><span class="time">19:00</span><span class="kind">Social</span><span class="what">Apéro at the Rhine<small>Strictly aligned rows of white wine.</small></span><span class="room">Terrasse</span></div>
+  </div>
+  <div class="sched" id="d2">
+    <div class="slot"><span class="time">09:00</span><span class="kind">Launch</span><span class="what">Rheinsans / 18 Weights, Live<small>Astrid Feldmann, Bahnhof Foundry</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">10:30</span><span class="kind">Talk</span><span class="what">Bilingual Baselines: Latin × Kanji<small>Kenji Okabe</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">13:00</span><span class="kind">Demo</span><span class="what">Live-Coding a Poster in WebGL<small>Théo Nguyen / 20 minutes, timed on stage</small></span><span class="room">Saal B</span></div>
+    <div class="slot"><span class="time">15:00</span><span class="kind">Talk</span><span class="what">Kerning at Four Millimetres<small>Samuel Baume</small></span><span class="room">Saal B</span></div>
+    <div class="slot"><span class="time">17:30</span><span class="kind">Critique</span><span class="what">Open Wall Review<small>Pin your work. Defend your margins.</small></span><span class="room">Foyer</span></div>
+  </div>
+  <div class="sched" id="d3">
+    <div class="slot"><span class="time">09:30</span><span class="kind">Talk</span><span class="what">Legibility at 120 km/h<small>Dieter Lang / federal wayfinding</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">11:00</span><span class="kind">Talk</span><span class="what">One Typeface, 214 Airports<small>Rutger Smit</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">14:00</span><span class="kind">Panel</span><span class="what">Zero Exceptions Since 2019<small>Greta Kaufmann in conversation with Jonas Meier</small></span><span class="room">Saal B</span></div>
+    <div class="slot"><span class="time">16:00</span><span class="kind">Keynote</span><span class="what">The Spread as Architecture<small>Edith Wyss / closing keynote</small></span><span class="room">Hall 3</span></div>
+    <div class="slot"><span class="time">17:30</span><span class="kind">Close</span><span class="what">Final remarks, ending 17:44 sharp<small>The congress has never once run late.</small></span><span class="room">Hall 3</span></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" id="figures">
+  <div class="sec-head"><span class="no">05</span><span>The Congress in Figures</span><span>Audited</span></div>
+  <div class="stats">
+    <div class="stat rv"><b data-count="1200">0</b><span>Delegates, capacity fixed</span></div>
+    <div class="stat rv"><b data-count="26">0</b><span>Editions since 2001</span></div>
+    <div class="stat rv"><b data-count="12">0</b><span>Columns. Always twelve</span></div>
+    <div class="stat rv"><b data-count="0">0</b><span>Minutes ever run late</span></div>
+  </div>
+</section>
+
+<!-- TICKETS -->
+<section class="section" id="tickets">
+  <div class="sec-head"><span class="no">06</span><span>Tickets / Prices Set in Tabular Figures</span><span>CHF · VAT incl.</span></div>
+  <div class="tix">
+    <div class="tik rv">
+      <span class="tier">Delegate</span>
+      <div class="price"><small>CHF</small> 390</div>
+      <ul>
+        <li>All talks, panels &amp; keynotes, three days</li>
+        <li>Printed programme, Munken 120 gsm</li>
+        <li>Apéro at the Rhine, Friday 19:00</li>
+        <li>Badge set in 8pt, name ranged left</li>
+      </ul>
+      <a class="buy" href="#tickets">Register / Delegate</a>
+    </div>
+    <div class="tik pat rv">
+      <span class="tier">Practitioner / Recommended</span>
+      <div class="price"><small>CHF</small> 640</div>
+      <ul>
+        <li>Everything in Delegate</li>
+        <li>Both workshops, materials in duplicate</li>
+        <li>Rheinsans licence, all 18 weights</li>
+        <li>Open Wall critique slot, guaranteed</li>
+        <li>Seat allocation on the grid, row 1–4</li>
+      </ul>
+      <a class="buy" href="#tickets">Register / Practitioner</a>
+    </div>
+    <div class="tik rv">
+      <span class="tier">Student</span>
+      <div class="price"><small>CHF</small> 120</div>
+      <ul>
+        <li>All talks, panels &amp; keynotes, three days</li>
+        <li>Standing critique access</li>
+        <li>PDF programme, printing discouraged</li>
+        <li>Valid student ID checked twice</li>
+      </ul>
+      <a class="buy" href="#tickets">Register / Student</a>
+    </div>
+  </div>
+</section>
+
+<!-- VENUE -->
+<section class="section" id="venue">
+  <div class="venue">
+    <h2 class="rv">Messe Basel<br><span>Hall 3</span> / a grid you can stand in.</h2>
+    <div class="vmeta rv">
+      <div><span class="lbl">Address</span><p>Messeplatz 10<br>4058 Basel, Switzerland</p></div>
+      <div><span class="lbl">Coordinates</span><p>47.5645° N<br>7.6008° E</p></div>
+      <div><span class="lbl">By rail</span><p>Basel SBB, then Tram 2<br>Eight minutes, on time</p></div>
+      <div><span class="lbl">Contact</span><p>kongress@helvetia26.ch<br>+41 61 555 26 26</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="foot-big rv" id="footBig">Ordnung<span>.</span></div>
+  <div class="foot-grid">
+    <div><span class="lbl">Congress</span><a href="#manifesto">Manifesto</a><a href="#speakers">Speakers</a><a href="#schedule">Schedule</a><a href="#tickets">Tickets</a></div>
+    <div><span class="lbl">Office</span><a href="#venue">Kongressbüro Basel</a><a href="#venue">Messeplatz 10, 4058 Basel</a><a href="#venue">+41 61 555 26 26</a></div>
+    <div><span class="lbl">Elsewhere</span><a href="#top">Are.na / /helvetia26</a><a href="#top">Mastodon / @helvetia26</a><a href="#top">Newsletter, monthly, brief</a></div>
+    <div><span class="lbl">Colophon</span><a href="#specimen">Archivo &amp; Archivo Black</a><a href="#specimen">Inter, text sizes only</a><a href="#top">12 columns / 24px baseline</a></div>
+  </div>
+  <div class="foot-legal">
+    <span>© 2027 Kongress HELVETIA, Basel. Edition 26.</span>
+    <span>Press G to expose the grid. Double-click the logo to invert.</span>
+    <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero letters */
+  function fill(rowId, word, redIdx){
+    var row = document.getElementById(rowId);
+    word.split('').forEach(function(c, i){
+      var s = document.createElement('span');
+      s.className = 'ch' + (redIdx.indexOf(i) > -1 ? ' red' : '');
+      s.textContent = c;
+      s.style.animationDelay = (i * 55) + 'ms';
+      row.appendChild(s);
+    });
+  }
+  fill('heroRow1', 'HELVE', []);
+  fill('heroRow2', 'TIA.', [3]);
+
+  /* marquees */
+  function mq(id, items){
+    var t = document.getElementById(id), html = '';
+    items.forEach(function(x){ html += '<span>' + x + ' <span class="dot">·</span></span>'; });
+    t.innerHTML = html + html; /* duplicate for seamless loop */
+  }
+  var words = ['Typography is order','Basel 12–14 March 2027','12 columns','24px baseline','No decoration','Grotesk ist Haltung','Edition 26'];
+  mq('mq1', words);
+  mq('mq2', ['Tickets from CHF 120','1200 delegates','Rheinsans launch','Open wall critique','Apéro at the Rhine','Never once run late']);
+
+  /* grid toggle */
+  var gridBtn = document.getElementById('gridBtn');
+  function toggleGrid(){
+    var on = document.body.classList.toggle('grid-on');
+    gridBtn.setAttribute('aria-pressed', on);
+  }
+  gridBtn.addEventListener('click', toggleGrid);
+  document.addEventListener('keydown', function(e){
+    if((e.key === 'g' || e.key === 'G') && !e.metaKey && !e.ctrlKey && !e.altKey &&
+       !/input|textarea/i.test(document.activeElement.tagName)) toggleGrid();
+  });
+
+  /* invert easter egg */
+  document.getElementById('logoBtn').addEventListener('dblclick', function(e){
+    e.preventDefault();
+    document.body.classList.toggle('inv');
+  });
+
+  /* cursor coordinates in header */
+  var coords = document.getElementById('coords');
+  if(coords && matchMedia('(pointer:fine)').matches){
+    var cx = 0, cy = 0, cTick = false;
+    document.addEventListener('mousemove', function(e){
+      cx = e.clientX; cy = e.clientY;
+      if(!cTick){
+        cTick = true;
+        requestAnimationFrame(function(){
+          coords.textContent = 'X ' + String(cx).padStart(4,'0') + ' · Y ' + String(cy).padStart(4,'0');
+          cTick = false;
+        });
+      }
+    });
+  }
+
+  /* footer wordmark letters */
+  (function(){
+    var fb = document.getElementById('footBig');
+    var word = 'Ordnung';
+    fb.innerHTML = word.split('').map(function(c){ return '<span class="fl">' + c + '</span>'; }).join('') + '<span style="color:var(--red)">.</span>';
+  })();
+
+  /* scroll progress + grid tag Y readout */
+  var prog = document.getElementById('prog'), gridTag = document.getElementById('gridTag'), pTick = false;
+  function setProg(){
+    var h = document.documentElement;
+    var p = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    prog.style.width = (p * 100) + '%';
+    gridTag.textContent = 'GRID · 12 COL / 24PX BASELINE · Y ' + String(Math.round(h.scrollTop)).padStart(4,'0') + ' · [G]';
+    pTick = false;
+  }
+  document.addEventListener('scroll', function(){
+    if(!pTick){ pTick = true; requestAnimationFrame(setProg); }
+  }, {passive:true});
+  setProg();
+
+  /* reveal on scroll */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el, i){
+    el.style.transitionDelay = ((i % 4) * 70) + 'ms';
+    io.observe(el);
+  });
+
+  /* schedule tabs */
+  var tabs = document.querySelectorAll('.day-tabs button');
+  tabs.forEach(function(b){
+    b.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.setAttribute('aria-selected','false'); });
+      b.setAttribute('aria-selected','true');
+      document.querySelectorAll('.sched').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById(b.dataset.day).classList.add('active');
+    });
+  });
+
+  /* variable-font specimen */
+  var spec = document.getElementById('specLine');
+  var specSec = document.querySelector('.specimen');
+  var wOut = document.getElementById('specW'), dOut = document.getElementById('specD');
+  if(specSec && !reduced){
+    specSec.addEventListener('mousemove', function(e){
+      var r = specSec.getBoundingClientRect();
+      var x = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1);
+      var y = Math.min(Math.max((e.clientY - r.top) / r.height, 0), 1);
+      var wght = Math.round(100 + x * 800);
+      var wdth = Math.round(62 + (1 - y) * 63);
+      spec.style.setProperty('--sw', wght);
+      spec.style.setProperty('--sd', wdth);
+      wOut.textContent = 'WGHT ' + wght;
+      dOut.textContent = 'WDTH ' + wdth;
+    });
+    specSec.addEventListener('mouseleave', function(){
+      spec.style.setProperty('--sw', 900);
+      spec.style.setProperty('--sd', 125);
+      wOut.textContent = 'WGHT 900';
+      dOut.textContent = 'WDTH 125';
+    });
+  }
+
+  /* count-up stats */
+  var cio = new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      if(!en.isIntersecting) return;
+      cio.unobserve(en.target);
+      var el = en.target, target = +el.dataset.count;
+      if(reduced || target === 0){ el.textContent = target; return; }
+      var t0 = null;
+      function step(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min((ts - t0) / 900, 1);
+        el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+        if(p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }, {threshold:.6});
+  document.querySelectorAll('.stat b').forEach(function(el){ cio.observe(el); });
+
+  /* '26' click / brief red flash of the grid */
+  document.getElementById('num26').addEventListener('click', function(){
+    document.body.classList.add('grid-on');
+    gridBtn.setAttribute('aria-pressed','true');
+  });
+})();
+</script>
+</body>
+</html>

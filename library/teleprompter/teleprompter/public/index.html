@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Teleprompter</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #f5f5f5; font-family: Georgia, 'Times New Roman', serif; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
+  #controls {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: rgba(0,0,0,0.95); padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    border-top: 1px solid #333;
+  }
+  #controls select, #controls button {
+    background: #222; color: #fff; border: 1px solid #444; padding: 10px 16px; border-radius: 6px;
+    font-size: 16px; cursor: pointer; touch-action: manipulation;
+  }
+  #controls select { max-width: 100%; }
+  #controls button:hover { background: #444; }
+  /* Search: type any words (a topic, a line you remember); results rank by name, then heading, then the script text */
+  #search-row { position: fixed; top: 0; left: 0; right: 0; z-index: 11; padding: 10px 16px; background: rgba(0,0,0,0.95); border-bottom: 1px solid #333; }
+  #search { width: 100%; background: #111; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 12px 14px;
+    font-size: 16px; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; }
+  #search:focus { outline: none; border-color: #ff6b2c; }
+  #results { display: none; position: absolute; left: 16px; right: 16px; top: calc(100% - 2px); max-height: 60vh; overflow-y: auto;
+    background: #111; border: 1px solid #444; border-radius: 8px; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; }
+  #results.open { display: block; }
+  #results .r { padding: 11px 14px; border-bottom: 1px solid #222; cursor: pointer; font-size: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #results .r:last-child { border-bottom: none; }
+  #results .r.sel, #results .r:hover { background: #222; }
+  #results .empty { padding: 12px 14px; color: #777; font-size: 14px; }
+  #controls button.active { background: #ff6b2c; border-color: #ff6b2c; }
+  /* Play is the button you hit mid-take, so it is twice the size of the others */
+  #controls #play-btn { padding: 20px 40px; font-size: 24px; font-weight: 700; border-radius: 10px; min-width: 150px; }
+  /* Speed sits right of Play, on a thick track with a big thumb, so it is easy to adjust mid-take */
+  .play-row { display: flex; align-items: center; gap: 14px; width: 100%; }
+  .speed-box { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .speed-name { font: 14px -apple-system, 'Segoe UI', system-ui, sans-serif; color: #aaa; }
+  .speed-name b { color: #fff; font-size: 16px; margin-left: 4px; }
+  #speed { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; margin: 0; touch-action: none; }
+  #speed::-webkit-slider-runnable-track { height: 16px; border-radius: 8px; background: #333; }
+  #speed::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; margin-top: -10px; border-radius: 50%; background: #ff6b2c; border: 3px solid #fff; }
+  #speed::-moz-range-track { height: 16px; border-radius: 8px; background: #333; }
+  #speed::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #ff6b2c; border: 3px solid #fff; }
+  .slider-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .slider-row input[type=range] { flex: 1; accent-color: #ff6b2c; height: 32px; }
+  .slider-label { font-size: 14px; color: #aaa; min-width: 70px; text-align: right; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; }
+  .slider-name { font-size: 14px; color: #aaa; min-width: 40px; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; }
+  #content {
+    /* Blank space above and below the text, so you always read in the middle of the screen: the first line starts at
+       the reading line and the last line can scroll up to it, clear of the controls bar. */
+    padding: 45vh 24px 60vh 24px; max-width: 800px; margin: 0 auto;
+    font-size: 32px; line-height: 1.6; letter-spacing: 0.02em;
+  }
+  #content h1 { font-size: 1.4em; color: #ff6b2c; margin: 1.2em 0 0.4em; border-bottom: 1px solid #333; padding-bottom: 8px; }
+  #content h2 { font-size: 1.2em; color: #ffbe2e; margin: 1em 0 0.3em; }
+  #content h3 { font-size: 1.05em; color: #ffbe2e; margin: 0.8em 0 0.3em; }
+  #content p { margin-bottom: 0.8em; }
+  #content strong { color: #ff6b2c; }
+  #content hr { border: none; border-top: 1px solid #333; margin: 1.5em 0; }
+  #content ul, #content ol { margin-left: 1.2em; margin-bottom: 0.8em; }
+  #content li { margin-bottom: 0.4em; }
+  #content blockquote { border-left: 3px solid #444; padding-left: 0.6em; color: #ccc; margin-bottom: 0.8em; }
+  #content pre { white-space: pre-wrap; font-size: 0.6em; color: #ccc; margin-bottom: 0.8em; }
+  #content .hint { color: #666; text-align: center; font-size: 20px; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; }
+
+  /* Reading line: a faint fixed line you drag to match your camera lens. The band is the touch target (28px tall,
+     full width); the visible line is 2px inside it. Its position is saved as a fraction of the screen height. */
+  #readline {
+    position: fixed; left: 0; right: 0; top: 50%; height: 28px; margin-top: -14px;
+    z-index: 9; touch-action: none; cursor: ns-resize; user-select: none; -webkit-user-select: none;
+  }
+  #readline::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px;
+    background: rgba(255, 107, 44, 0.35);
+  }
+  #readline.dragging::before { background: rgba(255, 107, 44, 0.8); }
+  #readline .grip {
+    position: absolute; right: 8px; top: 0; width: 44px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #readline .grip::before {
+    content: ""; width: 26px; height: 8px; border-radius: 4px;
+    background: rgba(255, 107, 44, 0.35);
+  }
+  #readline.dragging .grip::before { background: rgba(255, 107, 44, 0.8); }
+  /* while a touch is holding: the line warms up over the half-second hold, then goes full orange once it can move */
+  #readline.holding::before, #readline.holding .grip::before { background: rgba(255, 107, 44, 0.6); transition: background .5s; }
+  /* a quiet pill that says the open script just changed */
+  #live-toast { position: fixed; top: 74px; left: 50%; transform: translateX(-50%); z-index: 12; background: #ff6b2c; color: #fff;
+    font: 600 14px -apple-system, 'Segoe UI', system-ui, sans-serif; padding: 6px 14px; border-radius: 999px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  #live-toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="content"><p class="hint">Pick a script below</p></div>
+<div id="readline" aria-label="Reading line, hold and drag to move"><div class="grip"></div></div>
+<div id="search-row"><input id="search" type="search" placeholder="Search scripts: type any words..." autocomplete="off" autocapitalize="off" spellcheck="false"><div id="results"></div></div>
+<div id="controls">
+  <select id="script-select"><option value="">Pick a script...</option></select>
+  <div class="play-row">
+    <button id="play-btn">Play</button>
+    <div class="speed-box">
+      <span class="speed-name">Speed <b id="speed-label">1.0</b></span>
+      <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1">
+    </div>
+  </div>
+  <button id="mirror-btn">Mirror</button>
+  <button id="sync-btn" title="Keep the desktop page on the same line at the same speed">Sync</button>
+  <div class="slider-row">
+    <span class="slider-name">Size</span>
+    <input type="range" id="fontsize" min="18" max="72" step="1" value="32">
+    <span class="slider-label" id="font-label">32px</span>
+  </div>
+</div>
+<script src="/md.js"></script>
+<script src="/sync.js"></script>
+<script>
+const content = document.getElementById('content');
+const scriptSelect = document.getElementById('script-select');
+const speedSlider = document.getElementById('speed');
+const speedLabel = document.getElementById('speed-label');
+const fontSlider = document.getElementById('fontsize');
+const fontLabel = document.getElementById('font-label');
+const playBtn = document.getElementById('play-btn');
+const mirrorBtn = document.getElementById('mirror-btn');
+let mirrorOn = false;
+
+// Every script with its text, so search can look inside them. Names load first; the text fills in right after.
+let DOCS = [];
+async function loadScripts() {
+  try {
+    const scripts = await (await fetch('/api/scripts', { cache: 'no-store' })).json();
+    if (!scripts.length) {
+      content.innerHTML = '<p class="hint">No scripts yet. Ask your agent to send a script to the teleprompter, or put a .md file in the scripts folder and reload.</p>';
+    }
+    scripts.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.file;
+      opt.textContent = s.name;
+      scriptSelect.appendChild(opt);
+    });
+    if (curFile) scriptSelect.value = curFile;
+    DOCS = scripts.map(s => ({ file: s.file, name: s.name, mtime: s.mtime || 0, title: '', body: '' }));
+    // fetch the texts a few at a time; search already works on names meanwhile
+    const queue = DOCS.slice();
+    await Promise.all(Array.from({ length: 6 }, async () => {
+      while (queue.length) {
+        const d = queue.shift();
+        try {
+          const md = await (await fetch('/scripts/' + encodeURIComponent(d.file))).text();
+          const h = md.match(/^#{1,2}\s+(.+)$/m);
+          d.title = h ? h[1].trim() : '';
+          d.body = md.replace(/^#+\s+/gm, '').replace(/[*_`>]/g, '');
+        } catch(e) {}
+      }
+    }));
+    if (search.value.trim()) runSearch();
+  } catch(e) { console.error('Failed to load scripts', e); }
+}
+
+let curFile = null, lastMd = '', lastRev = 0;
+// why: 'user' (picked here) and 'agent' (your agent asked for it) tell the other screen; 'sync' came from the other
+// screen, so it keeps playing and the sync engine puts it on their line; anything else is a quiet first load.
+async function loadScript(file, why) {
+  if (!file) return;
+  if (![...scriptSelect.options].some(o => o.value === file)) {
+    const opt = document.createElement('option'); opt.value = file; opt.textContent = file.replace(/\.md$/, ''); scriptSelect.appendChild(opt);
+  }
+  scriptSelect.value = file;
+  try {
+    const res = await fetch('/scripts/' + encodeURIComponent(file), { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    const md = await res.text();
+    curFile = file; lastMd = md; lastRev = 0;
+    content.innerHTML = renderMarkdown(md);
+    sync.relayout();
+    if (why !== 'sync') { window.scrollTo(0, 0); sync.stop(); }
+    try { localStorage.setItem('tp-last', file); } catch(e) {}
+    if (why === 'user' || why === 'agent') sync.claim();
+  } catch(e) { content.innerHTML = '<p class="hint">Could not load that script.</p>'; }
+}
+scriptSelect.addEventListener('change', () => loadScript(scriptSelect.value, 'user'));
+
+// ---- Search ----
+// Every word you type must match somewhere (name, first heading or text); a word also matches the start of a longer
+// word ("anim" finds "animate") and a one-letter typo in names ("desgin"). Name hits rank above heading hits, heading
+// above text; ties go to the newest script. Enter opens the top result; arrow keys move; Esc clears.
+const search = document.getElementById('search'), results = document.getElementById('results');
+const norm = s => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+function near(a, b) { // one typo: a letter added, dropped, changed, or two neighbours swapped
+  if (Math.abs(a.length - b.length) > 1) return false;
+  if (a.length === b.length) { const d = []; for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) d.push(k);
+    if (d.length === 2 && d[1] === d[0] + 1 && a[d[0]] === b[d[1]] && a[d[1]] === b[d[0]]) return true; }
+  let i = 0, j = 0, d = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++d > 1) return false;
+    if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+  }
+  return d + (a.length - i) + (b.length - j) <= 1;
+}
+let hits = [], sel = 0;
+function score(d, terms) {
+  const name = norm(d.name), title = norm(d.title), body = norm(d.body);
+  const nw = name.split(' '), bw = ' ' + body + ' ';
+  let total = 0;
+  for (const t of terms) {
+    let s = 0;
+    if (nw.includes(t)) s += 14; else if (nw.some(w => w.startsWith(t))) s += 11; else if (name.includes(t)) s += 8;
+    else if (t.length >= 4 && nw.some(w => near(w, t))) s += 6;
+    if (title.includes(t)) s += 6; else if (t.length >= 4 && title.split(' ').some(w => near(w, t))) s += 3;
+    const whole = bw.split(' ' + t + ' ').length - 1, start = bw.split(' ' + t).length - 1;
+    s += Math.min(6, whole * 1.5 + (start - whole) * .7);
+    if (!s) return 0; // every word must match somewhere
+    total += s;
+  }
+  return total;
+}
+function runSearch() {
+  const terms = norm(search.value).split(' ').filter(Boolean);
+  if (!terms.length) { results.classList.remove('open'); hits = []; return; }
+  hits = DOCS.map(d => ({ d, s: score(d, terms) })).filter(h => h.s > 0)
+    .sort((a, b) => b.s - a.s || b.d.mtime - a.d.mtime).slice(0, 15);
+  sel = 0;
+  results.innerHTML = hits.length ? hits.map((h, i) => `<div class="r${i === sel ? ' sel' : ''}" data-f="${esc(h.d.file)}" title="${esc(h.d.name)}">${esc(h.d.title || h.d.name)}</div>`).join('')
+    : '<div class="empty">No script matches all of those words</div>';
+  results.classList.add('open');
+}
+function pick(file) { results.classList.remove('open'); search.value = ''; search.blur(); loadScript(file, 'user'); }
+search.addEventListener('input', runSearch);
+search.addEventListener('focus', () => { if (search.value.trim()) runSearch(); });
+search.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); if (hits[sel]) pick(hits[sel].d.file); }
+  else if (e.key === 'Escape') { search.value = ''; results.classList.remove('open'); }
+  else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && hits.length) {
+    e.preventDefault(); sel = (sel + (e.key === 'ArrowDown' ? 1 : hits.length - 1)) % hits.length;
+    results.querySelectorAll('.r').forEach((r, i) => r.classList.toggle('sel', i === sel));
+  }
+});
+results.addEventListener('pointerdown', e => { const r = e.target.closest('.r'); if (r) { e.preventDefault(); pick(r.dataset.f); } });
+document.addEventListener('pointerdown', e => { if (!e.target.closest('#search-row')) results.classList.remove('open'); });
+
+// Speed and size are remembered per browser, so whatever you set last time comes back on refresh.
+const SPEED_KEY = 'tp-speed', FONT_KEY = 'tp-fontsize';
+function applySpeed() { speedLabel.textContent = parseFloat(speedSlider.value).toFixed(1); }
+function applyFont() { const size = fontSlider.value; fontLabel.textContent = size + 'px'; content.style.fontSize = size + 'px'; }
+try {
+  const s = parseFloat(localStorage.getItem(SPEED_KEY));
+  if (s >= 0.1 && s <= 5) speedSlider.value = s;
+  const f = parseInt(localStorage.getItem(FONT_KEY), 10);
+  if (f >= 18 && f <= 72) fontSlider.value = f;
+} catch(e) {}
+applySpeed();
+applyFont();
+
+speedSlider.addEventListener('input', () => {
+  applySpeed();
+  try { localStorage.setItem(SPEED_KEY, speedSlider.value); } catch(e) {}
+  sync.setSpeed(parseFloat(speedSlider.value));
+});
+
+fontSlider.addEventListener('input', () => {
+  sync.keepPlace(applyFont);   // a size change keeps the line you were on
+  try { localStorage.setItem(FONT_KEY, fontSlider.value); } catch(e) {}
+  sync.layoutChanged();        // the desktop page copies the new line breaks
+});
+
+// Auto-scroll runs in sync.js (20 px a second per speed step), so it can follow the desktop page.
+playBtn.addEventListener('click', () => sync.play(!sync.playing));
+
+mirrorBtn.addEventListener('click', () => {
+  mirrorOn = !mirrorOn;
+  content.style.transform = mirrorOn ? 'scaleX(-1)' : '';
+  mirrorBtn.classList.toggle('active', mirrorOn);
+});
+
+// Reading line: drag up or down, position remembered per browser. Double-tap the grip to reset it to the centre.
+const readline = document.getElementById('readline');
+const READLINE_KEY = 'tp-readline-frac';
+const READLINE_MIN = 0.05, READLINE_MAX = 0.85; // keep it clear of the controls bar
+let readFrac = 0.5;
+try { const v = parseFloat(localStorage.getItem(READLINE_KEY)); if (v >= READLINE_MIN && v <= READLINE_MAX) readFrac = v; } catch(e) {}
+function placeReadline() { readline.style.top = (readFrac * 100) + '%'; }
+placeReadline();
+// A touch must hold the line for half a second before it moves, so a brush of the thumb never shifts it. A finger that
+// slides away before then is a stray touch and does nothing. A mouse still drags straight away.
+let dragOffset = 0, holdT = null, holdY = 0;
+const HOLD_MS = 500, HOLD_SLOP = 10;
+function arm() {
+  holdT = null;
+  readline.classList.remove('holding');
+  readline.classList.add('dragging');
+  dragOffset = holdY - readFrac * window.innerHeight;
+  try { navigator.vibrate && navigator.vibrate(15); } catch(err) {}
+}
+readline.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  readline.setPointerCapture(e.pointerId);
+  holdY = e.clientY;
+  if (e.pointerType === 'mouse') { arm(); return; }
+  readline.classList.add('holding');
+  holdT = setTimeout(arm, HOLD_MS);
+});
+function cancelHold() { if (holdT) { clearTimeout(holdT); holdT = null; } readline.classList.remove('holding'); }
+readline.addEventListener('pointermove', e => {
+  if (holdT && Math.abs(e.clientY - holdY) > HOLD_SLOP) { cancelHold(); return; }
+  if (!readline.classList.contains('dragging')) return;
+  const y = e.clientY - dragOffset;
+  readFrac = Math.min(READLINE_MAX, Math.max(READLINE_MIN, y / window.innerHeight));
+  placeReadline();
+  try { localStorage.setItem(READLINE_KEY, readFrac.toFixed(4)); } catch(e) {}
+});
+function endDrag() {
+  cancelHold();
+  if (!readline.classList.contains('dragging')) return;
+  readline.classList.remove('dragging');
+  try { localStorage.setItem(READLINE_KEY, readFrac.toFixed(4)); } catch(e) {}
+}
+readline.addEventListener('pointerup', endDrag);
+readline.addEventListener('pointercancel', endDrag);
+readline.addEventListener('dblclick', () => { readFrac = 0.5; placeReadline(); try { localStorage.setItem(READLINE_KEY, '0.5'); } catch(e) {} });
+
+// ---- Live updates ----
+// Every 1.5 s: if your agent asked the screens to open a script, open it; if the open script changed on disk, re-render it
+// in place, keeping the scroll position and the auto-scroll running, so a fix lands mid-take without a jump.
+const toast = document.createElement('div');
+toast.id = 'live-toast'; toast.textContent = 'Script updated'; document.body.appendChild(toast);
+let toastT = null, lastLiveSeq = null;
+function flash(text) { toast.textContent = text || 'Script updated'; toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 1200); }
+async function refreshInPlace() {
+  const md = await (await fetch('/scripts/' + encodeURIComponent(curFile), { cache: 'no-store' })).text();
+  if (md === lastMd) return;
+  const y = window.scrollY; lastMd = md;
+  content.innerHTML = renderMarkdown(md);
+  sync.relayout();
+  window.scrollTo(0, y); flash();
+}
+async function livePoll() {
+  if (document.hidden) return;
+  try {
+    const r = await (await fetch('/api/live' + (curFile ? '?f=' + encodeURIComponent(curFile) : ''), { cache: 'no-store' })).json();
+    // the first poll only opens the agent's script when nothing is showing yet (the other screen's script wins on open)
+    if (r.live && r.liveSeq !== lastLiveSeq) {
+      const first = lastLiveSeq === null; lastLiveSeq = r.liveSeq;
+      if (!(first && curFile)) { await loadScript(r.live, first ? 'first' : 'agent'); lastRev = r.liveRev; if (!first) flash('Opened ' + r.live.replace(/\.md$/, '')); return; }
+    }
+    if (curFile && r.curRev) { if (lastRev && r.curRev !== lastRev) await refreshInPlace(); lastRev = r.curRev; }
+  } catch(e) {}
+}
+setInterval(livePoll, 1500);
+
+// ---- Sync with the desktop page (/desktop) ----
+// Same line, same speed on both screens: whichever one you touch last leads, the other follows. Sync is on by default
+// and remembered; the button reads "Synced" while a desktop page is open.
+const syncBtn = document.getElementById('sync-btn');
+let syncOn = true, acc = 0;
+try { syncOn = localStorage.getItem('tp-sync') !== '0'; } catch(e) {}
+const sync = TPSync({
+  role: 'phone', enabled: syncOn, speed: parseFloat(speedSlider.value),
+  root: () => content,
+  topOf: el => el.getBoundingClientRect().top + window.scrollY,
+  getY: () => window.scrollY + readFrac * window.innerHeight,
+  setY: y => { acc = 0; window.scrollTo(0, y - readFrac * window.innerHeight); },
+  addY: dy => { acc += dy; const px = acc > 0 ? Math.floor(acc) : Math.ceil(acc); if (px) { window.scrollBy(0, px); acc -= px; } },
+  viewH: () => window.innerHeight,
+  file: () => curFile,
+  loadFile: f => loadScript(f, 'sync'),
+  onPlaying: p => { playBtn.textContent = p ? 'Pause' : 'Play'; playBtn.classList.toggle('active', p); },
+  onSpeed: v => { speedSlider.value = v; applySpeed(); try { localStorage.setItem(SPEED_KEY, v); } catch(e) {} },
+  layout: () => { const cs = getComputedStyle(content); return { w: Math.round(content.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)), fs: parseInt(fontSlider.value, 10) }; },
+  onStatus: st => { syncBtn.classList.toggle('active', st.enabled); syncBtn.textContent = st.enabled && st.online && st.peers.desk ? 'Synced' : 'Sync'; },
+});
+syncBtn.addEventListener('click', () => { syncOn = !syncOn; try { localStorage.setItem('tp-sync', syncOn ? '1' : '0'); } catch(e) {} sync.setEnabled(syncOn); });
+// a finger or a wheel on the text makes this screen the leader; its scrolling then reaches the desktop page
+const userScroll = e => { if (!e.target.closest || !e.target.closest('#controls, #search-row, #readline')) sync.moved(); };
+document.addEventListener('touchstart', userScroll, { passive: true });
+document.addEventListener('wheel', userScroll, { passive: true });
+window.addEventListener('scroll', () => sync.scrolled(), { passive: true });
+let resizeT = null;
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { sync.relayout(); sync.layoutChanged(); }, 300); });
+
+// on open: the other screen's script or your agent's script wins; otherwise the script you had open last time comes back
+loadScripts().then(livePoll).then(() => setTimeout(() => {
+  if (curFile) return;
+  let last = null; try { last = localStorage.getItem('tp-last'); } catch(e) {}
+  if (last && DOCS.some(d => d.file === last)) loadScript(last, 'first');
+}, 700));
+</script>
+</body>
+</html>

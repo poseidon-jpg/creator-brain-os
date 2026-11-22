@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHROME DREAMS — a Y2K design collective</title>
+<meta name="description" content="Chrome Dreams is a design collective resurrecting Y2K optimism: liquid metal, iridescent gradients, and interfaces that believe in the future again.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffb3f0'/%3E%3Cstop offset='.5' stop-color='%23a8f0ff'/%3E%3Cstop offset='1' stop-color='%23c9b3ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%231a0b2e'/%3E%3Ccircle cx='32' cy='32' r='18' fill='url(%23g)'/%3E%3Cellipse cx='26' cy='25' rx='6' ry='4' fill='white' opacity='.85'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12081f;
+    --bg2:#1a0b2e;
+    --ink:#f2ecff;
+    --dim:#b7a8d6;
+    --pink:#ffb3f0;
+    --cyan:#a8f0ff;
+    --lilac:#c9b3ff;
+    --holo:linear-gradient(100deg,#ffb3f0 0%,#a8f0ff 25%,#c9b3ff 50%,#ffd9a8 65%,#ffb3f0 80%,#a8f0ff 100%);
+    --pill-shine:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,.05) 45%,rgba(255,255,255,0) 55%,rgba(255,255,255,.12));
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%,#2a1245 0%,var(--bg) 55%) var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+    cursor:default;
+  }
+  ::selection{background:var(--pink);color:var(--bg)}
+
+  /* ---------- holo text utility ---------- */
+  .holo{
+    background:var(--holo);
+    background-size:300% 100%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    animation:holoShift 8s linear infinite;
+  }
+  @keyframes holoShift{to{background-position:300% 0}}
+
+  /* ---------- cursor trail ---------- */
+  #trail{position:fixed;inset:0;pointer-events:none;z-index:60;mix-blend-mode:screen}
+
+  /* ---------- scroll progress ---------- */
+  #progress{
+    position:fixed;top:0;left:0;height:3px;width:0;z-index:70;
+    background:var(--holo);background-size:300% 100%;
+    animation:holoShift 8s linear infinite;
+    box-shadow:0 0 12px rgba(255,179,240,.7);
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:fixed;top:18px;left:50%;transform:translateX(-50%);
+    z-index:50;display:flex;gap:10px;align-items:center;
+    padding:8px 10px;border-radius:999px;
+    background:rgba(26,11,46,.55);backdrop-filter:blur(14px);
+    border:1px solid rgba(201,179,255,.25);
+    box-shadow:0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.15);
+  }
+  nav .logo{
+    font-family:'Unbounded',sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.08em;
+    padding:8px 16px;border-radius:999px;white-space:nowrap;
+  }
+  nav a{
+    font-size:.8rem;font-weight:500;color:var(--dim);text-decoration:none;
+    padding:8px 14px;border-radius:999px;transition:color .25s,background .25s,box-shadow .25s;
+    position:relative;
+  }
+  nav a:hover{color:var(--ink);background:rgba(201,179,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+  nav a.cta{
+    color:var(--bg2);font-weight:600;
+    background:linear-gradient(120deg,var(--pink),var(--cyan),var(--lilac));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px rgba(255,179,240,.35);
+  }
+
+  /* ---------- hero ---------- */
+  header{
+    position:relative;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:120px 24px 80px;overflow:hidden;
+  }
+  #blob-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+  .hero-inner{position:relative;z-index:2;pointer-events:none}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;pointer-events:auto;
+    font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);
+    padding:8px 18px;border-radius:999px;border:1px solid rgba(168,240,255,.3);
+    background:rgba(18,8,31,.55);backdrop-filter:blur(10px);margin-bottom:28px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
+  }
+  .hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  h1{
+    font-family:'Unbounded',sans-serif;font-weight:800;
+    font-size:clamp(2.6rem,9vw,7.5rem);line-height:.95;letter-spacing:-.01em;
+    filter:drop-shadow(0 6px 30px rgba(10,4,20,.85)) drop-shadow(0 0 60px rgba(201,179,255,.2));
+  }
+  .hero-sub{
+    max-width:600px;margin:30px auto 0;color:#d8ccef;
+    font-size:clamp(.95rem,1.4vw,1.08rem);line-height:1.7;
+    background:rgba(18,8,31,.5);backdrop-filter:blur(12px);
+    padding:18px 28px;border-radius:22px;border:1px solid rgba(201,179,255,.14);
+  }
+  .hero-pills{display:flex;gap:14px;justify-content:center;margin-top:38px;flex-wrap:wrap;pointer-events:auto}
+  .pill{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:.9rem;
+    padding:15px 32px;border-radius:999px;text-decoration:none;cursor:pointer;border:0;
+    position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s;
+  }
+  .pill::after{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--pill-shine);pointer-events:none}
+  .pill-solid{
+    color:#2b1050;background:linear-gradient(120deg,#ffd0f5,#bdf3ff 50%,#d8c8ff);
+    box-shadow:0 10px 30px rgba(255,179,240,.3),inset 0 -2px 6px rgba(120,60,180,.25);
+  }
+  .pill-ghost{
+    color:var(--ink);background:rgba(255,255,255,.06);
+    border:1px solid rgba(201,179,255,.35);backdrop-filter:blur(6px);
+  }
+  .pill:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 16px 40px rgba(168,240,255,.35)}
+  .hero-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim);opacity:.7;animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{50%{transform:translate(-50%,8px)}}
+
+  /* ---------- marquee ---------- */
+  .marquee{
+    border-top:1px solid rgba(201,179,255,.18);border-bottom:1px solid rgba(201,179,255,.18);
+    padding:18px 0;overflow:hidden;white-space:nowrap;
+    background:rgba(26,11,46,.5);position:relative;z-index:2;
+  }
+  .marquee-track{display:inline-block;animation:scrollLoop 28s linear infinite}
+  .marquee span{
+    font-family:'Unbounded',sans-serif;font-weight:300;font-size:.85rem;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--dim);margin:0 34px;
+  }
+  .marquee span b{font-weight:600}
+  @keyframes scrollLoop{to{transform:translateX(-50%)}}
+
+  /* ---------- sections ---------- */
+  section{max-width:1160px;margin:0 auto;padding:120px 32px}
+  .kicker{
+    font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan);
+    display:flex;align-items:center;gap:14px;margin-bottom:22px;
+  }
+  .kicker::before{content:'';width:34px;height:1px;background:linear-gradient(90deg,var(--pink),var(--cyan))}
+  h2{
+    font-family:'Unbounded',sans-serif;font-weight:600;
+    font-size:clamp(1.7rem,4vw,3rem);line-height:1.12;margin-bottom:20px;max-width:760px;
+  }
+  .lede{color:var(--dim);font-size:1.05rem;line-height:1.75;max-width:640px}
+
+  /* reveal (staggered via --d set in JS) */
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.22,1,.36,1) var(--d,0s),transform .9s cubic-bezier(.22,1,.36,1) var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- manifesto ---------- */
+  .manifesto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:56px}
+  .tenet{
+    position:relative;border-radius:24px;padding:34px 30px;
+    background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+    border:1px solid transparent;
+    background-clip:padding-box;
+    transition:transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .tenet::before{
+    content:'';position:absolute;inset:-1px;border-radius:25px;padding:1px;z-index:-1;
+    background:linear-gradient(140deg,rgba(255,179,240,.5),rgba(168,240,255,.15) 40%,rgba(201,179,255,.45));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+  }
+  .tenet:hover{transform:translateY(-6px)}
+  .tenet .num{
+    font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.9rem;display:block;margin-bottom:16px;
+  }
+  .tenet h3{font-family:'Unbounded',sans-serif;font-weight:600;font-size:1.02rem;margin-bottom:12px;letter-spacing:.01em}
+  .tenet p{color:var(--dim);font-size:.93rem;line-height:1.7}
+
+  /* ---------- members ---------- */
+  .members-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+  .member{
+    border-radius:24px;padding:30px 26px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+    border:1px solid rgba(201,179,255,.2);
+    transition:transform .4s cubic-bezier(.22,1,.36,1),border-color .4s;
+  }
+  .member:hover{transform:translateY(-6px);border-color:rgba(255,179,240,.5)}
+  .member .orb{
+    width:64px;height:64px;border-radius:50%;margin-bottom:22px;position:relative;
+    background:radial-gradient(circle at 32% 28%,#fff 0%,var(--o1,#ffb3f0) 28%,var(--o2,#a8f0ff) 62%,#3a1a5e 100%);
+    box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 -4px 10px rgba(60,20,100,.5);
+    animation:orbFloat 4.5s ease-in-out infinite;
+    transition:box-shadow .5s;
+  }
+  @keyframes orbFloat{50%{transform:translateY(-7px)}}
+  .member:nth-child(2) .orb{animation-delay:-1.5s}
+  .member:nth-child(3) .orb{animation-delay:-3s}
+  .member:nth-child(4) .orb{animation-delay:-.7s}
+  .member:nth-child(5) .orb{animation-delay:-2.2s}
+  .member:nth-child(6) .orb{animation-delay:-3.7s}
+  .member:hover .orb{box-shadow:0 14px 38px rgba(255,179,240,.45),inset 0 -4px 10px rgba(60,20,100,.5)}
+  .member h3{font-family:'Unbounded',sans-serif;font-weight:600;font-size:1.05rem;margin-bottom:6px}
+  .member .role{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;font-weight:600}
+  .member p{color:var(--dim);font-size:.9rem;line-height:1.65}
+  .member .loc{display:inline-block;margin-top:16px;font-size:.72rem;letter-spacing:.12em;color:var(--cyan);
+    padding:5px 12px;border-radius:999px;border:1px solid rgba(168,240,255,.3)}
+
+  /* ---------- projects ---------- */
+  .proj-list{margin-top:56px;border-top:1px solid rgba(201,179,255,.2)}
+  .proj{
+    display:grid;grid-template-columns:90px 1fr auto;gap:26px;align-items:center;
+    padding:32px 10px;border-bottom:1px solid rgba(201,179,255,.2);
+    text-decoration:none;color:inherit;position:relative;transition:padding .35s cubic-bezier(.22,1,.36,1),background .35s;
+  }
+  .proj:hover{padding-left:26px;background:linear-gradient(90deg,rgba(255,179,240,.06),transparent 70%)}
+  .proj .year{font-family:'Unbounded',sans-serif;font-weight:300;font-size:.85rem;color:var(--dim)}
+  .proj h3{font-family:'Unbounded',sans-serif;font-weight:600;font-size:clamp(1.05rem,2.4vw,1.5rem);margin-bottom:6px;transition:letter-spacing .35s}
+  .proj:hover h3{letter-spacing:.03em}
+  .proj h3::after{
+    content:'⟶';margin-left:14px;font-weight:400;
+    background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    opacity:0;display:inline-block;transform:translateX(-10px);
+    transition:opacity .35s,transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .proj:hover h3::after{opacity:1;transform:none}
+  .proj p{color:var(--dim);font-size:.9rem;line-height:1.6;max-width:520px}
+  .proj .tag{
+    font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lilac);
+    padding:7px 16px;border-radius:999px;border:1px solid rgba(201,179,255,.35);white-space:nowrap;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
+
+  /* ---------- contact ---------- */
+  .contact{text-align:center}
+  .contact h2{margin-left:auto;margin-right:auto}
+  .big-mail{
+    display:inline-block;margin-top:40px;text-decoration:none;
+    font-family:'Unbounded',sans-serif;font-weight:600;font-size:clamp(1.1rem,3.6vw,2.2rem);
+    padding:22px 44px;border-radius:999px;color:var(--ink);
+    background:rgba(255,255,255,.05);border:1px solid rgba(201,179,255,.3);
+    position:relative;overflow:hidden;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s;
+  }
+  .big-mail::after{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--pill-shine);pointer-events:none}
+  .big-mail:hover{transform:scale(1.04);box-shadow:0 20px 60px rgba(168,240,255,.25)}
+  .socials{display:flex;gap:12px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .socials a{
+    font-size:.82rem;font-weight:500;color:var(--dim);text-decoration:none;
+    padding:10px 20px;border-radius:999px;border:1px solid rgba(201,179,255,.25);
+    transition:color .3s,border-color .3s,transform .3s;
+  }
+  .socials a:hover{color:var(--ink);border-color:var(--pink);transform:translateY(-2px)}
+
+  footer{
+    text-align:center;padding:50px 24px 40px;color:var(--dim);font-size:.78rem;
+    border-top:1px solid rgba(201,179,255,.15);
+  }
+  footer a{color:var(--lilac);text-decoration:none}
+  footer a:hover{color:var(--pink)}
+  footer .tiny{margin-top:10px;opacity:.65}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:900px){
+    .members-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:768px){
+    section{padding:90px 22px}
+    .manifesto-grid{grid-template-columns:1fr}
+    .proj{grid-template-columns:1fr;gap:10px}
+    .proj .tag{justify-self:start}
+    nav{gap:4px;padding:6px}
+    nav a{padding:7px 10px;font-size:.72rem}
+    nav .logo{font-size:.68rem;padding:7px 10px}
+  }
+  @media(max-width:520px){
+    .members-grid{grid-template-columns:1fr}
+    nav a.hide-sm{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="trail"></canvas>
+<div id="progress" aria-hidden="true"></div>
+
+<nav>
+  <span class="logo holo">CHROME DREAMS</span>
+  <a href="#manifesto">Manifesto</a>
+  <a href="#members" class="hide-sm">Members</a>
+  <a href="#projects" class="hide-sm">Projects</a>
+  <a href="#contact" class="cta">Contact</a>
+</nav>
+
+<header id="top">
+  <canvas id="blob-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <span class="hero-eyebrow"><span class="dot"></span>EST. 2024 · TOKYO / BERLIN / SÃO PAULO</span>
+    <h1><span class="holo">CHROME</span><br>DREAMS</h1>
+    <p class="hero-sub">A design collective resurrecting the future we were promised in 1999. Liquid metal, iridescent light, and interfaces that are optimistic on purpose.</p>
+    <div class="hero-pills">
+      <a class="pill pill-solid" href="#projects">See the work</a>
+      <a class="pill pill-ghost" href="#manifesto">Read the manifesto</a>
+    </div>
+  </div>
+  <div class="hero-hint">scroll · the blob is touchable</div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span><b>Y2K</b> optimism</span><span>liquid metal</span><span><b>chrome</b> everything</span><span>iridescent futures</span><span>dial-up dreams</span><span><b>2000</b> never ended</span>
+  </div>
+</div>
+
+<section id="manifesto">
+  <div class="reveal">
+    <p class="kicker">Manifesto</p>
+    <h2>The year 2000 promised us <span class="holo">flying interfaces</span>. We're here to deliver, 26 years late.</h2>
+    <p class="lede">Somewhere between the millennium bug and the flat-design decade, the web lost its shine. Chrome Dreams is a working group of designers, 3D artists, and engineers who believe the future should look like it did on the cover of a 1999 tech magazine: silver, curved, glowing, and unreasonably hopeful.</p>
+  </div>
+  <div class="manifesto-grid">
+    <div class="tenet reveal"><span class="num holo">01</span><h3>Shine is sincerity</h3><p>A reflective surface hides nothing. We design interfaces that gleam because they have nothing to be ashamed of - no dark patterns, no fine print, no grey areas. If it can't be chromed, it can't ship.</p></div>
+    <div class="tenet reveal"><span class="num holo">02</span><h3>Optimism is a technology</h3><p>Y2K design believed technology would make life better, and said so in gradients. We build with that same conviction: every project must make at least one person feel like the future is worth showing up for.</p></div>
+    <div class="tenet reveal"><span class="num holo">03</span><h3>Curves over corners</h3><p>Nature has no right angles and neither did the iMac G3. Our layouts breathe, our buttons are pills, and our type flows like mercury. Sharp edges are reserved for our opinions.</p></div>
+    <div class="tenet reveal"><span class="num holo">04</span><h3>The blob is alive</h3><p>Every Chrome Dreams project contains at least one living element - something that morphs, reacts, and refuses to sit still. Static design is a rehearsal. We only do opening nights.</p></div>
+  </div>
+</section>
+
+<section id="members">
+  <div class="reveal">
+    <p class="kicker">Members</p>
+    <h2>Six people, four time zones, one <span class="holo">shared hallucination</span>.</h2>
+    <p class="lede">We met in the comment section of a WinAmp skin archive in 2023. Now we take on three client projects a year and spend the rest of the time building things nobody asked for.</p>
+  </div>
+  <div class="members-grid">
+    <div class="member reveal" style="--o1:#ffb3f0;--o2:#a8f0ff"><div class="orb"></div><h3>Yuki Amane</h3><p class="role holo">3D &amp; Motion Lead</p><p>Renders liquid metal for a living. Previously simulated fluids for a Tokyo VFX house; now makes blobs that respond to your cursor like a shy pet.</p><span class="loc">TOKYO · UTC+9</span></div>
+    <div class="member reveal" style="--o1:#a8f0ff;--o2:#c9b3ff"><div class="orb"></div><h3>Mara Volkova</h3><p class="role holo">Creative Direction</p><p>Owns 47 translucent gadgets and a working Sony Vaio from 2001. Directs every project by asking one question: would this excite a kid at a 1999 electronics store?</p><span class="loc">BERLIN · UTC+1</span></div>
+    <div class="member reveal" style="--o1:#c9b3ff;--o2:#ffb3f0"><div class="orb"></div><h3>Théo Lacroix</h3><p class="role holo">Type &amp; Identity</p><p>Draws letterforms that look extruded from mercury. His custom typeface "Millennium Round" is used in every Chrome Dreams identity since 2024.</p><span class="loc">PARIS · UTC+1</span></div>
+    <div class="member reveal" style="--o1:#ffd9a8;--o2:#a8f0ff"><div class="orb"></div><h3>Bia Nakamura</h3><p class="role holo">Creative Engineer</p><p>Writes the shaders. Believes WebGL is the closest thing the browser has to magic, and that every website deserves at least sixty frames per second of joy.</p><span class="loc">SÃO PAULO · UTC-3</span></div>
+    <div class="member reveal" style="--o1:#a8f0ff;--o2:#ffd9a8"><div class="orb"></div><h3>Dele Okafor</h3><p class="role holo">Interaction Design</p><p>Prototypes the way things should feel before deciding how they look. Responsible for the collective's rule that every hover state must be "worth hovering twice".</p><span class="loc">LAGOS · UTC+1</span></div>
+    <div class="member reveal" style="--o1:#ffb3f0;--o2:#c9b3ff"><div class="orb"></div><h3>Ren Ishida</h3><p class="role holo">Sound &amp; Ambience</p><p>Composes the startup chimes, hover blips, and ambient hums that make Chrome Dreams projects sound like a spaceship waking up gently.</p><span class="loc">OSAKA · UTC+9</span></div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="reveal">
+    <p class="kicker">Selected Projects</p>
+    <h2>Work that <span class="holo">reflects well</span> on everyone involved.</h2>
+  </div>
+  <div class="proj-list">
+    <a class="proj reveal" href="#contact"><span class="year">2026</span><div><h3>MERCURY OS</h3><p>A concept operating system where every window is a droplet. Built for the Berlin Digital Futures biennale; 40,000 visitors dragged liquid windows around a 6-metre touchscreen.</p></div><span class="tag">Exhibition</span></a>
+    <a class="proj reveal" href="#contact"><span class="year">2025</span><div><h3>SOFT SERVE RECORDS</h3><p>Full identity for an ambient label: chrome-dipped wordmark, iridescent vinyl sleeves, and a release site where each album is a playable metallic blob.</p></div><span class="tag">Identity + Web</span></a>
+    <a class="proj reveal" href="#contact"><span class="year">2025</span><div><h3>AIRPORT 2000</h3><p>Wayfinding concept for Ōita Prefecture's regional terminal: pill-shaped signage, holographic gradients that shift with the time of day, zero right angles.</p></div><span class="tag">Environmental</span></a>
+    <a class="proj reveal" href="#contact"><span class="year">2024</span><div><h3>DIAL-UP DREAMHOUSE</h3><p>Our founding project. A browser museum of Y2K web artifacts - 56k modem sounds included - visited by 1.2 million nostalgic humans in its first month.</p></div><span class="tag">Self-initiated</span></a>
+  </div>
+</section>
+
+<section id="contact" class="contact">
+  <div class="reveal">
+    <p class="kicker" style="justify-content:center">Contact</p>
+    <h2>We take three projects a year.<br>Make yours <span class="holo">impossible to refuse</span>.</h2>
+    <p class="lede" style="margin:0 auto">Briefs open for 2027: one exhibition, one identity, one thing that has never existed before. Tell us which one you are.</p>
+    <a class="big-mail holo" href="mailto:hello@chromedreams.studio">hello@chromedreams.studio</a>
+    <div class="socials">
+      <a href="#top">Instagram ↗</a><a href="#top">Are.na ↗</a><a href="#top">Cosmos ↗</a><a href="#top">Newsletter ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Chrome Dreams Collective · Tokyo / Berlin / São Paulo · All reflections reserved</p>
+  <p class="tiny">Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ scroll reveals ============ */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  /* stagger children within grids */
+  document.querySelectorAll('.manifesto-grid,.members-grid,.proj-list').forEach(function(grid){
+    Array.prototype.forEach.call(grid.children,function(el,i){ el.style.setProperty('--d',(i%6)*0.09+'s'); });
+  });
+
+  /* scroll progress bar */
+  var prog=document.getElementById('progress'), scrollN=0;
+  addEventListener('scroll',function(){
+    var max=document.documentElement.scrollHeight-innerHeight;
+    scrollN=max>0?scrollY/max:0;
+    prog.style.width=(scrollN*100)+'%';
+  },{passive:true});
+
+  /* duplicate marquee content for seamless loop */
+  var track = document.getElementById('marqueeTrack');
+  track.innerHTML += track.innerHTML;
+
+  /* ============ cursor trail ============ */
+  var tc = document.getElementById('trail'), tctx = tc.getContext('2d');
+  var dots = [], hue = 200;
+  function sizeTrail(){ tc.width = innerWidth; tc.height = innerHeight; }
+  sizeTrail(); addEventListener('resize', sizeTrail);
+  if(!reduced){
+    addEventListener('pointermove', function(e){
+      dots.push({x:e.clientX,y:e.clientY,r:9,life:1,h:hue});
+      hue = (hue + 3) % 360;
+      if(dots.length>90) dots.shift();
+    });
+  }
+  function drawTrail(){
+    tctx.clearRect(0,0,tc.width,tc.height);
+    for(var i=dots.length-1;i>=0;i--){
+      var d=dots[i]; d.life-=0.03; d.r*=0.97;
+      if(d.life<=0){ dots.splice(i,1); continue; }
+      var g=tctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*3);
+      g.addColorStop(0,'hsla('+d.h+',100%,80%,'+(d.life*0.5)+')');
+      g.addColorStop(1,'hsla('+d.h+',100%,70%,0)');
+      tctx.fillStyle=g;
+      tctx.beginPath(); tctx.arc(d.x,d.y,d.r*3,0,6.2832); tctx.fill();
+    }
+  }
+
+  /* ============ simplex noise (3D) ============ */
+  var grad3=[[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+  var p=[],perm=[],i;
+  for(i=0;i<256;i++) p[i]=Math.floor(Math.abs(Math.sin(i*127.1)*43758.5453)%256);
+  for(i=0;i<512;i++) perm[i]=p[i&255];
+  function noise3(x,y,z){
+    var F3=1/3,G3=1/6;
+    var s=(x+y+z)*F3, i0=Math.floor(x+s), j0=Math.floor(y+s), k0=Math.floor(z+s);
+    var t=(i0+j0+k0)*G3, X0=i0-t,Y0=j0-t,Z0=k0-t, x0=x-X0,y0=y-Y0,z0=z-Z0;
+    var i1,j1,k1,i2,j2,k2;
+    if(x0>=y0){ if(y0>=z0){i1=1;j1=0;k1=0;i2=1;j2=1;k2=0;} else if(x0>=z0){i1=1;j1=0;k1=0;i2=1;j2=0;k2=1;} else {i1=0;j1=0;k1=1;i2=1;j2=0;k2=1;} }
+    else { if(y0<z0){i1=0;j1=0;k1=1;i2=0;j2=1;k2=1;} else if(x0<z0){i1=0;j1=1;k1=0;i2=0;j2=1;k2=1;} else {i1=0;j1=1;k1=0;i2=1;j2=1;k2=0;} }
+    var x1=x0-i1+G3,y1=y0-j1+G3,z1=z0-k1+G3;
+    var x2=x0-i2+2*G3,y2=y0-j2+2*G3,z2=z0-k2+2*G3;
+    var x3=x0-1+3*G3,y3=y0-1+3*G3,z3=z0-1+3*G3;
+    var ii=i0&255,jj=j0&255,kk=k0&255;
+    var n=0,t0,gi;
+    t0=0.6-x0*x0-y0*y0-z0*z0;
+    if(t0>0){t0*=t0;gi=perm[ii+perm[jj+perm[kk]]]%12;n+=t0*t0*(grad3[gi][0]*x0+grad3[gi][1]*y0+grad3[gi][2]*z0);}
+    t0=0.6-x1*x1-y1*y1-z1*z1;
+    if(t0>0){t0*=t0;gi=perm[ii+i1+perm[jj+j1+perm[kk+k1]]]%12;n+=t0*t0*(grad3[gi][0]*x1+grad3[gi][1]*y1+grad3[gi][2]*z1);}
+    t0=0.6-x2*x2-y2*y2-z2*z2;
+    if(t0>0){t0*=t0;gi=perm[ii+i2+perm[jj+j2+perm[kk+k2]]]%12;n+=t0*t0*(grad3[gi][0]*x2+grad3[gi][1]*y2+grad3[gi][2]*z2);}
+    t0=0.6-x3*x3-y3*y3-z3*z3;
+    if(t0>0){t0*=t0;gi=perm[ii+1+perm[jj+1+perm[kk+1]]]%12;n+=t0*t0*(grad3[gi][0]*x3+grad3[gi][1]*y3+grad3[gi][2]*z3);}
+    return 32*n;
+  }
+
+  /* ============ THREE.js chrome blob ============ */
+  if(typeof THREE === 'undefined'){ return; } // CDN failed; page still fully readable
+  var canvas = document.getElementById('blob-canvas');
+  var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0,0,4.6);
+
+  /* --- procedural iridescent environment (equirect canvas -> PMREM) --- */
+  function makeEnvTexture(){
+    var c=document.createElement('canvas'); c.width=1024; c.height=512;
+    var x=c.getContext('2d');
+    // vertical sky gradient: dark purple -> bright bands -> dark
+    var g=x.createLinearGradient(0,0,0,512);
+    g.addColorStop(0,'#0d0618');
+    g.addColorStop(0.18,'#3a1a5e');
+    g.addColorStop(0.34,'#ffd7f4');
+    g.addColorStop(0.42,'#ffffff');
+    g.addColorStop(0.50,'#a8f0ff');
+    g.addColorStop(0.60,'#c9b3ff');
+    g.addColorStop(0.72,'#2a1245');
+    g.addColorStop(1,'#08040f');
+    x.fillStyle=g; x.fillRect(0,0,1024,512);
+    // bright horizontal streaks = crisp chrome highlights
+    var streaks=[[70,10,'rgba(255,255,255,0.95)'],[150,26,'rgba(255,179,240,0.8)'],[260,14,'rgba(255,255,255,0.9)'],[330,30,'rgba(168,240,255,0.75)'],[430,12,'rgba(201,179,255,0.7)']];
+    streaks.forEach(function(s){
+      var sg=x.createLinearGradient(0,s[0]-s[1],0,s[0]+s[1]);
+      sg.addColorStop(0,'rgba(0,0,0,0)'); sg.addColorStop(0.5,s[2]); sg.addColorStop(1,'rgba(0,0,0,0)');
+      x.fillStyle=sg; x.fillRect(0,s[0]-s[1],1024,s[1]*2);
+    });
+    // vertical color pillars for iridescent variation around the sphere
+    var pillars=[[100,'rgba(255,179,240,0.5)'],[320,'rgba(168,240,255,0.5)'],[560,'rgba(201,179,255,0.55)'],[790,'rgba(255,217,168,0.4)'],[930,'rgba(255,179,240,0.45)']];
+    pillars.forEach(function(pl){
+      var pg=x.createLinearGradient(pl[0]-90,0,pl[0]+90,0);
+      pg.addColorStop(0,'rgba(0,0,0,0)'); pg.addColorStop(0.5,pl[1]); pg.addColorStop(1,'rgba(0,0,0,0)');
+      x.fillStyle=pg; x.fillRect(pl[0]-90,60,180,392);
+    });
+    var tex=new THREE.CanvasTexture(c);
+    tex.mapping=THREE.EquirectangularReflectionMapping;
+    tex.colorSpace=THREE.SRGBColorSpace;
+    return tex;
+  }
+  var pmrem = new THREE.PMREMGenerator(renderer);
+  var envRT = pmrem.fromEquirectangular(makeEnvTexture());
+  scene.environment = envRT.texture;
+
+  /* weld the non-indexed icosahedron into indexed geometry so
+     computeVertexNormals gives SMOOTH liquid normals, not facets */
+  function weld(src){
+    var pa=src.attributes.position.array, map={}, uniq=[], index=[];
+    for(var v=0;v<pa.length;v+=3){
+      var key=pa[v].toFixed(5)+'_'+pa[v+1].toFixed(5)+'_'+pa[v+2].toFixed(5);
+      if(map[key]===undefined){ map[key]=uniq.length/3; uniq.push(pa[v],pa[v+1],pa[v+2]); }
+      index.push(map[key]);
+    }
+    var g=new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(uniq),3));
+    g.setIndex(index);
+    return g;
+  }
+  var geo = weld(new THREE.IcosahedronGeometry(1.08, 28));
+  var basePos = geo.attributes.position.array.slice();
+  var mat = new THREE.MeshStandardMaterial({
+    color:0xffffff, metalness:1, roughness:0.06, envMapIntensity:1.35
+  });
+  var blob = new THREE.Mesh(geo, mat);
+  scene.add(blob);
+
+  // faint rim lights for extra pop
+  var l1 = new THREE.PointLight(0xffb3f0, 8, 20); l1.position.set(3,2,3); scene.add(l1);
+  var l2 = new THREE.PointLight(0xa8f0ff, 8, 20); l2.position.set(-3,-2,2); scene.add(l2);
+
+  function sizeGL(){
+    var w=canvas.clientWidth||canvas.parentElement.clientWidth, h=canvas.parentElement.clientHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+    /* keep the blob framed on narrow screens: pull the camera back */
+    camera.position.z = camera.aspect < 1 ? 4.6/Math.max(0.55, camera.aspect*1.05) : 4.6;
+  }
+  sizeGL(); addEventListener('resize', sizeGL);
+
+  /* mouse interaction */
+  var mx=0,my=0,tmx=0,tmy=0, boost=0;
+  addEventListener('pointermove',function(e){
+    tmx=(e.clientX/innerWidth)*2-1;
+    tmy=-(e.clientY/innerHeight)*2+1;
+  });
+  /* discovery: click the blob -> dream-mode pulse + hue shift */
+  var hueShift=0;
+  canvas.parentElement.addEventListener('click',function(e){
+    if(e.target.closest('a,button')) return;
+    boost=1.6; hueShift=(hueShift+60)%360;
+    canvas.style.filter='hue-rotate('+hueShift+'deg)';
+  });
+
+  var pos = geo.attributes.position;
+  var t=0;
+  function morph(time){
+    t=time*0.00035;
+    var amp=0.20+boost*0.30, freq=0.9;
+    for(var i=0;i<pos.count;i++){
+      var ix=i*3;
+      var ox=basePos[ix],oy=basePos[ix+1],oz=basePos[ix+2];
+      var len=Math.sqrt(ox*ox+oy*oy+oz*oz);
+      var nx=ox/len,ny=oy/len,nz=oz/len;
+      var n1=noise3(nx*freq+t, ny*freq+t*0.8, nz*freq-t);
+      var n2=0.35*noise3(nx*2.1-t*1.3, ny*2.1+t, nz*2.1+t*0.7);
+      /* cursor bulge: vertices facing the cursor swell */
+      var facing=nx*mx*0.9+ny*my*0.9;
+      var r=len*(1+amp*(n1+n2)*0.5+Math.max(0,facing)*0.12);
+      pos.array[ix]=nx*r; pos.array[ix+1]=ny*r; pos.array[ix+2]=nz*r;
+    }
+    pos.needsUpdate=true;
+    geo.computeVertexNormals();
+  }
+
+  var frame=0, lastSY=0;
+  function loop(time){
+    mx+=(tmx-mx)*0.05; my+=(tmy-my)*0.05;
+    /* scroll energy: fast scrolling agitates the metal */
+    var vel=Math.abs(scrollY-lastSY); lastSY=scrollY;
+    boost=Math.min(1.8, boost + vel*0.0035);
+    boost*=0.96;
+    morph(time||0);
+    /* parallax: blob drifts up and spins as you scroll away */
+    var sf=Math.min(1, scrollY/Math.max(1,innerHeight));
+    blob.position.y = sf*1.4;
+    blob.rotation.y = t*0.9 + mx*0.35 + sf*1.2;
+    blob.rotation.x = -my*0.25 + sf*0.4;
+    renderer.render(scene,camera);
+    if(!reduced) drawTrail();
+    frame++;
+    /* reduced motion: render a couple of frames for a static sculpted blob, then stop */
+    if(!reduced || frame<3) requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

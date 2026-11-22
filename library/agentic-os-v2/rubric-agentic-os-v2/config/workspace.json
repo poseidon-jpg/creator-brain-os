@@ -1,0 +1,14 @@
+{
+  "_note": "Where your workspace lives. Your agent fills this in at install (BRAIN.md, step 1). Paths are relative to root, except root itself, which is an absolute path (or relative to this OS folder).",
+  "root": "",
+  "routerDoc": "AGENTS.md",
+  "instructionDocs": ["AGENTS.md"],
+  "skillDirs": [],
+  "memoryDir": "",
+  "memoryIndex": "MEMORY.md",
+  "projectsDir": "",
+  "sharedPrefixes": [],
+  "visibleRoots": [],
+  "routing": {},
+  "maxFiles": 500000
+}

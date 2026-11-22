@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUBRIC Carousels</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='6' y='14' width='22' height='52' rx='5' fill='%23ff6b1a' opacity='.45'/%3E%3Crect x='29' y='8' width='26' height='64' rx='6' fill='%23ff6b1a'/%3E%3Crect x='56' y='14' width='18' height='52' rx='5' fill='%23ff6b1a' opacity='.45'/%3E%3C/svg%3E">
+<link href="/assets/fonts.css" rel="stylesheet">
+<style>
+html { color-scheme:dark; } html[data-theme="light"] { color-scheme:light; }
+:root, html[data-theme="dark"] { --bg:#131311; --card:#24221c; --text:#e8e2d2; --muted:#8d8775; --accent:#ff6b1a; --line:#3a372f; --shadow:#000; --well:#1a1915; --green:#5fbf6e; }
+html[data-theme="light"] { --bg:#f2efe8; --card:#faf8f2; --text:#1c1a16; --muted:#6f6a5c; --accent:#ff6b1a; --line:#1c1a16; --shadow:rgba(28,26,22,.9); --well:#ece8de; --green:#3f9a5b; }
+:root {
+  --cur-hex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z' fill='%23131311' stroke='%23e8e2d2' stroke-width='2'/%3E%3C/svg%3E") 12 12;
+  --cur-hex-fill:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z' fill='%23ff6b1a' stroke='%23ff6b1a' stroke-width='2'/%3E%3C/svg%3E") 12 12;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.5 'Outfit',system-ui,sans-serif; cursor:var(--cur-hex),auto; }
+a, button, .tile, .pill { cursor:var(--cur-hex-fill),pointer; }
+::selection { background:#ff6b1a; color:#fff; }
+.wrap { padding:0 28px 80px; }
+header { display:flex; align-items:flex-end; gap:12px 14px; flex-wrap:wrap; padding:36px 0 14px; max-width:1500px; }
+h1 { margin:0; font-weight:500; font-size:clamp(34px,5vw,52px); letter-spacing:-1.5px; line-height:1; }
+h1 .doto { font-family:'Doto',monospace; font-weight:900; color:var(--accent); margin-left:.2em; }
+.sp { flex:1; }
+.back { align-self:center; margin-right:4px; }   /* the way home, first thing in the header */
+html:not(.rnav-open) header { padding-top:60px; }   /* with the sidebar closed its floating tab sits top left, so Home starts below it, never under it */
+.hdr-r { display:flex; gap:8px 10px; align-items:center; flex:1 1 640px; justify-content:flex-end; min-width:0; }   /* the controls move as one group, so no button wraps alone */
+.hdr-r .chip { white-space:nowrap; }
+.chip { font:500 13px 'Outfit'; padding:7px 12px; border-radius:8px; border:2px solid var(--card); background:var(--card); color:var(--text); text-decoration:none; transition:transform .15s, box-shadow .15s; }
+.chip:hover { transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--shadow); }
+.chip.go { background:var(--accent); border-color:var(--accent); color:#fff; }
+html[data-theme="light"] .chip { border-color:var(--line); }
+input[type=search] { font:400 15px 'Outfit'; padding:8px 12px; border-radius:8px; border:2px solid var(--line); background:var(--well); color:var(--text); flex:1 1 130px; max-width:240px; min-width:0; outline:none; }   /* the one header item that gives way, so the row never wraps the theme button */
+input[type=search]:focus { border-color:var(--accent); }
+#tools { display:flex; gap:8px; align-items:center; }
+#tools .rcart-fab, #tools .rcm-fab { position:static; z-index:auto; box-shadow:none; padding:7px 12px; font-size:13px; }   /* flex items honour z-index, so reset it or they float over the big view */
+.lead { color:var(--muted); margin:0 0 22px; max-width:760px; font-size:16px; }
+.lead kbd { font:600 12px 'Outfit'; padding:1px 6px; border-radius:5px; background:var(--card); color:var(--text); }
+
+/* one row per carousel */
+.row { margin:0 0 34px; }
+.rhd { display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; margin:0 0 10px; max-width:1500px; }
+.rhd h2 { margin:0; font-weight:500; font-size:24px; letter-spacing:-.5px; }
+.rhd .meta { color:var(--muted); font-size:14px; display:flex; gap:12px; flex-wrap:wrap; }
+.rhd .meta b { color:var(--text); font-weight:600; }
+.rhd .meta .c b { color:var(--accent); }
+.rhd .acts { display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; }
+.tag { font-size:11px; letter-spacing:1.4px; text-transform:uppercase; font-weight:600; border-radius:6px; padding:2px 8px; white-space:nowrap; }
+.tag.stale { color:var(--accent); border:1.5px solid var(--accent); }
+.strip { display:flex; gap:16px; overflow-x:auto; padding:6px 8px 18px 2px; scroll-snap-type:x proximity; scrollbar-color:var(--line) transparent; }
+.tile { flex:0 0 auto; width:216px; scroll-snap-align:start; position:relative; transition:transform .18s; }
+.tile:hover { transform:translateY(-4px); }
+.tile.drag { opacity:.35; } .tile.over { box-shadow:-4px 0 0 var(--accent); border-radius:8px; }
+.shot { position:relative; aspect-ratio:4/5; border-radius:8px; overflow:hidden; background:var(--card); box-shadow:5px 5px 0 var(--shadow); container-type:inline-size; }
+.shot img { width:100%; height:100%; display:block; object-fit:cover; pointer-events:none; }
+/* the live preview: the card's real clip, played over the snapshot in the exact box the engine puts it */
+.shot .pv { position:absolute; z-index:1; background:#151515; display:block; pointer-events:none; }
+.shot .pv.cover { object-fit:cover; border-radius:1.2cqw; } .shot .pv.contain { object-fit:contain; }
+body.no-preview .shot .pv { display:none; }
+.cap .fv { font:600 12px 'Outfit'; padding:4px 8px; border-radius:6px; border:0; background:var(--card); color:var(--muted); display:inline-flex; align-items:center; gap:4px; }
+.cap .fv:hover { color:var(--accent); }
+.cap .fv svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+#pvBtn.off { background:var(--accent); border-color:var(--accent); color:#fff; }
+.tile.ok .shot { box-shadow:5px 5px 0 var(--green); }
+.badges { position:absolute; left:7px; bottom:7px; z-index:3; display:flex; gap:5px; pointer-events:none; }   /* bottom left: the card's own title and icon live at the top */
+.badge { font:600 11px 'Outfit'; padding:2px 7px; border-radius:6px; background:rgba(19,19,17,.85); color:#e8e2d2; }
+.badge.vid { background:var(--accent); color:#fff; }
+.tile .cap { display:flex; align-items:center; gap:6px; margin-top:9px; font-size:13px; }
+.tile .cap span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tile .cap .ok { color:var(--green); font-weight:700; }
+.mini { font:600 12px 'Outfit'; padding:4px 8px; border-radius:6px; border:0; background:var(--card); color:var(--muted); }
+.mini:hover { color:var(--text); }
+.mini.in-cart { background:var(--accent); color:#fff; }
+.empty { color:var(--muted); background:var(--well); border-radius:10px; padding:16px 18px; max-width:640px; }
+
+/* the big view */
+#view { position:fixed; inset:0; z-index:500; background:rgba(10,10,9,.94); display:none; }
+#view.show { display:flex; }
+.vstage { flex:1; display:flex; align-items:center; justify-content:center; padding:28px; min-width:0; }
+.vcard { position:relative; height:min(88vh, calc((100vw - 460px) * 1.25)); aspect-ratio:4/5; border-radius:10px; overflow:hidden; box-shadow:8px 8px 0 #000; background:#131311; }
+.vcard iframe { position:absolute; left:0; top:0; width:100%; height:100%; border:0; display:block; }
+.vcard .hit { position:absolute; inset:0; z-index:2; }
+.vnav { position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:44px; height:44px; border-radius:50%; border:0; background:var(--card); color:var(--text); font-size:20px; }
+.vnav.l { left:18px; } .vnav.r { right:478px; }
+.vside { width:440px; flex:none; background:var(--bg); padding:24px 22px 76px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+.vside .k { color:var(--muted); font-size:13px; letter-spacing:1.5px; text-transform:uppercase; }
+.vside h3 { margin:0; font-weight:500; font-size:24px; letter-spacing:-.5px; line-height:1.15; }
+.vside .t { color:var(--muted); font-size:14px; }
+.vbtns { display:flex; gap:8px; flex-wrap:wrap; }
+.btn { font:600 14px 'Outfit'; padding:9px 13px; border-radius:8px; border:0; background:var(--card); color:var(--text); transition:transform .15s, box-shadow .15s; }
+.btn:hover { transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--shadow); } .btn:active { transform:translate(1px,1px); box-shadow:none; }
+.btn.go { background:var(--accent); color:#fff; } .btn.okd { background:var(--green); color:#131311; }
+.btn.in-cart { background:var(--accent); color:#fff; }
+.covers { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.pill { border-radius:6px; overflow:hidden; border:2px solid transparent; background:var(--card); }
+.pill img { width:100%; display:block; aspect-ratio:4/5; object-fit:cover; }
+.pill span { display:block; font-size:11px; padding:3px 5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pill.on { border-color:var(--accent); } .pill.on span { color:var(--accent); }
+.vside label { font-weight:600; font-size:14px; }
+.vside textarea { width:100%; min-height:80px; resize:vertical; font:400 14px 'Outfit'; color:var(--text); background:var(--well); border:2px solid var(--line); border-radius:8px; padding:8px 10px; outline:none; box-shadow:4px 4px 0 rgba(255,107,26,0); transition:box-shadow .3s; }
+.vside textarea:focus { box-shadow:4px 4px 0 rgba(255,107,26,1); border-color:var(--accent); }
+.plist .it { display:grid; grid-template-columns:24px 1fr 22px; gap:6px; padding:6px 0; border-bottom:1px solid var(--line); font-size:14px; }
+.plist .it i { font-style:normal; color:var(--accent); font-weight:700; }
+.plist .it button { border:0; background:transparent; color:var(--muted); }
+.plist .none { color:var(--muted); font-size:14px; }
+.plist .it.done { opacity:.55; } .plist .it.done i { color:var(--green); } .plist .it small { display:block; color:var(--muted); font-size:12px; }
+/* the cover choice, right on the row: big enough to judge, every name showing, the chosen one unmistakable */
+.covpick { display:flex; align-items:flex-start; gap:12px; margin:0 0 14px; flex-wrap:wrap; }
+.covpick > span { color:var(--muted); font-size:13px; margin:6px 4px 0 0; width:84px; line-height:1.3; }
+.covpick .cp { position:relative; width:104px; padding:0; border:2px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card); text-align:left; transition:transform .15s, box-shadow .15s, border-color .15s; }
+.covpick .cp img { display:block; width:100%; aspect-ratio:4/5; object-fit:cover; }
+.covpick .cp i { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; font:500 11.5px/1.25 'Outfit'; font-style:normal; color:var(--muted); margin:5px 7px 6px; overflow:hidden; min-height:2.5em; }   /* margin, not padding, so a third line never peeks out under the clamp */
+.covpick .cp:hover { transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--shadow); border-color:var(--muted); }
+.covpick .cp.on { border-color:var(--accent); box-shadow:4px 4px 0 var(--accent); }
+.covpick .cp.on i { color:var(--accent); font-weight:600; }
+.covpick .cp .ck { position:absolute; left:6px; top:6px; font:700 10.5px 'Outfit'; letter-spacing:.3px; background:var(--accent); color:#fff; padding:2px 7px; border-radius:5px; }
+.covpick .cp:not(.on) .ck { display:none; }
+.vkeys { color:var(--muted); font-size:12.5px; margin-top:auto; }
+.vkeys kbd { font:600 11px 'Outfit'; padding:1px 5px; border-radius:4px; background:var(--card); color:var(--text); }
+.toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:9800; background:var(--accent); color:#fff; font:600 14px 'Outfit'; padding:9px 16px; border-radius:8px; opacity:0; transition:opacity .2s; pointer-events:none; }
+.toast.show { opacity:1; }
+@media (max-width:900px) { #view.show { flex-direction:column; } .vside { width:100%; } .vcard { height:auto; width:min(100%, 60vh); } .vnav.r { right:18px; } .wrap { padding:0 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="chip back" href="/" title="Back to every carousel">← Home</a>
+  <h1>RUBRIC<span class="doto">carousels</span></h1>
+  <div class="sp"></div>
+  <div class="hdr-r">
+  <input type="search" id="q" placeholder="Search carousels" aria-label="Search carousels">
+  <button class="chip" id="pvBtn" title="Stop or start the video previews (key p)">Stop previews</button>
+  <button class="chip go" id="copyAll" title="Every open comment on every carousel, for your agent">Copy all comments</button>
+  <div id="tools"></div>
+  <button class="chip" id="theme" aria-label="Dark or light">◐</button>
+  </div>
+</header>
+<p class="lead">Every carousel in one place. <b>Click a card</b> to comment on that spot, <b>Full view</b> opens it big. Videos preview on their own. <kbd>b</kbd> sidebar, <kbd>p</kbd> previews, <kbd>c</kbd> cart, <kbd>a</kbd> approves the open card. Drag cards to reorder. Everything saves next to each carousel.</p>
+<div id="rows"></div>
+</div>
+
+<div id="view" aria-modal="true" role="dialog">
+  <div class="vstage">
+    <button class="vnav l" id="prev" aria-label="Previous card">‹</button>
+    <div class="vcard" id="vcard"><iframe id="vframe" title="Card"></iframe><div class="hit" id="vhit"></div></div>
+    <button class="vnav r" id="next" aria-label="Next card">›</button>
+  </div>
+  <aside class="vside" id="vside"></aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/features/agent-cart.js"></script>
+<script src="/features/click-comment.js"></script>
+<script src="/features/sidebar-nav.js"></script>
+<script src="/features/apply-comments.js"></script>
+<script>
+// optional RUBRIC_TOKEN: the server hands it to this page, and every /api call carries it
+(() => { const f = window.fetch.bind(window); window.fetch = (u, o = {}) => { if (window.RUBRIC_TOKEN && String(u).startsWith('/api/')) o = Object.assign({}, o, { headers:Object.assign({}, o.headers, { 'x-rubric-token':window.RUBRIC_TOKEN }) }); return f(u, o); }; })();
+const $ = id => document.getElementById(id);
+let INFO = {};   // from GET /api/info: the kit folder, the carousels folder, the exporter and the Agentic OS address
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+let DATA = [], VIEW = null, toastT;
+const ONLY = new URLSearchParams(location.search).get('c');   // opened from the homepage: this one carousel only
+const shown = () => DATA.filter(d => !ONLY || d.slug === ONLY);
+const bySlug = s => DATA.find(d => d.slug === s);
+function toast(m) { $('toast').textContent = m; $('toast').classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 1600); }
+
+// ---------- saving one carousel's review (cover, approvals, order, comments) ----------
+const pending = {}, inflight = {}, waiters = {};
+// resolves once the save has landed, so Apply all comments can reload the page right after it marks comments applied
+function saveReview(slug) {
+  clearTimeout(pending[slug]);
+  const landed = new Promise(r => (waiters[slug] = waiters[slug] || []).push(r));
+  pending[slug] = setTimeout(async () => {
+    const ws = waiters[slug]; waiters[slug] = [];
+    await inflight[slug];   // one save at a time per carousel, so each carries the version the last one returned
+    inflight[slug] = (async () => {
+      const d = bySlug(slug); if (!d) return;
+      const r = await fetch('/api/review/' + encodeURIComponent(slug), { method:'PUT', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(d.review) });
+      if (r.status === 409) { d.review = await r.json(); await RoboComments.reload(); render(); toast('Newer changes from another tab loaded'); return; }
+      if (!r.ok) { toast('Could not save, try again'); return; }
+      const saved = await r.json(); d.review.version = saved.version; d.review.saved = saved.saved;
+    })().catch(() => toast('Could not save, try again'));
+    await inflight[slug]; ws.forEach(r => r());
+  }, 300);
+  return landed;
+}
+const ids = (slug, i) => slug + '#' + i;
+const cardOf = (d, i) => d.manifest.cards[i];
+const coverKey = d => d.review.cover || d.manifest.coverKey;
+const order = d => { const n = d.manifest.cards.length, o = (d.review.order || []).filter(i => i < n); for (let i = 0; i < n; i++) if (!o.includes(i)) o.push(i); return o; };
+const label = (d, i) => { const c = cardOf(d, i); return d.manifest.title + ' · ' + (c.num ? c.num + ' ' : '') + c.name; };
+const thumbOf = (d, i) => { const c = cardOf(d, i); if (c.cover) { const k = (d.manifest.covers || []).find(x => x.key === coverKey(d)); if (k) return k.thumb; } return c.thumb; };
+const bust = d => '?v=' + Date.parse(d.manifest.exportedAt || 0);
+
+// ---------- rows ----------
+function render() {
+  const q = $('q').value.trim().toLowerCase();
+  const list = shown().filter(d => !q || (d.manifest ? d.manifest.title : d.slug).toLowerCase().includes(q) || d.slug.includes(q));
+  if (!list.length) { $('rows').innerHTML = '<div class="empty">No carousels yet. Ask your agent to make one in the carousels folder (the README shows the folder format), then refresh.</div>'; return; }
+  $('rows').innerHTML = list.map(d => {
+    if (!d.manifest) return `<section class="row"><div class="rhd"><h2>${esc(d.slug)}</h2><div class="acts"><button class="chip go" data-exp="${esc(d.slug)}">Make snapshots</button></div></div><div class="empty">No snapshots yet. Press Make snapshots (about 30 seconds), or ask your agent to run the exporter (README, Snapshots), and the cards appear here.</div></section>`;
+    const m = d.manifest, n = m.cards.length, vids = m.cards.filter(c => c.media).length;
+    const coms = RoboComments.list().filter(c => c.target.startsWith(d.slug + '#') && c.status !== 'applied').length;   // open comments only
+    const covs = (m.covers || []);
+    const okd = Object.values(d.review.approved || {}).filter(Boolean).length;
+    const cov = (m.covers || []).find(x => x.key === coverKey(d));
+    const item = JSON.stringify({ id:'carousel:' + d.slug, title:'Carousel: ' + m.title, lines:{ Folder:d.folder } });
+    return `<section class="row" data-slug="${esc(d.slug)}" data-nav="${esc(d.slug)}" data-nav-label="${esc(m.title)}" data-nav-sub="${n} cards · ${okd} approved" data-nav-badge="${coms}">
+      <div class="rhd"><h2>${esc(m.title)}</h2>
+        <div class="meta"><span><b>${n}</b> cards</span>${vids ? `<span><b>${vids}</b> videos</span>` : ''}<span class="c"><b>${coms}</b> comments</span><span><b>${okd}</b>/${n} approved</span>${cov ? `<span>Cover: <b>${esc(cov.label)}</b></span>` : ''}${d.stale ? '<span class="tag stale">Deck changed, refresh snapshots</span>' : ''}</div>
+        <div class="acts">
+          <button class="chip" data-cart-add data-cart-item='${esc(item)}' data-cart-label-off="Add carousel to cart" data-cart-label-on="Carousel in cart">Add carousel to cart</button>
+          <button class="chip" data-copy="${esc(d.slug)}">Copy comments</button>
+          <button class="chip" data-exp="${esc(d.slug)}">Refresh snapshots</button>
+          <a class="chip" href="/c/${encodeURIComponent(d.slug)}/index.html" target="_blank" rel="noopener">Open storyboard</a>
+        </div></div>
+      ${covs.length > 1 ? `<div class="covpick"><span>Cover<br>click one to choose</span>${covs.map(k => `<button class="cp${k.key === coverKey(d) ? ' on' : ''}" data-pick-cover="${esc(k.key)}" data-slug="${esc(d.slug)}" title="${esc(k.label)}" aria-pressed="${k.key === coverKey(d)}"><img src="/c/${encodeURIComponent(d.slug)}/${esc(k.thumb)}${bust(d)}" alt=""><b class="ck">✓ Chosen</b><i>${esc(k.label)}</i></button>`).join('')}</div>` : ''}
+      <div class="strip" data-slug="${esc(d.slug)}">${order(d).map(i => tile(d, i)).join('')}</div>
+    </section>`;
+  }).join('');
+  RoboCart.refresh(); RoboComments.refresh(); RoboNav.refresh(); watchPreviews();
+}
+const FV = '<svg viewBox="0 0 12 12"><path d="M1 4V1h3M8 1h3v3M11 8v3H8M4 11H1V8"/></svg>';
+function tile(d, i) {
+  const c = cardOf(d, i), ok = d.review.approved && d.review.approved[i], md = c.media;
+  const item = JSON.stringify({ id:ids(d.slug, i), title:label(d, i), lines:{ Folder:d.folder, Card:(i + 1) + ' of ' + d.manifest.cards.length } });
+  const pv = md ? `<video class="pv ${md.fit === 'contain' ? 'contain' : 'cover'}" muted loop playsinline preload="none" data-src="/c/${encodeURIComponent(d.slug)}/${esc(md.src)}" style="left:${+md.rect.x || 0}%;top:${+md.rect.y || 0}%;width:${+md.rect.w || 0}%;height:${+md.rect.h || 0}%"></video>` : '';
+  return `<div class="tile${ok ? ' ok' : ''}" draggable="true" data-slug="${esc(d.slug)}" data-i="${i}" data-nav-child="${esc(ids(d.slug, i))}" data-nav-label="${esc((c.num ? c.num + ' · ' : '') + c.name)}">
+    <div class="shot" data-comment-id="${esc(ids(d.slug, i))}" data-comment-label="${esc(label(d, i))}">
+      <img src="/c/${encodeURIComponent(d.slug)}/${esc(thumbOf(d, i))}${bust(d)}" alt="" loading="lazy">${pv}
+      <span class="badges"><span class="badge">${c.cover ? 'Cover' : (c.num || i + 1)}</span>${c.kind === 'video' ? '<span class="badge vid">Video</span>' : ''}</span>
+    </div>
+    <div class="cap">${ok ? '<span class="ok" title="Approved">✓</span>' : ''}<span>${esc(c.name)}</span>
+      <button class="fv" data-view title="Open full view">${FV} Full view</button>
+      <button class="mini" data-cart-add data-cart-item='${esc(item)}' data-cart-label-off="+ Cart" data-cart-label-on="In cart" title="Add this card to the cart">+ Cart</button></div>
+  </div>`;
+}
+
+// ---------- previews: every video card plays its real clip while it is on screen; one button stops them all ----------
+let PREVIEW = (() => { try { return localStorage.getItem('rubric-carousels-preview') !== 'off'; } catch (e) { return true; } })();
+let pvIO = null;
+function watchPreviews() {
+  if (pvIO) pvIO.disconnect();
+  pvIO = new IntersectionObserver(es => es.forEach(en => {
+    const v = en.target; v._vis = en.isIntersecting;
+    if (v._vis && PREVIEW) { if (!v.src) v.src = v.dataset.src; v.play().catch(() => {}); } else v.pause();
+  }), { threshold:0.25 });
+  document.querySelectorAll('.shot .pv').forEach(v => pvIO.observe(v));
+}
+function setPreview(on) {
+  PREVIEW = on;
+  try { localStorage.setItem('rubric-carousels-preview', on ? 'on' : 'off'); } catch (e) {}
+  document.body.classList.toggle('no-preview', !on);
+  $('pvBtn').textContent = on ? 'Stop previews' : 'Play previews';
+  $('pvBtn').classList.toggle('off', !on);
+  document.querySelectorAll('.shot .pv').forEach(v => { if (on && v._vis) { if (!v.src) v.src = v.dataset.src; v.play().catch(() => {}); } else v.pause(); });
+  if (VIEW) openView(VIEW.slug, VIEW.i);   // the big view follows the same switch
+}
+
+// ---------- the big view ----------
+function openView(slug, i) {
+  const d = bySlug(slug); if (!d || !d.manifest) return;
+  VIEW = { slug, i };
+  $('vframe').src = `/c/${encodeURIComponent(slug)}/index.html?solo=${i}&cover=${encodeURIComponent(coverKey(d))}${PREVIEW ? '' : '&still=1'}`;
+  $('vhit').setAttribute('data-comment-id', ids(slug, i));
+  $('vhit').setAttribute('data-comment-label', label(d, i));
+  $('view').classList.add('show');
+  side();
+  RoboComments.refresh();
+}
+function side() {
+  const d = bySlug(VIEW.slug), i = VIEW.i, c = cardOf(d, i), t = ids(d.slug, i), ok = d.review.approved && d.review.approved[i];
+  const pos = order(d).indexOf(i) + 1, n = d.manifest.cards.length;
+  const note = (RoboComments.forTarget(t).find(k => k.x == null) || {}).text || '';
+  const item = JSON.stringify({ id:t, title:label(d, i), lines:{ Folder:d.folder, Card:(i + 1) + ' of ' + n } });
+  $('vside').innerHTML = `
+    <div class="k">${esc(d.manifest.title)} · card ${pos} of ${n}</div>
+    <h3>${c.cover ? 'Cover' : esc((c.num ? c.num + ' · ' : '') + c.name)}</h3>
+    <div class="t">${esc(c.title)}${c.kind === 'video' ? ' · video card' : ''}</div>
+    <div class="vbtns">
+      <button class="btn ${ok ? 'okd' : ''}" id="approve">${ok ? '✓ Approved' : 'Approve'}</button>
+      <button class="btn" data-cart-add data-cart-item='${esc(item)}' data-cart-label-off="Add card to cart" data-cart-label-on="Card in cart">Add card to cart</button>
+    </div>
+    ${c.cover && (d.manifest.covers || []).length ? `<label>Cover</label><div class="covers">${d.manifest.covers.map(k => `<button class="pill${k.key === coverKey(d) ? ' on' : ''}" data-cover="${esc(k.key)}"><img src="/c/${encodeURIComponent(d.slug)}/${esc(k.thumb)}${bust(d)}" alt=""><span>${k.key === coverKey(d) ? '✓ Chosen: ' : ''}${esc(k.label)}</span></button>`).join('')}</div>` : ''}
+    <label for="note">Your note on this card</label>
+    <textarea id="note" placeholder="What should change on this card?">${esc(note)}</textarea>
+    <label>Pinned comments</label>
+    <div class="plist" id="plist"></div>
+    <div class="vkeys">Click the card to pin a comment · <kbd>←</kbd> <kbd>→</kbd> cards · <kbd>a</kbd> approve · <kbd>p</kbd> previews · <kbd>c</kbd> cart · <kbd>Esc</kbd> close</div>`;
+  pinList();
+  RoboCart.refresh();
+}
+// only the pin list redraws when comments change, so the note box keeps its cursor while typing
+function pinList() {
+  if (!VIEW || !$('plist')) return;
+  const pins = RoboComments.forTarget(ids(VIEW.slug, VIEW.i)).filter(k => k.x != null);
+  let n = 0;
+  $('plist').innerHTML = pins.length ? pins.map(k => k.status === 'applied'
+      ? `<div class="it done"><i>✓</i><span>${esc(k.text)}${k.appliedNote ? `<small>Applied: ${esc(k.appliedNote)}</small>` : ''}</span><button data-del="${esc(k.id)}" aria-label="Delete">×</button></div>`
+      : `<div class="it"><i>${++n}</i><span>${esc(k.text)}</span><button data-del="${esc(k.id)}" aria-label="Delete">×</button></div>`).join('')
+    : '<div class="none">None yet. Click on the card where the change goes.</div>';
+}
+function closeView() { $('view').classList.remove('show'); $('vframe').src = 'about:blank'; VIEW = null; RoboComments.setMode(false); render(); }
+function step(dir) {
+  if (!VIEW) return;
+  const d = bySlug(VIEW.slug), o = order(d), k = o.indexOf(VIEW.i) + dir;
+  if (k >= 0 && k < o.length) openView(VIEW.slug, o[k]);
+}
+function approve() {
+  if (!VIEW) return;
+  const d = bySlug(VIEW.slug); d.review.approved = d.review.approved || {};
+  d.review.approved[VIEW.i] = !d.review.approved[VIEW.i]; saveReview(d.slug); side();
+}
+
+// ---------- exports for the agent ----------
+function carouselHead(d) {
+  const m = d.manifest, okd = order(d).filter(i => d.review.approved && d.review.approved[i]).map(i => i + 1);
+  const cov = (m.covers || []).find(x => x.key === coverKey(d));
+  const moved = d.review.order && d.review.order.some((v, k) => v !== k);
+  const head = ['Carousel: ' + m.title, 'Folder: ' + d.folder, 'Review file: ' + d.folder + '/review.json'];
+  if (cov) head.push('Cover pick: ' + cov.label + ' (' + cov.key + ')');
+  head.push('Approved cards: ' + (okd.length ? okd.join(', ') : 'none yet'));
+  if (moved) head.push('New card order: ' + order(d).map(i => i + 1).join(', '));
+  return head.join('\n');
+}
+function carouselText(d) { return carouselHead(d) + '\n\n' + RoboComments.text(c => c.target.startsWith(d.slug + '#')); }
+async function copyText(t, msg) {
+  try { await navigator.clipboard.writeText(t); } catch (e) { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  toast(msg);
+}
+
+// ---------- events ----------
+document.addEventListener('click', async e => {
+  const t = e.target;
+  const fv = t.closest('[data-view]'); if (fv) { const tl = fv.closest('.tile'); openView(tl.dataset.slug, +tl.dataset.i); return; }   // a click on the card itself opens the comment box (RoboComments)
+  if (t.id === 'pvBtn') { setPreview(!PREVIEW); return; }
+  const pc = t.closest('[data-pick-cover]'); if (pc) { const d = bySlug(pc.dataset.slug); d.review.cover = pc.dataset.pickCover; saveReview(d.slug); render(); toast('Cover set'); return; }
+  const ex = t.closest('[data-exp]'); if (ex) { runExport(ex.getAttribute('data-exp')); return; }
+  const cp = t.closest('[data-copy]'); if (cp) { const d = bySlug(cp.getAttribute('data-copy')); copyText(carouselText(d), 'Copied comments for ' + d.manifest.title); return; }
+  if (t.id === 'copyAll') { copyText(shown().filter(d => d.manifest).map(carouselText).join('\n\n---\n\n'), ONLY ? 'Copied comments for this carousel' : 'Copied comments for every carousel'); return; }
+  if (t.closest('#approve')) { approve(); return; }
+  const cv = t.closest('[data-cover]'); if (cv && VIEW) {
+    const d = bySlug(VIEW.slug); d.review.cover = cv.getAttribute('data-cover'); saveReview(d.slug);
+    $('vframe').src = `/c/${encodeURIComponent(d.slug)}/index.html?solo=${VIEW.i}&cover=${encodeURIComponent(d.review.cover)}${PREVIEW ? '' : '&still=1'}`; side(); return;
+  }
+  const del = t.closest('#vside [data-del]'); if (del) { RoboComments.remove(del.getAttribute('data-del')); return; }
+  if (t.id === 'view') closeView();
+});
+document.addEventListener('input', e => { if (e.target.id === 'note' && VIEW) RoboComments.note(ids(VIEW.slug, VIEW.i), e.target.value); });
+document.addEventListener('keydown', e => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'p') { setPreview(!PREVIEW); return; }
+  if (!VIEW) return;
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'ArrowLeft') step(-1);
+  if (e.key === 'a') approve();
+  if (e.key === 'Escape' && !document.querySelector('.rcm-pop') && !document.querySelector('.rcart.show')) closeView();
+});
+$('prev').onclick = () => step(-1); $('next').onclick = () => step(1);
+$('q').oninput = render;
+
+// drag to reorder inside a strip; the order saves to the carousel's review file
+let drag = null;
+document.addEventListener('dragstart', e => { const tl = e.target.closest('.tile'); if (!tl) return; drag = tl; tl.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; });
+document.addEventListener('dragover', e => { const tl = e.target.closest('.tile'); if (!drag || !tl || tl.dataset.slug !== drag.dataset.slug) return; e.preventDefault(); document.querySelectorAll('.tile.over').forEach(n => n.classList.remove('over')); tl.classList.add('over'); });
+document.addEventListener('drop', e => {
+  const tl = e.target.closest('.tile'); if (!drag || !tl || tl.dataset.slug !== drag.dataset.slug) return; e.preventDefault();
+  tl.parentNode.insertBefore(drag, tl);
+  const d = bySlug(drag.dataset.slug); d.review.order = [...tl.parentNode.querySelectorAll('.tile')].map(n => +n.dataset.i); saveReview(d.slug);
+});
+document.addEventListener('dragend', () => { if (drag) drag.classList.remove('drag'); drag = null; document.querySelectorAll('.tile.over').forEach(n => n.classList.remove('over')); });
+
+// snapshots run tools/export-cards.mjs on the server; without Playwright the server says so and nothing breaks
+function say(m, ms) { toast(m); if (ms) { clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), ms); } }
+async function runExport(slug) {
+  let j;
+  try { j = await (await fetch('/api/export/' + encodeURIComponent(slug), { method:'POST', headers:{ 'Content-Type':'application/json' }, body:'{}' })).json(); }
+  catch (e) { say('Could not reach the app. Is the server running?', 5000); return; }
+  if (!j.running) { say(j.error || 'Snapshots could not start', 9000); return; }
+  say('Making snapshots, about 30 seconds');
+  const poll = setInterval(async () => {
+    try { j = await (await fetch('/api/export/' + encodeURIComponent(slug))).json(); } catch (e) { return; }
+    if (!j.running) { clearInterval(poll); say(j.ok ? 'Snapshots ready' : 'Snapshots failed: ' + (j.error || 'see the server window'), j.ok ? 0 : 9000); await load(); }
+  }, 2000);
+}
+
+// ---------- the page features in features/: cart and comments (comments save into each carousel's review.json) ----------
+RoboCart.init({ key:'rubric-carousels-cart', name:'Cart', header:'Carousel cart', mount:'#tools', from:'RUBRIC Carousels',
+  intro:'For the agent: these are carousel cards (or whole carousels) from RUBRIC Carousels. For each, open its Folder, read review.json there for my cover pick, approvals, order and comments, then make the changes. The comments are listed under each pick.',
+  enrich: it => {
+    const [slug] = it.id.replace(/^carousel:/, '').split('#');
+    const list = RoboComments.list().filter(c => it.id.startsWith('carousel:') ? c.target.startsWith(slug + '#') : c.target === it.id);
+    return list.length ? { Comments: list.map(c => (c.x != null ? '(' + Math.round(c.x) + '% across, ' + Math.round(c.y) + '% down) ' : '') + c.text).join(' | ') } : {};
+  } });
+RoboNav.init({ title:'Carousels', key:'rubric-carousels-nav' });
+RoboComments.init({ title:'RUBRIC Carousels', mount:'#tools', always:true, onChange: () => pinList(),
+  store: {
+    load: async () => DATA.flatMap(d => (d.review.comments || [])),
+    save: async listAll => {
+      const waits = [];
+      for (const d of DATA) {
+        const mine = listAll.filter(c => c.target.startsWith(d.slug + '#'));
+        if (JSON.stringify(mine) !== JSON.stringify(d.review.comments || [])) { d.review.comments = mine; waits.push(saveReview(d.slug)); }
+      }
+      await Promise.all(waits);
+    }
+  } });
+
+// Apply all comments: the picked model applies every open comment to the carousel's own deck, never this app.
+// Started after the first load, so a one-carousel view (?c=slug) can name that deck. Key A, because a approves a card.
+let applyOn = false;
+function initApply() {
+  if (applyOn) return; applyOn = true;
+  const one = ONLY && bySlug(ONLY);
+  RoboApply.init({ key:'rubric-carousels-apply', hotkey:'A', title: one && one.manifest ? 'Carousel: ' + one.manifest.title : 'RUBRIC Carousels',
+    api: INFO.osAddress,   // the Agentic OS that runs the apply (CAROUSELS_OS_ADDRESS in server.mjs CONFIG); if nothing answers, the comments are copied instead
+    file: one ? one.folder + '/deck.js' : INFO.carouselsFolder,   // every row: each carousel's own Deck line says which deck
+    notes: 'RUBRIC Carousels is the review app, so never edit the app itself (' + INFO.kitFolder + ', everything outside its carousels folder). Each comment names its carousel and card, and every carousel with open comments is listed under them with its folder. Edit that carousel\'s deck.js (or its cover), leave approved cards alone, then run node ' + INFO.exporter + ' <folder> so the snapshots match. Do not edit review.json: the page marks the comments applied there itself.',
+    more: () => DATA.filter(d => d.manifest && RoboComments.list().some(c => c.target.startsWith(d.slug + '#') && c.status !== 'applied'))
+      .map(d => carouselHead(d) + '\nDeck: ' + d.folder + '/deck.js').join('\n\n') });
+}
+
+async function load() {
+  if (!INFO.kitFolder) INFO = await fetch('/api/info').then(r => r.json()).catch(() => ({}));
+  DATA = await (await fetch('/api/carousels')).json();
+  const one = ONLY && bySlug(ONLY);
+  if (one && one.manifest) { document.title = one.manifest.title + ' · RUBRIC Carousels'; $('copyAll').textContent = 'Copy comments'; }
+  await RoboComments.reload();
+  render();
+  setPreview(PREVIEW);   // apply the remembered switch to the button and the videos
+  initApply();
+}
+(function () {
+  const root = document.documentElement, saved = (() => { try { return localStorage.getItem('robo-theme'); } catch (e) { return null; } })() || 'dark';
+  const apply = t => { root.setAttribute('data-theme', t); root.style.colorScheme = t; };
+  apply(saved);
+  $('theme').onclick = () => { const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('robo-theme', n); } catch (e) {} apply(n); };
+})();
+load();
+</script>
+</body>
+</html>

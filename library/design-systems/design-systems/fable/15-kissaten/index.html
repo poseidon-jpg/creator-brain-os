@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KISSATEN 喫茶店 — A Tea House in Kyoto</title>
+<meta name="description" content="Kissaten Kohaku — a quiet tea house in northern Kyoto. Seasonal wagashi, stone-milled matcha, and the practice of doing one thing slowly.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f6f2e9'/%3E%3Ccircle cx='16' cy='17' r='9' fill='none' stroke='%231c1a16' stroke-width='2'/%3E%3Ccircle cx='16' cy='17' r='4.5' fill='%236b7b52'/%3E%3Crect x='22' y='4' width='6' height='6' rx='1' fill='%23d4622a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Zen+Maru+Gothic:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --washi:#f6f2e9;
+  --washi-deep:#efe9db;
+  --sumi:#1c1a16;
+  --sumi-soft:#4a463f;
+  --sumi-faint:#8a857a;
+  --matcha:#6b7b52;
+  --matcha-deep:#55633f;
+  --kaki:#d4622a;
+  --line:rgba(28,26,22,.14);
+  --serif:'Shippori Mincho',serif;
+  --sans:'Zen Maru Gothic',sans-serif;
+  --ease-slow:cubic-bezier(.22,.61,.21,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--washi);
+  color:var(--sumi);
+  font-family:var(--sans);
+  font-weight:300;
+  line-height:1.9;
+  overflow-x:hidden;
+  position:relative;
+}
+/* paper texture */
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:1000;
+  opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.39 0 0 0 0 0.33 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection{background:var(--matcha);color:var(--washi)}
+a{color:inherit}
+img{max-width:100%;display:block}
+
+.jp{font-family:var(--serif)}
+.en-label{
+  font-family:var(--sans);
+  font-size:.68rem;
+  letter-spacing:.42em;
+  text-transform:uppercase;
+  color:var(--sumi-faint);
+  font-weight:400;
+}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(28px);transition:opacity 1.6s var(--ease-slow),transform 1.6s var(--ease-slow)}
+.rv.on{opacity:1;transform:none}
+.rv-d1{transition-delay:.15s}.rv-d2{transition-delay:.3s}.rv-d3{transition-delay:.45s}.rv-d4{transition-delay:.6s}
+
+/* ---------- nav ---------- */
+nav{
+  position:absolute;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.6rem clamp(1.4rem,5vw,4rem);
+  mix-blend-mode:multiply;
+}
+nav .mark{font-family:var(--serif);font-size:1.05rem;letter-spacing:.35em;font-weight:600;text-decoration:none}
+nav .mark span{color:var(--kaki)}
+nav ul{display:flex;gap:2.2rem;list-style:none}
+nav ul a{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;text-decoration:none;color:var(--sumi-soft);position:relative}
+nav ul a::after{content:"";position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:var(--kaki);transform:scaleX(0);transform-origin:right;transition:transform .6s var(--ease-slow)}
+nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
+@media(max-width:640px){nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:100svh;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  padding:clamp(5.5rem,11vh,8rem) clamp(1.4rem,5vw,4rem) 5.5rem;
+  gap:clamp(1.5rem,4.5vw,4.5rem);
+  position:relative;
+}
+.hero-vertical{
+  writing-mode:vertical-rl;
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(2.6rem,8.5vmin,5.6rem);
+  letter-spacing:.24em;
+  line-height:1.4;
+  justify-self:end;
+  color:var(--sumi);
+  display:flex;
+  gap:1.1rem;
+  max-height:calc(100svh - 12rem);
+}
+.hero-vertical .sub{
+  font-size:.8rem;
+  letter-spacing:.42em;
+  color:var(--sumi-faint);
+  font-weight:400;
+  font-family:var(--sans);
+  align-self:flex-start;
+  margin-top:.4em;
+}
+.hero-vertical .ki{position:relative}
+.hero-vertical .ki i{font-style:normal;display:inline-block;opacity:0;transform:translateY(-14px);animation:inkdrop 1.4s var(--ease-slow) forwards}
+.hero-media{
+  position:relative;
+  align-self:stretch;
+  display:flex;align-items:center;
+}
+.hero-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/10;
+  max-height:62vh;
+  min-height:340px;
+  overflow:hidden;
+  background:var(--washi-deep);
+}
+.hero-frame video,.hero-frame img.fallback{
+  position:absolute;inset:-8% 0;width:100%;height:116%;object-fit:cover;
+  filter:saturate(.85) contrast(.98);
+  will-change:transform;
+}
+.hero-frame::after{
+  content:"";position:absolute;inset:0;
+  box-shadow:inset 0 0 60px rgba(28,26,22,.18);
+  pointer-events:none;
+}
+/* CSS steam wisps over the bowl */
+.steam{position:absolute;left:38%;bottom:34%;width:24%;height:52%;pointer-events:none;overflow:visible}
+.steam path{
+  fill:none;stroke:rgba(246,242,233,.5);stroke-linecap:round;
+  filter:blur(6px);
+  stroke-dasharray:180 260;
+  animation:steamrise 9s linear infinite;
+}
+.steam path:nth-child(2){stroke:rgba(246,242,233,.32);animation-duration:12s;animation-delay:-4s;filter:blur(9px)}
+@keyframes steamrise{
+  0%{stroke-dashoffset:440;opacity:0}
+  18%{opacity:1}
+  80%{opacity:.5}
+  100%{stroke-dashoffset:0;opacity:0}
+}
+.hero-caption{
+  margin-top:1.1rem;
+  font-size:.72rem;letter-spacing:.22em;color:var(--sumi-faint);
+  display:flex;justify-content:space-between;gap:1rem;
+}
+.hero-left{
+  writing-mode:vertical-rl;
+  justify-self:start;
+  font-size:.7rem;
+  letter-spacing:.45em;
+  color:var(--sumi-faint);
+  height:min(50vh,340px);
+  border-left:1px solid var(--line);
+  padding-left:1.1rem;
+}
+@keyframes inkdrop{to{opacity:1;transform:none}}
+.hero-seal{
+  position:absolute;
+  bottom:clamp(2rem,6vh,4rem);
+  right:clamp(1.4rem,5vw,4rem);
+  width:44px;height:44px;
+  background:var(--kaki);
+  color:var(--washi);
+  font-family:var(--serif);
+  font-size:1.15rem;
+  display:grid;place-items:center;
+  writing-mode:vertical-rl;
+  letter-spacing:.1em;
+  border-radius:3px;
+  cursor:pointer;
+  transition:transform .5s var(--ease-slow);
+  user-select:none;
+}
+.hero-seal:hover{transform:rotate(-4deg) scale(1.06)}
+.scroll-hint{
+  position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);
+  font-size:.62rem;letter-spacing:.5em;text-transform:uppercase;color:var(--sumi-faint);
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;
+}
+.scroll-hint::after{
+  content:"";width:1px;height:44px;background:var(--sumi-faint);
+  animation:drip 2.8s var(--ease-slow) infinite;
+  transform-origin:top;
+}
+@keyframes drip{0%{transform:scaleY(0)}45%{transform:scaleY(1);transform-origin:top}55%{transform-origin:bottom;transform:scaleY(1)}100%{transform-origin:bottom;transform:scaleY(0)}}
+
+@media(max-width:900px){
+  .hero{
+    grid-template-columns:1fr auto;grid-template-rows:minmax(56svh,auto) auto;
+    gap:2.2rem;align-items:end;
+    padding-top:6.5rem;padding-bottom:4.5rem;
+  }
+  .hero-left{
+    display:block;writing-mode:horizontal-tb;height:auto;
+    grid-column:1;grid-row:1;align-self:end;justify-self:start;
+    border-left:none;border-bottom:1px solid var(--line);
+    padding:0 0 1rem;max-width:11em;line-height:2.4;letter-spacing:.35em;
+    margin-bottom:.5rem;
+  }
+  .hero-vertical{grid-row:1;grid-column:2;justify-self:end;align-self:start;font-size:clamp(2.5rem,11vw,4rem);max-height:none;height:auto}
+  .hero-media{grid-column:1/-1;grid-row:2}
+  .hero-frame{max-height:none;min-height:0}
+  .scroll-hint{display:none}
+}
+
+/* ---------- brush divider ---------- */
+.brush{
+  display:block;
+  width:min(420px,60vw);
+  margin:clamp(4rem,10vh,7rem) auto;
+  opacity:.75;
+}
+.brush path{
+  stroke:var(--sumi);
+  fill:none;
+  stroke-linecap:round;
+  stroke-dasharray:600;
+  stroke-dashoffset:600;
+}
+.brush.on path{animation:brushdraw 2.2s var(--ease-slow) forwards}
+@keyframes brushdraw{to{stroke-dashoffset:0}}
+
+/* ---------- sections ---------- */
+section{position:relative;z-index:2}
+.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(1.4rem,5vw,4rem)}
+
+.section-head{
+  display:flex;align-items:flex-start;gap:clamp(1.5rem,4vw,3rem);
+  margin-bottom:clamp(3rem,7vh,5rem);
+}
+.section-head .v{
+  writing-mode:vertical-rl;
+  font-family:var(--serif);
+  font-size:clamp(1.7rem,3.4vw,2.5rem);
+  font-weight:500;
+  letter-spacing:.3em;
+  line-height:1;
+  padding-right:1.2rem;
+  border-right:2px solid var(--kaki);
+  min-height:7.5em;
+}
+.section-head .t{padding-top:.4rem}
+.section-head .t h2{
+  font-family:var(--serif);font-weight:500;
+  font-size:clamp(1.4rem,2.6vw,2rem);
+  letter-spacing:.06em;line-height:1.5;
+  margin:.7rem 0 0;
+}
+
+/* philosophy */
+.philo{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2.5rem,6vw,6rem);align-items:start}
+.philo-text p{margin-bottom:1.7em;max-width:34em;font-size:.98rem;color:var(--sumi-soft)}
+.philo-text p:first-of-type{font-size:1.12rem;color:var(--sumi)}
+.philo-text .jp-line{
+  font-family:var(--serif);
+  font-size:1.25rem;letter-spacing:.2em;color:var(--matcha-deep);
+  margin:2.4rem 0 .4rem;
+}
+.philo-text .jp-line + small{display:block;font-size:.72rem;letter-spacing:.2em;color:var(--sumi-faint)}
+.philo-art{position:relative}
+.philo-art img{
+  width:min(100%,420px);
+  margin-left:auto;
+  filter:saturate(.92);
+}
+.philo-art figcaption{
+  writing-mode:vertical-rl;
+  position:absolute;top:8%;left:-1rem;
+  font-size:.68rem;letter-spacing:.4em;color:var(--sumi-faint);
+  height:12em;
+}
+@media(max-width:900px){
+  .philo{grid-template-columns:1fr}
+  .philo-art img{margin:0 auto}
+  .philo-art figcaption{position:static;writing-mode:horizontal-tb;height:auto;margin-top:.9rem;text-align:center}
+}
+
+/* ---------- menu ---------- */
+.menu-season-tabs{
+  display:flex;gap:0;flex-wrap:wrap;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin-bottom:3.2rem;
+}
+.season-tab{
+  flex:1;min-width:120px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-weight:400;
+  padding:1.1rem .6rem;
+  font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--sumi-faint);
+  position:relative;
+  transition:color .5s;
+}
+.season-tab .k{font-family:var(--serif);font-size:1.05rem;display:block;letter-spacing:.25em;margin-bottom:.15rem;text-transform:none}
+.season-tab::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--kaki);transform:scaleX(0);transition:transform .6s var(--ease-slow)}
+.season-tab.active{color:var(--sumi)}
+.season-tab.active::after{transform:scaleX(1)}
+.season-note{font-size:.85rem;color:var(--sumi-faint);margin:-2rem 0 2.8rem;letter-spacing:.06em;min-height:1.8em;transition:opacity .6s}
+.menu-list{display:grid;gap:0}
+.menu-item{
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:1.4rem;align-items:baseline;
+  padding:1.5rem .6rem 1.5rem 0;
+  border-bottom:1px dashed var(--line);
+  transition:opacity .6s var(--ease-slow),transform .6s var(--ease-slow),padding .7s var(--ease-slow),background .7s var(--ease-slow);
+  position:relative;
+}
+.menu-item::before{
+  content:"";position:absolute;left:0;top:50%;width:5px;height:5px;border-radius:50%;
+  background:var(--kaki);opacity:0;transform:translate(-14px,-50%);
+  transition:opacity .5s var(--ease-slow),transform .5s var(--ease-slow);
+}
+.menu-item:hover{padding-left:1.3rem;background:linear-gradient(90deg,rgba(107,123,82,.06),transparent 70%)}
+.menu-item:hover::before{opacity:1;transform:translate(.2rem,-50%)}
+.menu-item:hover .kanji{color:var(--matcha-deep)}
+.menu-item .kanji{font-family:var(--serif);font-size:1.3rem;letter-spacing:.14em;min-width:6.2em;transition:color .5s}
+.menu-item .desc b{display:block;font-weight:500;letter-spacing:.08em;font-size:.95rem}
+.menu-item .desc span{font-size:.82rem;color:var(--sumi-faint);letter-spacing:.04em}
+.menu-item .price{font-family:var(--serif);color:var(--matcha-deep);font-size:.95rem;letter-spacing:.08em;white-space:nowrap}
+.menu-fading .menu-item{opacity:0;transform:translateY(10px)}
+@media(max-width:640px){
+  .menu-item{grid-template-columns:1fr auto}
+  .menu-item .kanji{grid-column:1/-1;min-width:0;margin-bottom:-.6rem}
+}
+
+/* ---------- master ---------- */
+.master{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(2.5rem,6vw,6rem);align-items:center}
+.master-photo{position:relative;overflow:hidden;background:var(--washi-deep)}
+.master-photo img{width:100%;aspect-ratio:4/5;object-fit:cover;filter:saturate(.85);transform:scale(1.06);transition:transform 2.5s var(--ease-slow)}
+.master-photo:hover img{transform:scale(1.0)}
+.master-quote{
+  font-family:var(--serif);
+  font-size:clamp(1.25rem,2.2vw,1.7rem);
+  line-height:2;letter-spacing:.04em;
+  font-weight:400;
+}
+.master-quote::before{content:"「";color:var(--kaki)}
+.master-quote::after{content:"」";color:var(--kaki)}
+.master-bio{margin-top:2rem;font-size:.92rem;color:var(--sumi-soft);max-width:32em}
+.master-name{margin-top:1.8rem;display:flex;align-items:center;gap:1rem}
+.master-name .line{width:44px;height:1px;background:var(--sumi)}
+.master-name b{font-weight:500;letter-spacing:.2em;font-size:.85rem}
+.master-name small{color:var(--sumi-faint);font-size:.72rem;letter-spacing:.16em}
+@media(max-width:900px){.master{grid-template-columns:1fr}}
+
+/* ---------- rooms / rhythm ---------- */
+.rhythm{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.rhythm-cell{
+  background:var(--washi);
+  padding:clamp(1.6rem,3vw,2.6rem);
+  min-height:230px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:1.6rem;
+  transition:background 1s var(--ease-slow);
+  position:relative;overflow:hidden;
+}
+.rhythm-cell::after{
+  content:attr(data-k);
+  position:absolute;right:-.12em;bottom:-.28em;
+  font-family:var(--serif);font-size:9rem;line-height:1;
+  color:var(--sumi);opacity:.045;pointer-events:none;
+  transform:translateY(12%) rotate(2deg);
+  transition:transform 1.4s var(--ease-slow),opacity 1.4s var(--ease-slow);
+}
+.rhythm-cell:hover{background:var(--washi-deep)}
+.rhythm-cell:hover::after{transform:translateY(0) rotate(0);opacity:.09}
+.rhythm-cell>*{position:relative;z-index:1}
+.rhythm-cell .k{font-family:var(--serif);font-size:1.6rem;letter-spacing:.2em;color:var(--matcha-deep)}
+.rhythm-cell h3{font-weight:500;font-size:.88rem;letter-spacing:.24em;text-transform:uppercase;margin-bottom:.5rem}
+.rhythm-cell p{font-size:.85rem;color:var(--sumi-soft)}
+.rhythm-cell .num{font-family:var(--serif);color:var(--kaki);font-size:.8rem;letter-spacing:.2em}
+@media(max-width:900px){.rhythm{grid-template-columns:1fr}}
+
+/* ---------- visit ---------- */
+.visit{
+  background:var(--sumi);color:var(--washi);
+  padding:clamp(4.5rem,10vh,7.5rem) 0;
+  margin-top:clamp(5rem,12vh,8rem);
+  position:relative;
+  overflow:hidden;
+}
+.enso{
+  position:absolute;right:-6%;top:50%;transform:translateY(-50%);
+  width:min(46vw,520px);height:auto;opacity:.07;pointer-events:none;
+}
+.enso path{
+  fill:none;stroke:var(--washi);stroke-width:11;stroke-linecap:round;
+  stroke-dasharray:1220;stroke-dashoffset:1220;
+}
+.visit.on .enso path{animation:ensodraw 3.2s var(--ease-slow) .4s forwards}
+@keyframes ensodraw{to{stroke-dashoffset:70}}
+.visit .en-label{color:rgba(246,242,233,.5)}
+.visit-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:clamp(2.5rem,6vw,5.5rem)}
+.visit .v-title{
+  writing-mode:vertical-rl;
+  font-family:var(--serif);font-size:clamp(1.9rem,3.4vw,2.7rem);
+  letter-spacing:.3em;font-weight:500;
+  border-right:2px solid var(--kaki);padding-right:1.2rem;
+}
+.visit dl{display:grid;gap:1.4rem;font-size:.92rem}
+.visit dt{font-size:.68rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(246,242,233,.5);margin-bottom:.25rem}
+.visit dd{color:rgba(246,242,233,.92);letter-spacing:.04em}
+.visit dd .jp{display:block;color:rgba(246,242,233,.6);font-size:.85rem;margin-top:.1rem}
+.visit .note{
+  font-size:.85rem;color:rgba(246,242,233,.65);line-height:2.1;max-width:26em;
+}
+.visit .note .jp-line{font-family:var(--serif);font-size:1.1rem;letter-spacing:.18em;color:var(--washi);margin-bottom:1rem;display:block}
+@media(max-width:900px){
+  .visit-grid{grid-template-columns:1fr}
+  .visit .v-title{writing-mode:horizontal-tb;border-right:none;border-bottom:2px solid var(--kaki);padding:0 0 .8rem}
+}
+
+/* ---------- footer ---------- */
+footer{
+  background:var(--sumi);color:rgba(246,242,233,.45);
+  padding:2.4rem clamp(1.4rem,5vw,4rem) 2.8rem;
+  font-size:.72rem;letter-spacing:.14em;
+  display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  border-top:1px solid rgba(246,242,233,.12);
+}
+footer a{color:rgba(246,242,233,.7);text-decoration:none;border-bottom:1px solid rgba(246,242,233,.25)}
+footer a:hover{color:var(--washi)}
+
+/* easter egg toast */
+.seal-toast{
+  position:fixed;bottom:2rem;left:50%;transform:translate(-50%,20px);
+  background:var(--sumi);color:var(--washi);
+  font-family:var(--serif);font-size:.85rem;letter-spacing:.14em;
+  padding:.9rem 1.6rem;border-radius:2px;
+  opacity:0;pointer-events:none;
+  transition:opacity .8s var(--ease-slow),transform .8s var(--ease-slow);
+  z-index:200;text-align:center;
+}
+.seal-toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .rv{opacity:1;transform:none}
+  .hero-vertical .ki i{opacity:1;transform:none}
+  .steam{display:none}
+  .brush path{stroke-dashoffset:0}
+  .enso path{stroke-dashoffset:70}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="mark" href="#top">琥珀<span>&nbsp;·</span>&nbsp;KISSATEN</a>
+  <ul>
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#master">Tea Master</a></li>
+    <li><a href="#visit">Visit</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-left rv">est. 1972 — kyoto 京都 — a room for slowness</div>
+
+  <div class="hero-media rv rv-d2">
+    <div style="width:100%">
+      <div class="hero-frame">
+        <img class="fallback" src="/assets/kissaten-2.jpg" alt="Matcha whisked in a raku bowl on tatami, steam rising">
+        <video autoplay muted loop playsinline poster="/assets/kissaten-2.jpg"
+               onerror="this.remove()"
+               id="heroVideo">
+          <source src="/assets/kissaten-hero.mp4" type="video/mp4" onerror="document.getElementById('heroVideo').remove()">
+        </video>
+        <svg class="steam" viewBox="0 0 100 200" aria-hidden="true">
+          <path d="M52 196 C 40 160, 66 140, 52 104 C 40 74, 60 52, 50 8" stroke-width="10"/>
+          <path d="M60 190 C 52 150, 74 128, 58 92 C 48 64, 66 40, 56 4" stroke-width="7"/>
+        </svg>
+      </div>
+      <div class="hero-caption">
+        <span>薄茶 — usucha, whisked to a fine foam</span>
+        <span>35.058° N, 135.746° E</span>
+      </div>
+    </div>
+  </div>
+
+  <h1 class="hero-vertical" aria-label="Kissaten Kohaku — the amber tea house">
+    <span class="sub rv rv-d3">THE AMBER TEA HOUSE — KYOTO</span>
+    <span class="ki" aria-hidden="true">
+      <i style="animation-delay:.2s">喫</i><i style="animation-delay:.55s">茶</i><i style="animation-delay:.9s">店</i><i style="animation-delay:1.3s">琥</i><i style="animation-delay:1.65s">珀</i>
+    </span>
+  </h1>
+
+  <button class="hero-seal" id="seal" title="The seal of the house" aria-label="Press the house seal">琥</button>
+  <div class="scroll-hint rv rv-d4">Slowly</div>
+</header>
+
+<!-- brush divider -->
+<svg class="brush" viewBox="0 0 420 40" aria-hidden="true">
+  <path d="M8 24 C 60 10, 110 30, 168 22 S 280 8, 336 20 S 400 26, 412 18" stroke-width="3.4" opacity=".9"/>
+  <path d="M30 28 C 90 20, 150 32, 220 26 S 340 16, 400 24" stroke-width="1.2" opacity=".45"/>
+</svg>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy" class="wrap">
+  <div class="section-head rv">
+    <div class="v jp" aria-hidden="true">哲学</div>
+    <div class="t">
+      <span class="en-label">Philosophy · Tetsugaku</span>
+      <h2>One bowl, prepared completely.<br>Nothing else.</h2>
+    </div>
+  </div>
+  <div class="philo">
+    <div class="philo-text">
+      <p class="rv">Kohaku serves eleven seats. There is no music, no menu board, no hurry. Tea arrives when it is ready, which is rarely when you expect it and always when it should.</p>
+      <p class="rv rv-d1">We follow the old kissaten habit of doing very few things with unreasonable care. Our matcha is stone-milled each morning in Uji. Our water rests overnight in Shigaraki clay. Our sweets are made in quantities small enough that some afternoons, they simply end.</p>
+      <p class="rv rv-d2">The room was a weaver's workshop for ninety years before it was a tea house. We kept the worn beams, the uneven floor, the light that arrives late through the north window. Repairs are visible. That is the point.</p>
+      <div class="jp-line rv rv-d3">侘び寂び — 不完全の美</div>
+      <small class="rv rv-d3">wabi-sabi: the beauty of the incomplete, the impermanent, the imperfect</small>
+    </div>
+    <figure class="philo-art rv rv-d2">
+      <img src="/assets/kissaten-1.jpg" alt="Sumi-e ink painting of a camellia branch with a red artist seal" loading="lazy">
+      <figcaption>椿 — camellia, painted by the first master</figcaption>
+    </figure>
+  </div>
+</section>
+
+<svg class="brush" viewBox="0 0 420 40" aria-hidden="true">
+  <path d="M12 18 C 70 30, 130 12, 200 20 S 320 30, 408 16" stroke-width="3" opacity=".9"/>
+  <path d="M40 24 C 110 14, 190 28, 260 20 S 370 12, 410 22" stroke-width="1.1" opacity=".4"/>
+</svg>
+
+<!-- MENU -->
+<section id="menu" class="wrap">
+  <div class="section-head rv">
+    <div class="v jp" aria-hidden="true">献立</div>
+    <div class="t">
+      <span class="en-label">Seasonal Menu · Kondate</span>
+      <h2>The menu changes with the garden,<br>not the calendar.</h2>
+    </div>
+  </div>
+
+  <div class="menu-season-tabs rv" role="tablist" aria-label="Season">
+    <button class="season-tab" data-season="haru" role="tab"><span class="k">春</span>Spring</button>
+    <button class="season-tab" data-season="natsu" role="tab"><span class="k">夏</span>Summer</button>
+    <button class="season-tab" data-season="aki" role="tab"><span class="k">秋</span>Autumn</button>
+    <button class="season-tab active" data-season="fuyu" role="tab" aria-selected="true"><span class="k">冬</span>Winter</button>
+  </div>
+  <p class="season-note rv" id="seasonNote"></p>
+
+  <div class="menu-list rv" id="menuList" aria-live="polite"></div>
+</section>
+
+<svg class="brush" viewBox="0 0 420 40" aria-hidden="true">
+  <path d="M10 22 C 80 8, 160 34, 240 20 S 360 10, 410 22" stroke-width="3.2" opacity=".9"/>
+</svg>
+
+<!-- TEA MASTER -->
+<section id="master" class="wrap">
+  <div class="section-head rv">
+    <div class="v jp" aria-hidden="true">亭主</div>
+    <div class="t">
+      <span class="en-label">The Tea Master · Teishu</span>
+      <h2>Fifty years of the same gesture,<br>never once the same.</h2>
+    </div>
+  </div>
+  <div class="master">
+    <div class="master-photo rv">
+      <img src="/assets/kissaten-2.jpg" alt="A bowl of matcha resting on tatami, steam rising in morning light" loading="lazy">
+    </div>
+    <div>
+      <p class="master-quote rv rv-d1">I do not make the tea better each year. I make myself quieter, and the tea notices.</p>
+      <p class="master-bio rv rv-d2">Hosokawa Renji began as an apprentice at Kohaku in 1974, sweeping the entry stones before dawn. He became the third master in 1998. He still sweeps the stones. He selects each morning's water, mills the day's matcha by hand, and greets every guest by pouring — not by speaking. Guests who return often enough are eventually given their own bowl, kept on the north shelf, repaired with gold when it breaks.</p>
+      <div class="master-name rv rv-d3">
+        <span class="line"></span>
+        <b>HOSOKAWA RENJI</b>
+        <small>細川 錬治 · third master</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<svg class="brush" viewBox="0 0 420 40" aria-hidden="true">
+  <path d="M14 20 C 90 32, 170 10, 250 24 S 370 28, 406 14" stroke-width="3.2" opacity=".9"/>
+  <path d="M50 16 C 130 26, 210 14, 290 22 S 380 20, 412 18" stroke-width="1" opacity=".4"/>
+</svg>
+
+<!-- RHYTHM -->
+<section class="wrap">
+  <div class="section-head rv">
+    <div class="v jp" aria-hidden="true">作法</div>
+    <div class="t">
+      <span class="en-label">How We Ask You to Sit · Sahō</span>
+      <h2>Three small requests.</h2>
+    </div>
+  </div>
+  <div class="rhythm rv">
+    <div class="rhythm-cell" data-k="静">
+      <span class="num">一 / one</span>
+      <div>
+        <span class="k jp">静</span>
+        <h3>Quiet devices</h3>
+        <p>Phones sleep in a lacquer box by the door. They are always still there when you leave, and rarely missed while you stay.</p>
+      </div>
+    </div>
+    <div class="rhythm-cell" data-k="待">
+      <span class="num">二 / two</span>
+      <div>
+        <span class="k jp">待</span>
+        <h3>Let it arrive</h3>
+        <p>Tea is not brought when ordered but when ready. Some bowls take four minutes. The koicha takes eleven. Both are on time.</p>
+      </div>
+    </div>
+    <div class="rhythm-cell" data-k="残">
+      <span class="num">三 / three</span>
+      <div>
+        <span class="k jp">残</span>
+        <h3>Leave a little</h3>
+        <p>Finish the tea, but leave the last moment unfinished — sit a breath longer than necessary. It is the only tip we accept.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section class="visit" id="visit">
+  <svg class="enso" viewBox="0 0 400 400" aria-hidden="true">
+    <path d="M232 38 C 330 56, 384 148, 362 240 C 340 332, 244 380, 156 358 C 68 336, 16 244, 40 156 C 62 74, 138 26, 214 36"/>
+  </svg>
+  <div class="wrap visit-grid">
+    <div class="v-title jp rv" aria-hidden="true">御案内</div>
+    <dl class="rv rv-d1">
+      <div>
+        <dt>Address</dt>
+        <dd>17-3 Murasakino Imamiya-chō, Kita-ku, Kyoto 603-8243
+          <span class="jp">京都市北区紫野今宮町17-3</span>
+        </dd>
+      </div>
+      <div>
+        <dt>Hours</dt>
+        <dd>Thursday – Monday, 8:00 – 17:00<span class="jp">Last bowl poured at 16:20 · closed Tue &amp; Wed</span></dd>
+      </div>
+      <div>
+        <dt>Seats</dt>
+        <dd>Eleven. No reservations — the wait is part of the visit.<span class="jp">予約不可 · 十一席</span></dd>
+      </div>
+    </dl>
+    <div class="note rv rv-d2">
+      <span class="jp-line">一期一会 — one time, one meeting</span>
+      Five minutes north of Daitoku-ji, behind an indigo curtain with no sign.
+      Look for the single persimmon tree and the smell of roasting hōjicha.
+      If the curtain is down, the room is full — the bench outside is warm in winter
+      and shaded in summer, and it has never felt like waiting to anyone who sat on it.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>喫茶店 琥珀 · Kissaten Kohaku, Kyoto — a fictional tea house</span>
+  <span>Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></span>
+</footer>
+
+<div class="seal-toast" id="sealToast" role="status"></div>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero video: hide if the file is missing so the poster/img shows */
+  var v = document.getElementById('heroVideo');
+  if (v) {
+    v.addEventListener('error', function(){ v.remove(); });
+    var src = v.querySelector('source');
+    if (src) src.addEventListener('error', function(){ v.remove(); });
+  }
+
+  /* reveal on scroll */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); }
+    });
+  },{threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rv,.brush,.visit').forEach(function(el){ io.observe(el); });
+
+  /* gentle parallax on the hero image */
+  if(!reduced){
+    var frame = document.querySelector('.hero-frame');
+    var media = frame ? frame.querySelectorAll('video,img.fallback') : [];
+    var ticking = false;
+    window.addEventListener('scroll', function(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var y = window.scrollY;
+        if(y < window.innerHeight * 1.4){
+          var shift = y * 0.08;
+          media.forEach(function(m){ m.style.transform = 'translateY(' + shift + 'px)'; });
+        }
+        ticking = false;
+      });
+    }, {passive:true});
+  }
+
+  /* seasonal menu */
+  var MENUS = {
+    haru: {
+      note:'Spring — sakura arrives from the Kamo river banks; the first tender sencha of the year.',
+      items:[
+        ['桜薄茶','Sakura Usucha','Thin matcha with a single salted cherry blossom resting on the foam','¥1,300'],
+        ['新茶','Shincha','First-flush sencha from Wazuka, picked within the week, steeped at 62°C','¥1,100'],
+        ['花見団子','Hanami Dango','Three-colour rice dumplings — cherry, plain, and mugwort','¥750'],
+        ['蕨餅','Warabi-mochi','Bracken-starch jelly under a deep drift of kinako','¥800'],
+        ['桜湯','Sakura-yu','Hot water blooming a preserved cherry blossom — served to those who wait','—']
+      ]
+    },
+    natsu: {
+      note:'Summer — everything cools; the mill rests in the heat of the day and turns again at dusk.',
+      items:[
+        ['冷抹茶','Hiyashi Matcha','Matcha whisked over a single large piece of Kurama ice','¥1,200'],
+        ['水出し玉露','Mizudashi Gyokuro','Gyokuro steeped six hours in cold spring water — served in three tiny pours','¥1,600'],
+        ['水羊羹','Mizu Yōkan','Chilled azuki jelly, softer than the summer air demands','¥700'],
+        ['葛切り','Kuzukiri','Arrowroot ribbons in iced kuromitsu, eaten with cedar chopsticks','¥850'],
+        ['麦茶','Mugicha','Roasted barley tea, free and bottomless, as it should be','—']
+      ]
+    },
+    aki: {
+      note:'Autumn — the roaster works daily; the room smells of hōjicha and the persimmon tree gives.',
+      items:[
+        ['焙じ茶','Jika-bai Hōjicha','House-roasted hōjicha, roasted that morning, poured from height','¥950'],
+        ['栗薄茶','Kuri Usucha','Thin matcha beside a single candied Tanba chestnut','¥1,350'],
+        ['月見饅頭','Tsukimi Manjū','Moon-viewing bun with smooth white bean paste','¥750'],
+        ['柿','Kaki','A ripe persimmon from our tree, halved, chilled, nothing added','¥600'],
+        ['玄米茶','Genmaicha','Bancha with toasted rice — the quiet companion to a long book','¥800']
+      ]
+    },
+    fuyu: {
+      note:'Winter — the brazier is lit; thick tea and warm sweets for the coldest, clearest light.',
+      items:[
+        ['濃茶','Koicha','Thick matcha, kneaded not whisked — thirty-year guests say it is why they came','¥1,800'],
+        ['焼き餅ぜんざい','Yaki-mochi Zenzai','Azuki soup with rice cake toasted over the charcoal brazier','¥950'],
+        ['柚子茶','Yuzu-cha','House yuzu preserved in honey, opened with hot water at the table','¥850'],
+        ['雪平','Seppei','Snow-white kneaded sweet hiding a salted plum center','¥700'],
+        ['白湯','Sayu','Plain hot water in a raku bowl — for the guest who only came to sit','—']
+      ]
+    }
+  };
+  var list = document.getElementById('menuList');
+  var note = document.getElementById('seasonNote');
+  var tabs = document.querySelectorAll('.season-tab');
+
+  function render(season){
+    var data = MENUS[season];
+    note.textContent = data.note;
+    list.innerHTML = data.items.map(function(it,i){
+      return '<div class="menu-item" style="transition-delay:'+(i*90)+'ms">'
+        + '<span class="kanji jp">'+it[0]+'</span>'
+        + '<span class="desc"><b>'+it[1]+'</b><span>'+it[2]+'</span></span>'
+        + '<span class="price">'+it[3]+'</span></div>';
+    }).join('');
+  }
+  function setSeason(season, animate){
+    tabs.forEach(function(t){
+      var on = t.dataset.season===season;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on);
+    });
+    if(animate && !reduced){
+      list.classList.add('menu-fading');
+      setTimeout(function(){
+        render(season);
+        list.classList.add('menu-fading');
+        requestAnimationFrame(function(){requestAnimationFrame(function(){
+          list.classList.remove('menu-fading');
+        });});
+      },200);
+    } else {
+      render(season);
+      list.classList.remove('menu-fading');
+    }
+  }
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ setSeason(t.dataset.season, true); }); });
+  setSeason('fuyu', false);
+
+  /* seal easter egg */
+  var seal = document.getElementById('seal');
+  var toast = document.getElementById('sealToast');
+  var sealLines = [
+    '琥珀 — kohaku means amber: resin that learned to wait.',
+    'The seal is pressed once per bowl. You have been counted.',
+    '第三代亭主より — the third master says: sit a breath longer.',
+    'A repaired bowl holds more than a new one.'
+  ];
+  var sealIdx = 0, toastTimer;
+  seal.addEventListener('click', function(){
+    toast.textContent = sealLines[sealIdx % sealLines.length];
+    sealIdx++;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 3600);
+  });
+})();
+</script>
+</body>
+</html>

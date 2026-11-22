@@ -1,0 +1,8 @@
+{
+  "name": "inspos",
+  "label": "Inspos",
+  "port": 5059,
+  "apiPrefixes": ["/api/inspos"],
+  "panelSelector": ".insp-root",
+  "stripSelectors": [".gen-rubric-brand"]
+}

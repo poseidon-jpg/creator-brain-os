@@ -1,0 +1,58 @@
+[
+  {
+    "id": "pixel_8bit",
+    "name": "Pixel 8-bit",
+    "description": "Chunky retro, NES/Game Boy, large visible pixels",
+    "image": "pixel_8bit.jpg",
+    "prompt": "Chunky retro 8-bit pixel art style, large visible square pixels, minimal shading, like NES or Game Boy Color. ONLY dark mode (black, dark grey background). Primary accents ORANGE and YELLOW. Secondary accents GREEN and BLUE. NO purple NO pink NO cyan NO magenta."
+  },
+  {
+    "id": "pixel_32bit",
+    "name": "Pixel 32-bit",
+    "description": "Detailed, rich shading, anti-aliased, warm office scenes",
+    "image": "pixel_32bit.jpg",
+    "prompt": "Detailed 32-bit pixel art style, rich shading and anti-aliasing. ONLY dark mode (black, dark grey background). Primary accents ORANGE and YELLOW. Secondary accents GREEN and BLUE. NO purple NO pink NO cyan NO magenta."
+  },
+  {
+    "id": "pixel_64bit",
+    "name": "Pixel 64-bit",
+    "description": "Ultra-detailed, near-photorealistic lighting, smooth anti-aliasing",
+    "image": "pixel_64bit.jpg",
+    "prompt": "Ultra-detailed 64-bit pixel art style, near-photorealistic lighting, smooth anti-aliasing. ONLY dark mode (black, dark grey background). Primary accents ORANGE and YELLOW. Secondary accents GREEN and BLUE. NO purple NO pink NO cyan NO magenta."
+  },
+  {
+    "id": "3d_style",
+    "name": "3D Style",
+    "description": "Glossy, beveled, specular highlights, Pixar/Blender quality",
+    "image": "3d_style.jpg",
+    "prompt": "3D rendered, glossy, beveled edges, specular highlights, Pixar/Blender quality."
+  },
+  {
+    "id": "cinematic_liquid_glass",
+    "name": "Cinematic Liquid Glass",
+    "description": "Frosted glassmorphism, dark void, soft glows, Apple Vision Pro aesthetic",
+    "image": "cinematic_liquid_glass.jpg",
+    "prompt": "Cinematic 16:9 3D render, liquid glass aesthetic, dark background. Glossy 3D app icon(s) with beveled edges and soft glow. Frosted glassmorphism UI elements - cards, panels, waveforms - with thin glowing edges, subtle reflections, and depth layers. Dark void or subtle nebula/stars in background. Premium, minimal, modern tech. No clutter, no bright colors - cool whites, warm ambers from icons, soft blue accents only."
+  },
+  {
+    "id": "isometric_tech",
+    "name": "Isometric Tech",
+    "description": "Clean isometric perspective, miniature desk scenes, floating UI panels, tilt-shift feel",
+    "image": "isometric_tech.jpg",
+    "prompt": "Isometric 3D tech illustration - clean dimetric perspective showing a cozy desk setup with multiple monitors displaying code and agent workflows, interconnected floating UI panels, data flowing between nodes. Miniature, detailed, tilt-shift feel. Dark mode background (near-black). Primary accents ORANGE and YELLOW glowing elements. Secondary accents GREEN and BLUE for data flows. Warm desk lamp casting soft light. Clean vector-like edges, subtle shadows grounding objects. NO purple NO pink NO cyan NO magenta. NO sci-fi NO neon. Think Monument Valley meets developer workspace."
+  },
+  {
+    "id": "paper_craft",
+    "name": "Paper Craft",
+    "description": "Layered cardstock cutouts, torn edges, drop shadows, tactile handmade feel",
+    "image": "paper_craft.jpg",
+    "prompt": "Paper craft cutout illustration - layered cardstock paper with visible depth between layers and soft drop shadows. Warm cardstock textures in earthy tones. Dark background (near-black or dark charcoal). Primary accents ORANGE and YELLOW paper layers. Secondary accents GREEN and BLUE paper elements. Warm ambient lighting casting shadows between paper layers. Tactile, handmade feel with slightly rough torn edges. NO purple NO pink NO cyan NO magenta. NO glossy NO digital. Think stop-motion paper animation set piece."
+  },
+  {
+    "id": "claymation",
+    "name": "Claymation",
+    "description": "Warm plasticine clay, fingerprint textures, chunky forms, Aardman Studios feel",
+    "image": "claymation.jpg",
+    "prompt": "Claymation style illustration - warm clay and plasticine rendered scene. Soft, slightly imperfect handmade shapes with visible fingerprint textures in the clay. Rounded edges, thick chunky forms, subtle stop-motion feel. Dark background (near-black). Primary accents ORANGE and YELLOW clay elements. Secondary accents GREEN and BLUE clay details. Warm ambient lighting with soft shadows. Friendly, approachable, Aardman Studios quality. NO purple NO pink NO cyan NO magenta. NO glossy NO digital. Think Wallace and Gromit meets tech workspace."
+  }
+]

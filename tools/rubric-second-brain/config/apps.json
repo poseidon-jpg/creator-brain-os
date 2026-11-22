@@ -1,0 +1,99 @@
+{
+  "_note": "Only REAL connections. FL Studio MCP is a deliberate local-only exception for the music department.",
+  "apps": [
+    {
+      "id": "app:gh",
+      "label": "GitHub CLI",
+      "kind": "cli",
+      "access": "claude",
+      "status": "live",
+      "desc": "gh CLI - repos, PRs, issues",
+      "links": [],
+      "iconSlug": "github"
+    },
+    {
+      "id": "app:gmail-connector",
+      "label": "Gmail",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Mail search, drafts, labels",
+      "links": [],
+      "iconSlug": "gmail"
+    },
+    {
+      "id": "app:gcal",
+      "label": "Google Calendar",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Events, scheduling",
+      "links": [],
+      "iconSlug": "googlecalendar"
+    },
+    {
+      "id": "app:gdrive",
+      "label": "Google Drive",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Files, search, sharing",
+      "links": [],
+      "iconSlug": "googledrive"
+    },
+    {
+      "id": "app:gdocs",
+      "label": "Google Docs",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Read and edit docs",
+      "links": []
+    },
+    {
+      "id": "app:gsheets",
+      "label": "Google Sheets",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Read and edit sheets",
+      "links": []
+    },
+    {
+      "id": "app:gslides",
+      "label": "Google Slides",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Read and edit decks",
+      "links": []
+    },
+    {
+      "id": "app:tinyfish",
+      "label": "TinyFish",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Web search, extraction, browser automation",
+      "links": []
+    },
+    {
+      "id": "app:chrome",
+      "label": "Claude in Chrome",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Drives your real Chrome",
+      "links": []
+    },
+    {
+      "id": "app:flstudio",
+      "label": "FL Studio MCP",
+      "kind": "mcp",
+      "access": "claude",
+      "status": "live",
+      "desc": "Local bridge into FL Studio (port 9787) - local only",
+      "links": []
+    }
+  ]
+}

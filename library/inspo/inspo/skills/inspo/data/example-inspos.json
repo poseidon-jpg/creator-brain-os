@@ -1,0 +1,38 @@
+{
+  "inspos": [
+    {
+      "id": "UF8uR6Z6KLc",
+      "url": "https://www.youtube.com/watch?v=UF8uR6Z6KLc",
+      "title": "Steve Jobs' 2005 Stanford Commencement Address",
+      "channel": "Stanford",
+      "subscribers": 2210000,
+      "views": 49215811,
+      "viewsText": "49.2M",
+      "published": "2008-03-08",
+      "ago": "18y ago",
+      "duration": "15:04",
+      "tags": ["apple", "graduation", "education", "Pixar", "Steve Jobs", "stanford", "speech", "commencement"],
+      "description": "Drawing from some of the most pivotal points in his life, Steve Jobs, chief executive officer and co-founder of Apple Computer and of Pixar Animation Studios, urged graduates to pursue their dreams and see the opportunities in life's setbacks.",
+      "note": "Three stories, one lesson each. Steal the structure for a talking-head video.",
+      "capturedAt": "2026-10-09T08:45:48.000Z",
+      "example": true
+    },
+    {
+      "id": "jNQXAC9IVRw",
+      "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+      "title": "Me at the zoo",
+      "channel": "jawed",
+      "subscribers": 6670000,
+      "views": 441521500,
+      "viewsText": "441.5M",
+      "published": "2005-04-24",
+      "ago": "21y ago",
+      "duration": "0:19",
+      "tags": ["me at the zoo", "jawed karim", "first youtube video"],
+      "description": "The first video ever uploaded to YouTube. One take, nineteen seconds, in front of the elephants.",
+      "note": "Proof that a simple idea, shot plainly, can still travel.",
+      "capturedAt": "2026-10-09T08:45:46.000Z",
+      "example": true
+    }
+  ]
+}

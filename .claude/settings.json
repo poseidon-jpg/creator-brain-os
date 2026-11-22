@@ -1,0 +1,27 @@
+{
+  "outputStyle": "Creative Infinity",
+  "hooks": {
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/drift/start.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/drift/stopcheck.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

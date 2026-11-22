@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excalidraw Landing Pad</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect x='12' y='8' width='24' height='32' rx='2' fill='none' stroke='%23ff6b1a' stroke-width='3'/%3E%3Crect x='18' y='4' width='12' height='8' rx='2' fill='%23ff6b1a'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Doto:wght@900&display=swap" rel="stylesheet">
+<style>
+  html { color-scheme: dark; }
+  html[data-theme="light"] { color-scheme: light; }
+  :root, html[data-theme="dark"] {
+    --bg:#131311; --card:#1c1a16; --text:#e8e2d2; --muted:#8d8775; --accent:#ff6b1a;
+    --shadow:#000; --line:rgba(232,226,210,.14);
+  }
+  html[data-theme="light"] {
+    --bg:#f2efe8; --card:#faf8f2; --text:#1c1a16; --muted:#6f6a5c; --accent:#ff6b1a;
+    --shadow:rgba(28,26,22,.9); --line:rgba(28,26,22,.14);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Outfit',system-ui,sans-serif; font-weight:400;
+    transition:background .25s, color .25s;
+    padding:48px 32px 96px;
+  }
+  ::selection { background:var(--accent); color:#fff; }
+
+  #themeToggle {
+    position:fixed; top:16px; right:16px; z-index:100;
+    width:40px; height:40px; border:2px solid var(--text); background:var(--card);
+    color:var(--text); border-radius:0; cursor:pointer; font-size:18px; line-height:1;
+    font-family:'Outfit',sans-serif; box-shadow:3px 3px 0 var(--text);
+  }
+  #themeToggle:active { box-shadow:1px 1px 0 var(--text); transform:translate(2px,2px); }
+
+  .wrap { max-width:1180px; margin:0 auto; }
+  .kicker {
+    font-size:12px; letter-spacing:6px; text-transform:uppercase;
+    color:var(--muted); font-weight:400; margin:0 0 10px;
+  }
+  h1 {
+    font-size:clamp(34px,5vw,52px); font-weight:500; letter-spacing:-1.5px;
+    margin:0 0 14px; line-height:1.02;
+  }
+  h1 .doto { font-family:'Doto',monospace; font-weight:900; color:var(--accent); margin:0 .25em; }
+  .lede { color:var(--muted); font-size:17px; max-width:680px; margin:0 0 36px; line-height:1.55; }
+
+  /* how-to strip */
+  .how {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px;
+    margin:0 0 44px;
+  }
+  .step {
+    background:var(--card); border:2px solid var(--text); box-shadow:5px 5px 0 var(--shadow);
+    padding:16px 18px;
+  }
+  html[data-theme="dark"] .step { border-color:var(--card); }
+  .step .n {
+    font-size:26px; font-weight:600; letter-spacing:-.01em; color:var(--accent);
+    line-height:1; margin-bottom:8px;
+  }
+  .step p { margin:0; font-size:14px; line-height:1.5; color:var(--muted); }
+  .step b { color:var(--text); font-weight:500; }
+  kbd {
+    font-family:'Outfit',sans-serif; font-weight:500; font-size:13px;
+    border:1px solid var(--line); padding:1px 6px; background:var(--bg); color:var(--text);
+  }
+
+  .sechead {
+    display:flex; align-items:baseline; gap:14px; margin:0 0 20px;
+    border-bottom:1px solid var(--line); padding-bottom:12px;
+  }
+  .sechead h2 { font-size:20px; font-weight:500; letter-spacing:-.4px; margin:0; }
+  .sechead span { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; }
+
+  .build {
+    background:var(--card); border:2px solid var(--text); box-shadow:6px 6px 0 var(--shadow);
+    display:flex; flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  html[data-theme="dark"] .build { border-color:var(--card); }
+  .build:hover { transform:translate(-2px,-4px); box-shadow:9px 9px 0 var(--shadow); }
+
+  .prev {
+    background:#121212; border-bottom:2px solid var(--line);
+    height:210px; display:flex; align-items:center; justify-content:center; padding:14px;
+  }
+  html[data-theme="light"] .prev { background:#1a1a1a; }
+  .prev svg { max-width:100%; max-height:100%; }
+
+  .meta { padding:16px 18px 6px; flex:1; }
+  .meta h3 { margin:0 0 6px; font-size:18px; font-weight:500; letter-spacing:-.3px; }
+  .meta p { margin:0 0 10px; font-size:13.5px; line-height:1.5; color:var(--muted); }
+  .tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+  .tag {
+    font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted);
+    border:1px solid var(--line); padding:2px 7px;
+  }
+
+  .actions { display:flex; gap:0; border-top:1px solid var(--line); }
+  .actions button, .actions a {
+    flex:1; padding:13px 10px; font-family:'Outfit',sans-serif; font-size:13px;
+    font-weight:500; letter-spacing:1.5px; text-transform:uppercase;
+    border:0; cursor:pointer; text-align:center; text-decoration:none;
+    background:transparent; color:var(--text); border-radius:0;
+    transition:background .15s, color .15s;
+  }
+  .actions button.primary { background:var(--accent); color:#fff; }
+  .actions button.primary.done { background:#2f9e44; }
+  .actions a { border-left:1px solid var(--line); color:var(--muted); }
+  .actions a:hover { color:var(--text); background:var(--bg); }
+
+  .empty {
+    border:2px dashed var(--line); padding:40px; text-align:center;
+    color:var(--muted); font-size:14px;
+  }
+  footer {
+    margin-top:56px; padding-top:20px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px; line-height:1.6;
+  }
+  footer code {
+    font-family:ui-monospace,monospace; font-size:12px; color:var(--text);
+    background:var(--card); padding:1px 5px;
+  }
+</style>
+</head>
+<body>
+<button id="themeToggle" aria-label="Toggle dark / light mode">◐</button>
+
+<div class="wrap">
+  <p class="kicker">Excalidraw · Landing Pad</p>
+  <h1>Landing <span class="doto">PAD</span></h1>
+  <p class="lede">
+    Every excalidraw build your agent makes lands here. Hit copy, then paste straight onto your
+    live canvas. Nothing on your board gets touched - paste adds, it never replaces.
+  </p>
+
+  <div class="how">
+    <div class="step">
+      <div class="n">1</div>
+      <p>Click <b>Copy elements</b> on the build you want.</p>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <p>Open <b>excalidraw.com</b> and click the spot on your canvas where it should land.</p>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd>. It drops in at your cursor, grouped, ready to drag.</p>
+    </div>
+  </div>
+
+  <div class="sechead">
+    <h2>Builds</h2>
+    <span id="count">0 scenes</span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Never drag a <code>.excalidraw</code> file onto a canvas you care about - importing a file
+    <b>replaces</b> the whole scene. Pasting is the safe move. The download link is for starting a
+    fresh board or for your agent to merge into an exported copy.
+  </footer>
+</div>
+
+<script src="builds.js"></script>
+<script>
+(function () {
+  const root = document.documentElement;
+  const apply = t => { root.setAttribute('data-theme', t); root.style.colorScheme = t; };
+  apply(localStorage.getItem('pad-theme') || 'dark');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('pad-theme', next); apply(next);
+  });
+})();
+
+/* ---- generic excalidraw -> SVG preview renderer ---------------------------
+   Handles the element types the library actually emits. Good enough for a thumbnail;
+   the real hand-drawn roughness only shows up once it is on the canvas.      */
+function renderPreview(elements, files) {
+  const live = elements.filter(e => !e.isDeleted);
+  if (!live.length) return '';
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  live.forEach(e => {
+    const w = e.width || 0, h = e.height || 0;
+    if (e.points) {
+      e.points.forEach(([px, py]) => {
+        minX = Math.min(minX, e.x + px); maxX = Math.max(maxX, e.x + px);
+        minY = Math.min(minY, e.y + py); maxY = Math.max(maxY, e.y + py);
+      });
+    } else {
+      minX = Math.min(minX, e.x); maxX = Math.max(maxX, e.x + w);
+      minY = Math.min(minY, e.y); maxY = Math.max(maxY, e.y + h);
+    }
+  });
+  const pad = 16;
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const fillOf = e => (!e.backgroundColor || e.backgroundColor === 'transparent') ? 'none' : e.backgroundColor;
+
+  const parts = live.map(e => {
+    const sw = e.strokeWidth || 2, sc = e.strokeColor || '#1e1e1e', op = (e.opacity ?? 100) / 100;
+    const common = `stroke="${sc}" stroke-width="${sw}" opacity="${op}" stroke-linejoin="round" stroke-linecap="round"`;
+
+    if (e.type === 'image') {
+      const f = files && files[e.fileId];
+      if (!f || !f.dataURL) return '';
+      return `<image x="${e.x}" y="${e.y}" width="${e.width}" height="${e.height}"
+        href="${f.dataURL}" opacity="${op}" preserveAspectRatio="none"/>`;
+    }
+    if (e.type === 'text') {
+      const anchor = e.textAlign === 'center' ? 'middle' : e.textAlign === 'right' ? 'end' : 'start';
+      const tx = e.x + (anchor === 'middle' ? (e.width || 0) / 2 : anchor === 'end' ? (e.width || 0) : 0);
+      const fs = e.fontSize || 20;
+      // excalidraw wraps on \n and keeps runs of spaces; plain SVG <text> does neither.
+      const spans = String(e.text || '').split('\n').map((ln, i) =>
+        `<tspan x="${tx}" dy="${i === 0 ? 0 : fs * 1.25}">${esc(ln)}</tspan>`).join('');
+      return `<text x="${tx}" y="${e.y + fs}" fill="${sc}" opacity="${op}" text-anchor="${anchor}"
+        font-family="Outfit,sans-serif" font-weight="500" font-size="${fs}"
+        letter-spacing="0.5" xml:space="preserve">${spans}</text>`;
+    }
+    if (e.type === 'line' || e.type === 'arrow' || e.type === 'draw' || e.type === 'freedraw') {
+      const pts = (e.points || []).map(([px, py]) => `${e.x + px},${e.y + py}`).join(' ');
+      const closed = e.type === 'line' && fillOf(e) !== 'none';
+      return `<${closed ? 'polygon' : 'polyline'} points="${pts}" fill="${closed ? fillOf(e) : 'none'}" ${common}/>`;
+    }
+    if (e.type === 'ellipse') {
+      return `<ellipse cx="${e.x + e.width / 2}" cy="${e.y + e.height / 2}" rx="${e.width / 2}" ry="${e.height / 2}" fill="${fillOf(e)}" ${common}/>`;
+    }
+    if (e.type === 'diamond') {
+      const p = [[e.x + e.width / 2, e.y], [e.x + e.width, e.y + e.height / 2],
+                 [e.x + e.width / 2, e.y + e.height], [e.x, e.y + e.height / 2]];
+      return `<polygon points="${p.map(a => a.join(',')).join(' ')}" fill="${fillOf(e)}" ${common}/>`;
+    }
+    // rectangle + anything else box-shaped
+    return `<rect x="${e.x}" y="${e.y}" width="${e.width}" height="${e.height}" rx="${e.roundness ? 8 : 0}" fill="${fillOf(e)}" ${common}/>`;
+  });
+
+  return `<svg viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}"
+    width="${maxX - minX}" height="${maxY - minY}"
+    xmlns="http://www.w3.org/2000/svg">${parts.join('')}</svg>`;
+}
+
+/* ---- clipboard ---------------------------------------------------------- */
+function clipboardPayload(elements, files) {
+  return JSON.stringify({ type: 'excalidraw/clipboard', elements, files: files || {} });
+}
+function legacyCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  document.body.removeChild(ta); return ok;
+}
+async function copyElements(elements, files, btn) {
+  const text = clipboardPayload(elements, files);
+  let ok = true;
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { ok = legacyCopy(text); }
+  const label = btn.textContent;
+  btn.textContent = ok ? '✓ Copied - now Ctrl+V' : 'Copy failed';
+  btn.classList.toggle('done', ok);
+  setTimeout(() => { btn.textContent = label; btn.classList.remove('done'); }, 2400);
+}
+function downloadScene(build) {
+  const scene = {
+    type: 'excalidraw', version: 2, source: 'https://excalidraw.com',
+    elements: build.elements,
+    appState: { gridSize: null, viewBackgroundColor: '#121212' }, files: build.files || {},
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(scene, null, 2)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = build.id + '.excalidraw';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ---- render ------------------------------------------------------------- */
+const BUILDS = (window.EXCALIDRAW_BUILDS || []).slice().reverse();
+const grid = document.getElementById('grid');
+document.getElementById('count').textContent =
+  BUILDS.length + (BUILDS.length === 1 ? ' scene' : ' scenes');
+
+if (!BUILDS.length) {
+  grid.innerHTML = '<div class="empty">No builds yet. Your agent drops them in <code>builds.js</code>.</div>';
+} else {
+  BUILDS.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'build';
+    card.innerHTML = `
+      <div class="prev">${renderPreview(b.elements, b.files)}</div>
+      <div class="meta">
+        <h3>${b.title}</h3>
+        <p>${b.note || ''}</p>
+        <div class="tags">
+          <span class="tag">${b.date}</span>
+          <span class="tag">${b.elements.length} elements</span>
+          ${b.project ? `<span class="tag">${b.project}</span>` : ''}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary">Copy elements</button>
+        <a href="#" role="button">Download</a>
+      </div>`;
+    card.querySelector('button.primary').addEventListener('click', ev => copyElements(b.elements, b.files, ev.currentTarget));
+    card.querySelector('a').addEventListener('click', ev => { ev.preventDefault(); downloadScene(b); });
+    grid.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>

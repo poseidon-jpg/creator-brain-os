@@ -1,0 +1,9 @@
+# your settings and keys
+env.local
+
+# what the app makes while you work
+projects/*/logs/
+projects/*/final-v*/export.mp4
+projects/*/*.tmp
+__pycache__/
+node_modules/

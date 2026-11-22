@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Meridian · Grand Hotel · Est. 1925</title>
+<meta name="description" content="The Meridian, a 1925 Art Deco grand hotel. Rooms and suites, The Gilded Fan bar, the Palm Atrium dining room. Ninety-nine years of gilded hospitality.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230b0b0d'/%3E%3Cpath d='M32 8 L36 28 L56 32 L36 36 L32 56 L28 36 L8 32 L28 28 Z' fill='%23c9a24b'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%230b0b0d' stroke='%23c9a24b' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Poiret+One&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0b0b0d;
+  --ink:#101014;
+  --gold:#c9a24b;
+  --gold-bright:#e8c877;
+  --gold-dim:#8a6f33;
+  --cream:#f3ead8;
+  --cream-dim:#d9cdb4;
+  --emerald:#0e3b32;
+  --emerald-deep:#092a24;
+  --serif:'Marcellus',serif;
+  --deco:'Poiret One',cursive;
+  --sans:'Montserrat',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  background:var(--black);
+  color:var(--cream);
+  font-family:var(--sans);
+  font-weight:300;
+  line-height:1.7;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--gold);color:var(--black)}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+/* ============ PRELOADER ============ */
+#veil{
+  position:fixed;inset:0;z-index:200;
+  background:var(--black);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 1s ease .2s,visibility 1s ease .2s;
+}
+#veil.gone{opacity:0;visibility:hidden}
+#veil svg{width:min(300px,70vw);height:auto}
+#veil .stamp{
+  stroke:var(--gold);fill:none;stroke-width:1.4;
+  stroke-dasharray:600;stroke-dashoffset:600;
+  animation:stamp 1.6s cubic-bezier(.6,0,.2,1) forwards;
+}
+#veil .stamp2{animation-delay:.35s}
+#veil .stamp3{animation-delay:.7s}
+#veil .veil-m{
+  font-family:var(--deco);font-size:52px;fill:var(--gold);
+  opacity:0;animation:inkfill 1s ease 1.2s forwards;
+}
+@keyframes stamp{to{stroke-dashoffset:0}}
+@keyframes inkfill{to{opacity:1}}
+
+/* scroll progress hairline */
+#progress{
+  position:fixed;top:0;left:0;height:2px;width:100%;z-index:110;
+  background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));
+  transform-origin:left;transform:scaleX(0);pointer-events:none;
+}
+
+/* ============ TOP NAV ============ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px clamp(20px,5vw,64px);
+  background:linear-gradient(to bottom,rgba(11,11,13,.92),rgba(11,11,13,0));
+  transition:background .5s;
+}
+nav.solid{background:rgba(11,11,13,.96);border-bottom:1px solid rgba(201,162,75,.25)}
+.nav-mono{
+  font-family:var(--deco);font-size:26px;color:var(--gold);
+  letter-spacing:.35em;text-decoration:none;padding-left:.35em;
+}
+.nav-links{display:flex;gap:clamp(14px,2.5vw,36px);list-style:none}
+.nav-links a{
+  font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  text-decoration:none;color:var(--cream-dim);
+  position:relative;padding:4px 0;transition:color .35s;
+}
+.nav-links a::after{
+  content:"";position:absolute;left:50%;bottom:0;width:0;height:1px;
+  background:var(--gold);transition:width .35s ease,left .35s ease;
+}
+.nav-links a:hover{color:var(--gold-bright)}
+.nav-links a:hover::after{width:100%;left:0}
+@media(max-width:768px){
+  .nav-links{display:none}
+  nav{padding:14px 20px}
+  .nav-mono{font-size:20px}
+}
+
+/* ============ HERO ============ */
+header.hero{
+  min-height:100svh;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:110px 20px 80px;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 118%,rgba(201,162,75,.14),transparent 60%),
+    radial-gradient(ellipse 60% 45% at 50% -10%,rgba(14,59,50,.55),transparent 65%),
+    var(--black);
+}
+.hero-frame{
+  position:absolute;inset:clamp(14px,3vw,36px);pointer-events:none;
+}
+.hero-frame svg{width:100%;height:100%}
+.hero-frame path,.hero-frame circle,.hero-frame line{
+  stroke:var(--gold);fill:none;vector-effect:non-scaling-stroke;
+}
+.hero-eyebrow{
+  font-family:var(--deco);letter-spacing:.55em;padding-left:.55em;
+  font-size:clamp(12px,1.4vw,16px);color:var(--gold);text-transform:uppercase;
+}
+h1.hero-title{
+  font-family:var(--deco);font-weight:400;
+  font-size:clamp(52px,11vw,150px);
+  letter-spacing:.14em;padding-left:.14em;
+  line-height:1.05;margin:18px 0 10px;
+  background:linear-gradient(100deg,var(--cream) 40%,var(--gold-bright) 50%,var(--cream) 60%);
+  background-size:250% 100%;background-position:120% 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+body.loaded h1.hero-title{animation:shimmer 3.2s cubic-bezier(.4,0,.2,1) 2.6s}
+@keyframes shimmer{0%{background-position:120% 0}100%{background-position:-130% 0}}
+.hero-sub{
+  font-family:var(--serif);font-size:clamp(15px,1.8vw,21px);
+  color:var(--cream-dim);letter-spacing:.12em;max-width:560px;margin:0 auto;
+}
+.hero-est{
+  display:flex;align-items:center;gap:16px;margin-top:34px;
+  font-size:11px;letter-spacing:.4em;padding-left:.4em;text-transform:uppercase;color:var(--gold);
+}
+.hero-est::before,.hero-est::after{
+  content:"";width:56px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));
+}
+.hero-est::after{background:linear-gradient(90deg,var(--gold),transparent)}
+.hero-cta{
+  margin-top:44px;display:inline-block;
+  font-size:12px;letter-spacing:.32em;padding:16px 38px 16px calc(38px + .32em);
+  text-transform:uppercase;text-decoration:none;
+  color:var(--gold);border:1px solid var(--gold-dim);
+  position:relative;overflow:hidden;transition:color .45s;
+}
+.hero-cta span{position:relative;z-index:1}
+.hero-cta::before{
+  content:"";position:absolute;inset:0;background:var(--gold);
+  transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.7,0,.2,1);
+}
+.hero-cta:hover{color:var(--black)}
+.hero-cta:hover::before{transform:scaleX(1)}
+/* sunburst behind title */
+.sunburst{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  width:min(760px,120vw);opacity:.5;pointer-events:none;
+}
+.sunburst line{stroke:var(--gold);stroke-width:.6;opacity:.55}
+.scroll-hint{
+  position:absolute;bottom:clamp(26px,5vh,52px);left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:.4em;padding-left:.4em;text-transform:uppercase;color:var(--gold-dim);
+  animation:hintFloat 3s ease-in-out infinite;
+}
+@keyframes hintFloat{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+@media(max-width:520px){
+  .hero-eyebrow{letter-spacing:.32em;padding-left:.32em;font-size:11px}
+  h1.hero-title{letter-spacing:.1em;padding-left:.1em}
+  .hero-sub{font-size:15px}
+  .hero-est{margin-top:24px;font-size:10px}
+  .hero-cta{margin-top:30px;padding:14px 28px 14px calc(28px + .32em)}
+  .hero-frame{inset:56px 12px 12px}
+  header.hero{padding-top:90px;padding-bottom:70px}
+  .scroll-hint{display:none}
+}
+
+/* stagger reveal (hero children) */
+.h-rise{opacity:0;transform:translateY(26px);transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.2,.7,.2,1)}
+body.loaded .h-rise{opacity:1;transform:none}
+body.loaded .h-rise:nth-child(1){transition-delay:1.5s}
+body.loaded .h-d1{transition-delay:1.6s}
+body.loaded .h-d2{transition-delay:1.8s}
+body.loaded .h-d3{transition-delay:2s}
+body.loaded .h-d4{transition-delay:2.2s}
+body.loaded .h-d5{transition-delay:2.4s}
+
+/* hero frame draw-in */
+.draw{stroke-dasharray:1500;stroke-dashoffset:1500}
+body.loaded .draw{animation:drawIn 2.4s cubic-bezier(.55,0,.2,1) 1.1s forwards}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+
+/* ============ SECTION SCAFFOLD ============ */
+section{position:relative;padding:clamp(80px,12vh,150px) clamp(20px,6vw,80px)}
+.wrap{max-width:1180px;margin:0 auto}
+.kicker{
+  font-family:var(--deco);font-size:clamp(12px,1.3vw,15px);
+  letter-spacing:.5em;padding-left:.5em;text-transform:uppercase;
+  color:var(--gold);text-align:center;
+}
+h2.sec-title{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(32px,5vw,58px);letter-spacing:.06em;
+  text-align:center;margin:14px 0 0;color:var(--cream);
+}
+.divider{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  margin:30px auto 0;width:min(420px,80%);
+}
+.divider::before,.divider::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-dim));
+}
+.divider::after{background:linear-gradient(90deg,var(--gold-dim),transparent)}
+.divider svg{width:52px;height:26px;flex-shrink:0}
+.divider svg path{stroke:var(--gold);fill:none;stroke-width:1.2}
+/* scroll reveal */
+.rv{opacity:0;transform:translateY(34px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}
+.rv.on{opacity:1;transform:none}
+.rv-d1{transition-delay:.12s}.rv-d2{transition-delay:.24s}.rv-d3{transition-delay:.36s}
+
+/* ============ STORY ============ */
+#story{background:linear-gradient(to bottom,var(--black),#0d0f0e 40%,var(--black))}
+.story-grid{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,5vw,72px);
+  align-items:center;margin-top:clamp(46px,7vh,80px);
+}
+.story-copy p{margin-bottom:1.3em;color:var(--cream-dim);font-size:clamp(15px,1.15vw,17px)}
+.story-copy p:first-of-type::first-letter{
+  font-family:var(--serif);font-size:3.4em;float:left;
+  line-height:.8;padding:6px 12px 0 0;color:var(--gold);
+}
+.story-copy strong{color:var(--cream);font-weight:500}
+.plate{
+  position:relative;padding:14px;
+  border:1px solid var(--gold-dim);
+}
+.plate::before{
+  content:"";position:absolute;inset:6px;border:1px solid rgba(201,162,75,.4);
+  pointer-events:none;z-index:2;
+}
+.plate img{width:100%;height:100%;object-fit:cover;filter:sepia(.18) saturate(.92);transition:filter .8s,transform .8s ease}
+.plate .img-clip{overflow:hidden}
+.plate:hover img{filter:sepia(0) saturate(1.05);transform:scale(1.035)}
+.plate-corner{
+  position:absolute;width:26px;height:26px;z-index:3;
+}
+.plate-corner svg{width:100%;height:100%}
+.plate-corner path{stroke:var(--gold);fill:none;stroke-width:1.5}
+.pc-tl{top:-4px;left:-4px}
+.pc-tr{top:-4px;right:-4px;transform:rotate(90deg)}
+.pc-br{bottom:-4px;right:-4px;transform:rotate(180deg)}
+.pc-bl{bottom:-4px;left:-4px;transform:rotate(270deg)}
+.plate-caption{
+  margin-top:16px;text-align:center;
+  font-family:var(--serif);font-size:13px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gold-dim);
+}
+.story-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:rgba(201,162,75,.3);border:1px solid rgba(201,162,75,.3);
+  margin-top:clamp(48px,8vh,90px);
+}
+.stat{background:var(--black);padding:34px 16px;text-align:center;transition:background .5s}
+.stat:hover{background:var(--emerald-deep)}
+.stat b{
+  display:block;font-family:var(--deco);font-weight:400;
+  font-size:clamp(34px,4.4vw,54px);color:var(--gold-bright);letter-spacing:.06em;
+}
+.stat span{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--cream-dim)}
+@media(max-width:860px){.story-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.story-stats{grid-template-columns:1fr}}
+
+/* ============ ROOMS ============ */
+#rooms{
+  background:var(--cream);color:var(--ink);
+}
+#rooms .kicker{color:var(--emerald)}
+#rooms h2.sec-title{color:var(--ink)}
+#rooms .divider::before{background:linear-gradient(90deg,transparent,rgba(14,59,50,.5))}
+#rooms .divider::after{background:linear-gradient(90deg,rgba(14,59,50,.5),transparent)}
+#rooms .divider svg path{stroke:var(--emerald)}
+.rooms-intro{
+  max-width:620px;margin:26px auto 0;text-align:center;
+  color:#4c4636;font-size:clamp(14px,1.1vw,16px);
+}
+.room-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(22px,3vw,40px);
+  margin-top:clamp(50px,8vh,86px);
+}
+.room-card{
+  border:1px solid rgba(14,59,50,.35);
+  padding:30px 26px 28px;position:relative;
+  background:linear-gradient(to bottom,rgba(255,255,255,.5),rgba(243,234,216,0));
+  transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .5s,border-color .5s;
+}
+.room-card::before{
+  content:"";position:absolute;inset:5px;border:1px solid rgba(14,59,50,.18);
+  pointer-events:none;transition:border-color .5s;
+}
+.room-card:hover{
+  transform:translateY(-8px);
+  border-color:var(--gold);
+  box-shadow:0 26px 50px -20px rgba(14,59,50,.35);
+}
+.room-card:hover::before{border-color:rgba(201,162,75,.6)}
+.room-fan{width:64px;height:36px;margin:0 auto 18px;display:block}
+.room-fan path,.room-fan line{stroke:var(--emerald);fill:none;stroke-width:1.1;transition:stroke .5s}
+.room-card:hover .room-fan path,.room-card:hover .room-fan line{stroke:var(--gold-dim)}
+.room-card .room-fan path{
+  stroke-dasharray:160;stroke-dashoffset:0;
+}
+.room-card:hover .room-fan path{
+  animation:fanOpen 1s cubic-bezier(.55,0,.2,1);
+}
+@keyframes fanOpen{from{stroke-dashoffset:160}to{stroke-dashoffset:0}}
+.room-no{
+  text-align:center;font-family:var(--deco);font-size:13px;
+  letter-spacing:.45em;padding-left:.45em;color:var(--emerald);text-transform:uppercase;
+}
+.room-name{
+  font-family:var(--serif);font-size:clamp(22px,2vw,27px);
+  text-align:center;margin:8px 0 4px;letter-spacing:.04em;
+}
+.room-size{
+  text-align:center;font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:#7a7360;margin-bottom:18px;
+}
+.room-desc{font-size:14px;color:#4c4636;line-height:1.75;text-align:center}
+.room-feats{
+  list-style:none;margin:20px 0 22px;padding:16px 0 0;
+  border-top:1px solid rgba(14,59,50,.2);
+  font-size:12.5px;color:#5c5545;
+}
+.room-feats li{
+  padding:5px 0;display:flex;align-items:baseline;gap:10px;justify-content:center;
+}
+.room-feats li::before{content:"◆";font-size:7px;color:var(--gold-dim);flex-shrink:0;transform:translateY(-2px)}
+.room-rate{
+  text-align:center;padding-top:16px;
+  border-top:1px solid rgba(14,59,50,.2);
+}
+.room-rate b{
+  font-family:var(--deco);font-weight:400;font-size:30px;color:var(--emerald);letter-spacing:.04em;
+}
+.room-rate span{display:block;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#7a7360;margin-top:2px}
+@media(max-width:960px){.room-grid{grid-template-columns:1fr;max-width:460px;margin-left:auto;margin-right:auto}}
+
+/* ============ BAR - GILDED FAN ============ */
+#bar{
+  background:
+    radial-gradient(ellipse 80% 70% at 85% 20%,rgba(201,162,75,.1),transparent 60%),
+    linear-gradient(160deg,var(--emerald-deep),var(--black) 70%);
+}
+.bar-grid{
+  display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(36px,5vw,80px);
+  align-items:center;margin-top:clamp(46px,7vh,80px);
+}
+.bar-copy p{color:var(--cream-dim);margin-bottom:1.3em;font-size:clamp(15px,1.15vw,17px)}
+.bar-copy em{font-family:var(--serif);font-style:normal;color:var(--gold-bright)}
+.menu{
+  margin-top:34px;border-top:1px solid rgba(201,162,75,.35);
+}
+.menu-row{
+  display:flex;align-items:baseline;gap:14px;
+  padding:15px 6px;border-bottom:1px solid rgba(201,162,75,.18);
+  transition:background .45s cubic-bezier(.2,.7,.2,1),padding-left .45s cubic-bezier(.2,.7,.2,1);cursor:default;
+}
+@media(max-width:420px){.menu-row .m-dots{min-width:18px}.menu-row{gap:10px}}
+.menu-row:hover{background:rgba(201,162,75,.08);padding-left:14px}
+.menu-row .m-name{font-family:var(--serif);font-size:17px;letter-spacing:.05em;color:var(--cream)}
+.menu-row .m-dots{flex:1;border-bottom:1px dotted rgba(201,162,75,.45);transform:translateY(-4px)}
+.menu-row .m-price{font-family:var(--deco);font-size:18px;color:var(--gold-bright);letter-spacing:.05em}
+.menu-row .m-desc{
+  display:block;font-size:12.5px;color:var(--cream-dim);letter-spacing:.02em;font-weight:300;
+}
+.bar-hours{
+  margin-top:26px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);
+}
+@media(max-width:860px){.bar-grid{grid-template-columns:1fr}}
+
+/* ============ DINING ============ */
+#dining{background:var(--black)}
+.dine-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+  background:rgba(201,162,75,.3);border:1px solid rgba(201,162,75,.3);
+  margin-top:clamp(50px,8vh,86px);
+}
+.dine-cell{
+  background:var(--black);padding:clamp(34px,4vw,56px);
+  position:relative;overflow:hidden;transition:background .6s;
+}
+.dine-cell::after{
+  content:"";position:absolute;right:-40px;bottom:-40px;width:150px;height:150px;
+  background:radial-gradient(circle,rgba(201,162,75,.16),transparent 70%);
+  opacity:0;transition:opacity .6s;
+}
+.dine-cell:hover{background:#0e100f}
+.dine-cell:hover::after{opacity:1}
+.dine-fan{
+  position:absolute;top:20px;right:20px;width:34px;height:20px;opacity:.4;
+  transition:opacity .6s,transform .6s cubic-bezier(.2,.7,.2,1);
+}
+.dine-fan path{stroke:var(--gold);fill:none;stroke-width:1}
+.dine-cell:hover .dine-fan{opacity:1;transform:rotate(12deg)}
+.dine-cell h3{
+  font-family:var(--serif);font-weight:400;font-size:clamp(21px,2vw,26px);
+  color:var(--gold-bright);letter-spacing:.05em;margin-bottom:4px;
+}
+.dine-cell .d-time{
+  font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-dim);
+  display:block;margin-bottom:16px;
+}
+.dine-cell p{font-size:14px;color:var(--cream-dim)}
+@media(max-width:760px){.dine-grid{grid-template-columns:1fr}}
+
+/* ============ RESERVE ============ */
+#reserve{
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 110%,rgba(14,59,50,.5),transparent 65%),
+    var(--black);
+  text-align:center;
+}
+.res-frame{
+  max-width:680px;margin:clamp(46px,7vh,80px) auto 0;
+  border:1px solid var(--gold-dim);padding:clamp(34px,5vw,64px);
+  position:relative;
+}
+.res-frame::before{content:"";position:absolute;inset:7px;border:1px solid rgba(201,162,75,.3);pointer-events:none}
+.res-frame p{color:var(--cream-dim);font-size:15px;max-width:460px;margin:0 auto 30px}
+.res-fields{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:480px;margin:0 auto 26px;text-align:left;
+}
+.res-fields label{
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);
+  display:block;margin-bottom:6px;
+}
+.res-fields input,.res-fields select{
+  width:100%;background:transparent;border:none;border-bottom:1px solid rgba(201,162,75,.4);
+  color:var(--cream);font-family:var(--sans);font-size:14px;padding:8px 2px;
+  outline:none;transition:border-color .4s;
+}
+.res-fields select option{background:var(--black)}
+.res-fields input:focus,.res-fields select:focus{border-color:var(--gold-bright)}
+.res-tel{
+  margin-top:26px;font-family:var(--deco);font-size:clamp(19px,2.6vw,26px);
+  letter-spacing:.18em;color:var(--gold-bright);
+}
+.res-tel-note{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);margin-top:8px}
+@media(max-width:560px){.res-fields{grid-template-columns:1fr}}
+
+/* ============ FOOTER ============ */
+footer{
+  border-top:1px solid rgba(201,162,75,.3);
+  padding:clamp(44px,7vh,70px) clamp(20px,6vw,80px) 34px;
+  background:#080809;text-align:center;
+}
+.foot-mono{font-family:var(--deco);font-size:34px;color:var(--gold);letter-spacing:.3em;padding-left:.3em}
+.foot-addr{
+  margin-top:14px;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);
+  line-height:2.2;
+}
+.foot-links{
+  display:flex;justify-content:center;gap:26px;margin-top:22px;flex-wrap:wrap;
+}
+.foot-links a{
+  font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;text-decoration:none;
+  color:var(--gold-dim);transition:color .35s;
+}
+.foot-links a:hover{color:var(--gold-bright)}
+.foot-credit{
+  margin-top:36px;padding-top:22px;border-top:1px solid rgba(201,162,75,.14);
+  font-size:11px;color:#6d675a;letter-spacing:.06em;
+}
+.foot-credit a{color:var(--gold-dim);text-decoration:none}
+.foot-credit a:hover{color:var(--gold-bright)}
+
+/* konami-ish easter egg: type "1925" */
+#speakeasy{
+  position:fixed;inset:0;z-index:150;background:rgba(9,42,36,.97);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  opacity:0;visibility:hidden;transition:opacity .8s,visibility .8s;padding:24px;
+}
+#speakeasy.open{opacity:1;visibility:visible}
+#speakeasy .se-inner{max-width:520px;border:1px solid var(--gold);padding:clamp(30px,6vw,60px);position:relative}
+#speakeasy .se-inner::before{content:"";position:absolute;inset:8px;border:1px solid rgba(201,162,75,.4)}
+#speakeasy h3{font-family:var(--deco);font-size:clamp(24px,4vw,36px);color:var(--gold-bright);letter-spacing:.2em;margin-bottom:16px}
+#speakeasy p{color:var(--cream-dim);font-size:14.5px}
+#speakeasy .se-close{
+  margin-top:26px;display:inline-block;cursor:pointer;
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--gold-dim);padding:12px 28px;transition:background .4s,color .4s;
+}
+#speakeasy .se-close:hover{background:var(--gold);color:var(--black)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.15s!important;animation-delay:0s!important;transition-delay:0s!important}
+  .rv,.h-rise{opacity:1;transform:none}
+  #veil{display:none}
+  .draw{stroke-dashoffset:0}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- PRELOADER -->
+<div id="veil" aria-hidden="true">
+  <svg viewBox="0 0 200 200">
+    <rect class="stamp" x="20" y="20" width="160" height="160"/>
+    <rect class="stamp stamp2" x="30" y="30" width="140" height="140"/>
+    <path class="stamp stamp3" d="M100 40 L108 92 L160 100 L108 108 L100 160 L92 108 L40 100 L92 92 Z"/>
+    <text class="veil-m" x="100" y="118" text-anchor="middle">M</text>
+  </svg>
+</div>
+
+<div id="progress" aria-hidden="true"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-mono" href="#top" aria-label="The Meridian home">M</a>
+  <ul class="nav-links">
+    <li><a href="#story">The Story</a></li>
+    <li><a href="#rooms">Rooms &amp; Suites</a></li>
+    <li><a href="#bar">The Gilded Fan</a></li>
+    <li><a href="#dining">Dining</a></li>
+    <li><a href="#reserve">Reserve</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <svg class="sunburst" viewBox="0 0 760 400" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+    <g id="burst"></g>
+  </svg>
+  <div class="hero-frame" aria-hidden="true">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
+      <path class="draw" d="M40 90 L40 40 L90 40 M1110 40 L1160 40 L1160 90 M1160 710 L1160 760 L1110 760 M90 760 L40 760 L40 710" stroke-width="1.6"/>
+      <path class="draw" d="M52 100 L52 52 L100 52 M1100 52 L1148 52 L1148 100 M1148 700 L1148 748 L1100 748 M100 748 L52 748 L52 700" stroke-width="1" opacity=".55"/>
+      <line class="draw" x1="130" y1="40" x2="520" y2="40" stroke-width="1" opacity=".5"/>
+      <line class="draw" x1="680" y1="40" x2="1070" y2="40" stroke-width="1" opacity=".5"/>
+      <line class="draw" x1="130" y1="760" x2="520" y2="760" stroke-width="1" opacity=".5"/>
+      <line class="draw" x1="680" y1="760" x2="1070" y2="760" stroke-width="1" opacity=".5"/>
+      <path class="draw" d="M560 40 L600 25 L640 40 L600 55 Z" stroke-width="1.2"/>
+      <path class="draw" d="M560 760 L600 745 L640 760 L600 775 Z" stroke-width="1.2"/>
+    </svg>
+  </div>
+  <p class="hero-eyebrow h-rise h-d1">Grand Hotel · Marlow Square</p>
+  <h1 class="hero-title h-rise h-d2">THE MERIDIAN</h1>
+  <p class="hero-sub h-rise h-d3">Where the gilded age never checked out.</p>
+  <p class="hero-est h-rise h-d4">Established MCMXXV</p>
+  <a class="hero-cta h-rise h-d5" href="#reserve"><span>Reserve a Room</span></a>
+  <div class="scroll-hint h-rise h-d5">Descend</div>
+</header>
+
+<!-- STORY -->
+<section id="story">
+  <div class="wrap">
+    <p class="kicker rv">Chapter One</p>
+    <h2 class="sec-title rv rv-d1">Ninety-Nine Years of Gold Leaf</h2>
+    <div class="divider rv rv-d2" aria-hidden="true">
+      <svg viewBox="0 0 52 26"><path d="M26 22 L26 8 M26 8 L14 4 M26 8 L38 4 M26 8 L8 10 M26 8 L44 10 M26 8 L20 2 M26 8 L32 2"/></svg>
+    </div>
+    <div class="story-grid">
+      <div class="story-copy rv">
+        <p>On the evening of <strong>14 November 1925</strong>, four hundred guests in white tie stepped beneath a bronze sunburst canopy and into the lobby of The Meridian for the first time. The champagne was Perrier-Jouët, the orchestra was Duke Calloway's Twelve, and the marble underfoot - a radiating fan of Belgian noir and Sienna gold - had taken stonemasons eleven months to lay.</p>
+        <p>Her architect, <strong>Vivian Ashcombe-Reyes</strong>, was thirty-one years old and had never built anything taller than a bank. She spent the hotel's entire ornament budget on the ground floor, reasoning that "a guest forgives a modest room; a guest never forgives a modest arrival."</p>
+        <p>She was right. The Meridian survived the Crash, two wars, one fire in the west pastry kitchen, and seven decades of fashion. In <strong>2019</strong> a three-year restoration returned every fan motif, every fluted sconce, and every inch of verdigris rail to Ashcombe-Reyes's original drawings - now framed in the mezzanine gallery, floor 1½.</p>
+      </div>
+      <figure class="plate rv rv-d2">
+        <span class="plate-corner pc-tl"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-tr"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-br"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-bl"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <div class="img-clip"><img src="/assets/meridian-1.jpg" alt="The Meridian's grand lobby with its sunburst marble floor" loading="lazy"></div>
+        <figcaption class="plate-caption">The Grand Lobby · Plate I</figcaption>
+      </figure>
+    </div>
+    <div class="story-stats">
+      <div class="stat rv"><b class="count" data-n="1925" data-plain="1">1925</b><span>Doors opened</span></div>
+      <div class="stat rv rv-d1"><b class="count" data-n="212">212</b><span>Rooms &amp; suites</span></div>
+      <div class="stat rv rv-d2"><b class="count" data-n="11000">11,000</b><span>Sheets of gold leaf</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ROOMS -->
+<section id="rooms">
+  <div class="wrap">
+    <p class="kicker rv">The Brochure Plates</p>
+    <h2 class="sec-title rv rv-d1">Rooms &amp; Suites</h2>
+    <div class="divider rv rv-d2" aria-hidden="true">
+      <svg viewBox="0 0 52 26"><path d="M26 22 L26 8 M26 8 L14 4 M26 8 L38 4 M26 8 L8 10 M26 8 L44 10 M26 8 L20 2 M26 8 L32 2"/></svg>
+    </div>
+    <p class="rooms-intro rv rv-d2">Every key at The Meridian is brass, every headboard is a hand-lacquered fan, and every rate includes morning coffee sent up on the 1925 dumbwaiter - still running, still punctual.</p>
+    <div class="room-grid">
+      <article class="room-card rv">
+        <svg class="room-fan" viewBox="0 0 64 36" aria-hidden="true"><path d="M32 32 L32 8 M32 32 L16 10 M32 32 L48 10 M32 32 L8 18 M32 32 L56 18 M8 18 A28 28 0 0 1 56 18"/></svg>
+        <p class="room-no">Plate No. I</p>
+        <h3 class="room-name">The Marlow Room</h3>
+        <p class="room-size">28 m² · Floors 3–7 · Square view</p>
+        <p class="room-desc">The classic Meridian chamber: walnut wainscoting, an emerald velvet reading chair, and the softest bed a queen-size frame will legally hold.</p>
+        <ul class="room-feats">
+          <li>Original 1925 fan headboard</li>
+          <li>Deep-soak pedestal tub</li>
+          <li>Nightly turndown with candied orange peel</li>
+        </ul>
+        <p class="room-rate"><b>$385</b><span>Per night</span></p>
+      </article>
+      <article class="room-card rv rv-d1">
+        <svg class="room-fan" viewBox="0 0 64 36" aria-hidden="true"><path d="M32 32 L32 8 M32 32 L16 10 M32 32 L48 10 M32 32 L8 18 M32 32 L56 18 M8 18 A28 28 0 0 1 56 18"/></svg>
+        <p class="room-no">Plate No. II</p>
+        <h3 class="room-name">The Ashcombe Suite</h3>
+        <p class="room-size">55 m² · Floors 8–11 · Corner aspect</p>
+        <p class="room-desc">Named for the architect, appointed to her taste: a curved chaise beneath double-height windows, a private bar cart, and her monogram in the parquet.</p>
+        <ul class="room-feats">
+          <li>Separate salon with fireplace</li>
+          <li>Marble bath in Belgian noir</li>
+          <li>Gramophone with a curated shellac library</li>
+        </ul>
+        <p class="room-rate"><b>$720</b><span>Per night</span></p>
+      </article>
+      <article class="room-card rv rv-d2">
+        <svg class="room-fan" viewBox="0 0 64 36" aria-hidden="true"><path d="M32 32 L32 8 M32 32 L16 10 M32 32 L48 10 M32 32 L8 18 M32 32 L56 18 M8 18 A28 28 0 0 1 56 18"/></svg>
+        <p class="room-no">Plate No. III</p>
+        <h3 class="room-name">The Sunburst Penthouse</h3>
+        <p class="room-size">140 m² · Floor 12 · Full skyline</p>
+        <p class="room-desc">One per hotel. The bronze sunburst on the ceiling is original; the wraparound terrace, the grand piano, and the butler's bell all answer to you.</p>
+        <ul class="room-feats">
+          <li>Private terrace with fan balustrade</li>
+          <li>Dedicated butler, 6am–midnight</li>
+          <li>Champagne sabrage on arrival</li>
+        </ul>
+        <p class="room-rate"><b>$2,400</b><span>Per night</span></p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- BAR -->
+<section id="bar">
+  <div class="wrap">
+    <p class="kicker rv">Behind the Bronze Door</p>
+    <h2 class="sec-title rv rv-d1">The Gilded Fan</h2>
+    <div class="divider rv rv-d2" aria-hidden="true">
+      <svg viewBox="0 0 52 26"><path d="M26 22 L26 8 M26 8 L14 4 M26 8 L38 4 M26 8 L8 10 M26 8 L44 10 M26 8 L20 2 M26 8 L32 2"/></svg>
+    </div>
+    <div class="bar-grid">
+      <figure class="plate rv">
+        <span class="plate-corner pc-tl"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-tr"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-br"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <span class="plate-corner pc-bl"><svg viewBox="0 0 26 26"><path d="M2 12 L2 2 L12 2 M5 8 L5 5 L8 5"/></svg></span>
+        <div class="img-clip"><img src="/assets/meridian-2.jpg" alt="The Gilded Fan bar at night, bartender at work" loading="lazy"></div>
+        <figcaption class="plate-caption">The Gilded Fan · Plate II</figcaption>
+      </figure>
+      <div class="bar-copy rv rv-d1">
+        <p>During Prohibition, the room behind the lobby's bronze door was listed on the hotel plans as <em>"linen storage."</em> The linen in question was a forty-foot bar of Cuban mahogany, a ceiling of gold-leaf fans, and the city's best-informed bartender.</p>
+        <p>The door is open now. The fans still catch the candlelight, the stools are still low enough for secrets, and head bartender <em>Mirella Okonkwo-Hart</em> still stirs, never shakes, unless you insist.</p>
+        <div class="menu">
+          <div class="menu-row">
+            <div><span class="m-name">The Meridian Line</span><span class="m-desc">Gin, yellow chartreuse, bergamot, gold-dusted lemon oil</span></div>
+            <span class="m-dots"></span><span class="m-price">24</span>
+          </div>
+          <div class="menu-row">
+            <div><span class="m-name">Linen Storage</span><span class="m-desc">Rye, black walnut, amaro, served in a teacup - old habits</span></div>
+            <span class="m-dots"></span><span class="m-price">22</span>
+          </div>
+          <div class="menu-row">
+            <div><span class="m-name">Ashcombe's Ruin</span><span class="m-desc">Cognac, crème de cacao, absinthe rinse, architect's bitters</span></div>
+            <span class="m-dots"></span><span class="m-price">26</span>
+          </div>
+          <div class="menu-row">
+            <div><span class="m-name">Emerald Hour</span><span class="m-desc">Mezcal, green Chartreuse, lime leaf, cracked ice fan</span></div>
+            <span class="m-dots"></span><span class="m-price">23</span>
+          </div>
+        </div>
+        <p class="bar-hours">Nightly 5pm – 2am · No reservations · Password optional</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DINING -->
+<section id="dining">
+  <div class="wrap">
+    <p class="kicker rv">The Table Is Set</p>
+    <h2 class="sec-title rv rv-d1">Dining at The Meridian</h2>
+    <div class="divider rv rv-d2" aria-hidden="true">
+      <svg viewBox="0 0 52 26"><path d="M26 22 L26 8 M26 8 L14 4 M26 8 L38 4 M26 8 L8 10 M26 8 L44 10 M26 8 L20 2 M26 8 L32 2"/></svg>
+    </div>
+    <div class="dine-grid">
+      <div class="dine-cell rv">
+        <svg class="dine-fan" viewBox="0 0 34 20" aria-hidden="true"><path d="M17 18 L17 4 M17 18 L7 6 M17 18 L27 6 M17 18 L3 12 M17 18 L31 12"/></svg>
+        <h3>The Palm Atrium</h3>
+        <span class="d-time">Breakfast &amp; Lunch · 6:30am – 3pm</span>
+        <p>Beneath the original glass canopy and twelve potted palms older than most guests. Eggs Meridian - poached, smoked trout, saffron hollandaise - has been on the card since 1926 and is not leaving.</p>
+      </div>
+      <div class="dine-cell rv rv-d1">
+        <svg class="dine-fan" viewBox="0 0 34 20" aria-hidden="true"><path d="M17 18 L17 4 M17 18 L7 6 M17 18 L27 6 M17 18 L3 12 M17 18 L31 12"/></svg>
+        <h3>Verdigris</h3>
+        <span class="d-time">Dinner · Tue–Sat, 6pm – 11pm</span>
+        <p>Chef Théodore Lam's eight-course tasting in the old ballroom annexe. Duck pressed tableside in a 1930s silver press. One Michelin star, held nine years, worn lightly.</p>
+      </div>
+      <div class="dine-cell rv rv-d2">
+        <svg class="dine-fan" viewBox="0 0 34 20" aria-hidden="true"><path d="M17 18 L17 4 M17 18 L7 6 M17 18 L27 6 M17 18 L3 12 M17 18 L31 12"/></svg>
+        <h3>The Mezzanine Salon</h3>
+        <span class="d-time">Afternoon Tea · Daily, 2pm – 5pm</span>
+        <p>Tea taken on floor 1½ among Ashcombe-Reyes's framed drawings. Forty-one loose leaves, warm madeleines, and a strict no-hurry policy enforced by nobody in particular.</p>
+      </div>
+      <div class="dine-cell rv rv-d3">
+        <svg class="dine-fan" viewBox="0 0 34 20" aria-hidden="true"><path d="M17 18 L17 4 M17 18 L7 6 M17 18 L27 6 M17 18 L3 12 M17 18 L31 12"/></svg>
+        <h3>Room Service, Eternal</h3>
+        <span class="d-time">All hours · Dial 0</span>
+        <p>The night kitchen never closed - not in 1929, not in the blackouts, not last Tuesday. The croque-monsieur at 3am is a house rite of passage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESERVE -->
+<section id="reserve">
+  <div class="wrap">
+    <p class="kicker rv">Your Key Awaits</p>
+    <h2 class="sec-title rv rv-d1">Reserve a Room</h2>
+    <div class="divider rv rv-d2" aria-hidden="true">
+      <svg viewBox="0 0 52 26"><path d="M26 22 L26 8 M26 8 L14 4 M26 8 L38 4 M26 8 L8 10 M26 8 L44 10 M26 8 L20 2 M26 8 L32 2"/></svg>
+    </div>
+    <div class="res-frame rv">
+      <p>Tell us when, and the concierge desk - staffed since 1925 without a single missed morning - will do the rest.</p>
+      <form class="res-fields" onsubmit="return confirmRes(event)">
+        <div><label for="f-in">Arrival</label><input id="f-in" type="date" required></div>
+        <div><label for="f-out">Departure</label><input id="f-out" type="date" required></div>
+        <div><label for="f-room">Room</label>
+          <select id="f-room">
+            <option>The Marlow Room</option>
+            <option>The Ashcombe Suite</option>
+            <option>The Sunburst Penthouse</option>
+          </select>
+        </div>
+        <div><label for="f-guests">Guests</label>
+          <select id="f-guests"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+        </div>
+        <div style="grid-column:1/-1;text-align:center;margin-top:8px">
+          <button class="hero-cta" type="submit" style="background:none;cursor:pointer;font-family:var(--sans)"><span>Request Reservation</span></button>
+        </div>
+      </form>
+      <p class="res-tel">MARlow 4-1925</p>
+      <p class="res-tel-note">In the modern fashion: +1 (212) 555-1925</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="foot-mono">M</p>
+  <p class="foot-addr">The Meridian Grand Hotel<br>No. 1 Marlow Square · New York, NY 10036<br>stay@themeridian1925.com</p>
+  <div class="foot-links">
+    <a href="#story">Story</a>
+    <a href="#rooms">Rooms</a>
+    <a href="#bar">The Gilded Fan</a>
+    <a href="#dining">Dining</a>
+    <a href="#reserve">Reserve</a>
+  </div>
+  <p class="foot-credit" title="Guests who remember the year may type it, anywhere, anytime.">Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a><br><span style="font-size:10px;letter-spacing:.14em;opacity:.55">P.S. The bronze door opens for those who type the year we opened.</span></p>
+</footer>
+
+<!-- SPEAKEASY EASTER EGG -->
+<div id="speakeasy" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="se-inner">
+    <h3>You Know the Year</h3>
+    <p>Very good. Tell the bronze door "Ashcombe sent me" and tonight's first Meridian Line is on the house. Mirella will pretend to be surprised.</p>
+    <span class="se-close" onclick="document.getElementById('speakeasy').classList.remove('open')">Keep the Secret</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Sunburst rays
+  var burst=document.getElementById('burst');
+  var NS='http://www.w3.org/2000/svg';
+  for(var i=0;i<=48;i++){
+    var a=Math.PI*(i/48);
+    var l=document.createElementNS(NS,'line');
+    var cx=380,cy=400,r1=120,r2=390;
+    l.setAttribute('x1',cx+Math.cos(a)*r1);l.setAttribute('y1',cy-Math.sin(a)*r1);
+    l.setAttribute('x2',cx+Math.cos(a)*r2);l.setAttribute('y2',cy-Math.sin(a)*r2);
+    burst.appendChild(l);
+  }
+
+  // Preloader → loaded
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function begin(){
+    document.getElementById('veil').classList.add('gone');
+    document.body.classList.add('loaded');
+  }
+  if(reduce){begin();}
+  else{window.addEventListener('load',function(){setTimeout(begin,1900)});setTimeout(begin,4200);}
+
+  // Nav solid + progress + sunburst parallax (one rAF-throttled listener)
+  var nav=document.getElementById('nav');
+  var prog=document.getElementById('progress');
+  var sun=document.querySelector('.sunburst');
+  var ticking=false;
+  function onScroll(){
+    var y=window.scrollY;
+    nav.classList.toggle('solid',y>60);
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    prog.style.transform='scaleX('+(max>0?y/max:0)+')';
+    if(!reduce&&sun){sun.style.transform='translate(-50%,-52%) rotate('+(y*0.012)+'deg)'}
+    ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
+  },{passive:true});
+
+  // Stat count-up on reveal
+  function countUp(el){
+    var target=parseInt(el.dataset.n,10);
+    var plain=el.dataset.plain==='1';
+    var t0=null,dur=1600;
+    function fmt(n){return plain?String(n):n.toLocaleString('en-US')}
+    if(reduce){el.textContent=fmt(target);return;}
+    function step(t){
+      if(!t0)t0=t;
+      var p=Math.min((t-t0)/dur,1);
+      var e=1-Math.pow(1-p,3);
+      el.textContent=fmt(Math.round(target*e));
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var cio=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){countUp(e.target);cio.unobserve(e.target);}});
+  },{threshold:.6});
+  document.querySelectorAll('.count').forEach(function(el){cio.observe(el)});
+
+  // Scroll reveal
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});
+  },{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
+
+  // Easter egg: type 1925
+  var buf='';
+  window.addEventListener('keydown',function(e){
+    if(e.key.length===1){buf=(buf+e.key).slice(-4);
+      if(buf==='1925'){document.getElementById('speakeasy').classList.add('open');buf='';}}
+  });
+
+  // Reservation confirm
+  window.confirmRes=function(e){
+    e.preventDefault();
+    var btn=e.target.querySelector('button span');
+    btn.textContent='Received - the concierge will write';
+    setTimeout(function(){btn.textContent='Request Reservation'},3500);
+    return false;
+  };
+})();
+</script>
+</body>
+</html>

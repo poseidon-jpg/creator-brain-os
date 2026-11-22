@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brain OS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307080c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23ff7a2f' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.6' fill='%23ff7a2f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="os.css">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail" aria-label="Views"></nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="title"><h1>Brain <em>OS</em></h1><small id="subtitle">Command Center</small></div>
+      <button class="search" id="open-palette" aria-label="Search or run anything">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <span>Search files, run a skill, ask your brain…</span><kbd>⌘K</kbd>
+      </button>
+      <div class="hud" id="hud"></div>
+    </header>
+    <main class="stage" id="stage">
+      <section class="view" id="v-home"></section>
+      <section class="view" id="v-recos"></section>
+      <section class="view" id="v-usage"></section>
+      <section class="view" id="v-skills"></section>
+      <section class="view" id="v-routines"></section>
+      <section class="view" id="v-artifacts"></section>
+      <section class="view" id="v-timeline"></section>
+      <section class="view" id="v-apps"></section>
+      <section class="view" id="v-memory"></section>
+    </main>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+<div class="palette" id="palette" role="dialog" aria-label="Command palette">
+  <input type="text" id="p-input" placeholder="Search · “?” asks your brain · “>” for actions" autocomplete="off" spellcheck="false">
+  <div class="p-list" id="p-list"></div>
+  <div class="p-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span><span style="margin-left:auto">? question → brain recall (0 tokens)</span></div>
+</div>
+<div class="modal" id="run-modal" role="dialog" aria-label="Run skill">
+  <div class="label" style="color:var(--accent)">Run skill</div>
+  <h3 id="rm-name" class="mono" style="margin-top:8px"></h3>
+  <p id="rm-desc"></p>
+  <input type="text" id="rm-args" placeholder="What should it work on? (optional)">
+  <div class="row2"><select id="rm-model" aria-label="Model"><option value="">Default model</option><option value="opus">Opus</option><option value="sonnet">Sonnet</option><option value="haiku">Haiku</option></select></div>
+  <div id="rm-out"></div>
+  <div class="row2" style="justify-content:flex-end;margin-top:18px"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm primary" id="rm-go">Run ▶</button></div>
+</div>
+<aside class="drawer" id="drawer" aria-label="Department detail"><div class="drawer-h" id="dr-h"></div><div class="drawer-b" id="dr-b"></div></aside>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"><i></i><span></span></div>
+<div class="perfhud" id="perfhud"></div>
+
+<script defer src="_icons.js"></script>
+<script defer src="os-core.js"></script>
+<script defer src="os-views.js"></script>
+<script defer src="os-fx.js"></script>
+<script defer src="os-recos.js"></script>
+<script defer src="qa.js"></script>
+</body>
+</html>

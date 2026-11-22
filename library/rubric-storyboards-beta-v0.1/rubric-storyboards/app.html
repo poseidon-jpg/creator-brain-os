@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUBRIC Storyboards (beta)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z' fill='%23ff6b1a'/%3E%3Cpath d='M6 16l18 10 18-10M24 26v16' fill='none' stroke='%23131311' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { color-scheme: dark; }
+  html[data-theme="light"] { color-scheme: light; }
+  :root, html[data-theme="dark"] {
+    --bg:#131311; --card:#24221c; --card2:#2c2923; --well:#1c1a16; --text:#e8e2d2; --muted:#8d8775; --accent:#ff6b1a;
+    --ok:#3fae6d; --okbg:rgba(63,174,109,.14); --line:rgba(232,226,210,.13); --shadow:#000; --stage:#000; --hover:rgba(232,226,210,.06); --frame:#2c2923;
+  }
+  html[data-theme="light"] {
+    --bg:#f2efe8; --card:#faf8f2; --card2:#ece8de; --well:#f2efe8; --text:#1c1a16; --muted:#6f6a5c; --accent:#ff6b1a;
+    --ok:#2f7d4f; --okbg:rgba(47,125,79,.12); --line:rgba(28,26,22,.14); --shadow:rgba(28,26,22,.9); --stage:#131311; --hover:rgba(28,26,22,.05); --frame:#1c1a16;
+  }
+  * { box-sizing:border-box; }
+  ::selection { background:#ff6b1a; color:#fff; }
+  html, body { height:100%; margin:0; }
+  body { background:var(--bg); color:var(--text); font:14px/1.45 'Outfit', system-ui, sans-serif; -webkit-font-smoothing:antialiased; overflow:hidden; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  .kick { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--muted); }
+  kbd { font:600 10.5px/1 'Outfit'; padding:3px 5px; border-radius:4px; border:1px solid var(--line); color:var(--muted); margin-left:4px; }
+
+  /* buttons: flat at rest, the offset shadow fades in on hover, collapses on press */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:8px; border:0; background:var(--card2);
+    font-weight:500; cursor:pointer; white-space:nowrap; transition:transform .15s ease, box-shadow .15s ease; box-shadow:0 0 0 var(--shadow); text-decoration:none; }
+  .btn:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--shadow); }
+  .btn:active { transform:translate(1px,1px); box-shadow:0 0 0 var(--shadow); transition-duration:.06s; }
+  a.btn { color:var(--text); }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary kbd { color:#fff; border-color:rgba(255,255,255,.4); }
+  .btn.ghost { background:transparent; color:var(--muted); }
+  .btn.sm { padding:5px 9px; font-size:12.5px; }
+  .btn[disabled] { opacity:.4; pointer-events:none; }
+  .btn[hidden] { display:none; }
+  html[data-theme="light"] .btn:not(.primary):not(.ghost) { box-shadow:0 0 0 1.5px var(--text) inset; }
+  html[data-theme="light"] .btn:not(.primary):not(.ghost):hover { box-shadow:0 0 0 1.5px var(--text) inset, 5px 5px 0 var(--shadow); }
+
+  /* top bar */
+  .top { height:62px; display:flex; align-items:center; gap:18px; padding:0 18px; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand svg { width:32px; height:32px; }
+  .brand b { font-weight:700; letter-spacing:2px; font-size:16px; }
+  .brand small { display:block; color:var(--muted); font-size:12px; margin-top:-2px; }
+  .beta { background:var(--accent); color:#fff; font:700 9.5px/1 'Outfit'; letter-spacing:1.5px; padding:3px 6px; border-radius:5px; margin-left:4px; vertical-align:2px; }
+  .kicker { border-left:1px solid var(--line); padding:4px 0 4px 18px; letter-spacing:5px; text-transform:uppercase; font-size:12px; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52vw; cursor:text; border-radius:4px; }
+  .kicker:hover { color:var(--text); }
+  .tools { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+  /* layout: windows with draggable lines between them */
+  #layout { height:calc(100% - 62px); display:grid; grid-template-columns:var(--side,240px) 8px minmax(0,1fr) 8px var(--right,370px); padding:0 10px 10px; }
+  .gutter { cursor:col-resize; position:relative; }
+  .gutter::after { content:''; position:absolute; top:0; bottom:0; left:3px; width:2px; border-radius:2px; transition:background .15s; }
+  .gutter:hover::after, .gutter.drag::after { background:var(--accent); }
+  .gutter.h { cursor:row-resize; }
+  .gutter.h::after { left:0; right:0; top:3px; bottom:auto; width:auto; height:2px; }
+  .win { background:var(--card); border-radius:10px; display:flex; flex-direction:column; min-height:0; min-width:0; overflow:hidden; }
+  .win-h { display:flex; align-items:center; gap:10px; padding:12px 14px 8px; }
+  #center { display:grid; grid-template-rows:minmax(0,1fr) 8px var(--tl,210px); min-width:0; min-height:0; }
+
+  /* projects */
+  #projList { overflow:auto; padding:4px 10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .proj { background:var(--card2); border-radius:8px; padding:10px 12px; cursor:pointer; border:1.5px solid transparent; transition:border-color .15s, transform .15s; }
+  .proj:hover { transform:translate(-1px,-2px); }
+  .proj.on { border-color:var(--accent); }
+  .proj.dragging { opacity:.4; }
+  .proj h4 { margin:0 0 4px; font-size:13.5px; font-weight:500; line-height:1.3; }
+  .proj .meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:11.5px; color:var(--muted); }
+  .pill { display:inline-flex; align-items:center; gap:4px; font:600 11px/1 'Outfit'; padding:4px 6px; border-radius:5px; border:1px solid var(--line); color:var(--muted); background:transparent; cursor:pointer; }
+  .pill.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .pill.busy { border-color:var(--accent); color:var(--accent); }
+  .pill.ok { border-color:var(--ok); color:var(--ok); }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); display:inline-block; animation:blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity:.25; } }
+
+  /* stage */
+  #stageWin { position:relative; }
+  .stage-area { flex:1; min-height:0; position:relative; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .stage { position:relative; background:var(--stage); border-radius:6px; overflow:hidden; box-shadow:0 0 0 1px var(--line); }
+  .stage canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .stage .final { position:absolute; left:0; top:0; transform-origin:0 0; }
+  .stage .final iframe { border:0; display:block; background:#000; }
+  .stage .final video { display:block; background:#000; }
+  .stage .clicklayer { position:absolute; inset:0; cursor:crosshair; }
+  .stage-tag { position:absolute; right:10px; top:10px; z-index:3; font:700 10.5px/1 'Outfit'; letter-spacing:2px; padding:6px 8px; border-radius:5px;
+    background:var(--text); color:var(--bg); pointer-events:none; }
+  .spin { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; background:var(--accent); color:#fff; font:700 11px/22px 'Outfit';
+    text-align:center; z-index:4; box-shadow:0 0 0 3px rgba(255,107,26,.3); cursor:pointer; transition:opacity .2s; }
+  .spin.applied { background:var(--muted); box-shadow:none; }
+  .spin.sel { box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(255,107,26,.5); z-index:5; }
+  .empty { position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; padding:30px; z-index:5; }
+  .empty.show { display:flex; }
+  .empty h2 { font-weight:500; font-size:30px; letter-spacing:-1px; margin:0 0 6px; }
+  .empty p { color:var(--muted); margin:0 auto 18px; max-width:520px; }
+  .steps-art { display:flex; gap:14px; justify-content:center; margin:18px 0 22px; }
+  .steps-art div { width:170px; padding:14px; border-radius:10px; background:var(--card2); text-align:left; }
+  .steps-art b { display:block; font-weight:600; margin:6px 0 2px; }
+  .steps-art span { color:var(--muted); font-size:12.5px; }
+  .job { position:absolute; left:12px; right:12px; top:12px; z-index:6; display:none; align-items:center; gap:14px; padding:10px 14px; border-radius:10px;
+    background:rgba(19,19,17,.92); color:#e8e2d2; box-shadow:0 0 0 1px rgba(255,107,26,.5); }
+  .job.show { display:flex; }
+  .job.full { top:12px; bottom:12px; flex-direction:column; justify-content:center; text-align:center; background:rgba(19,19,17,.96); }
+  .job .jt { font:600 22px/1 'Outfit'; letter-spacing:-.01em; color:#ff6b1a; }
+  .job.full .jt { font-size:54px; }
+  .job .jk { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#8d8775; }
+  .job .jm { color:#e8e2d2; font-size:13px; }
+  .job .jp { color:#8d8775; font-size:12.5px; }
+  .job .btn { margin-left:auto; }
+  .job.full .btn { margin:10px 0 0; }
+  .transport { display:flex; align-items:center; gap:8px; padding:8px 12px 12px; flex-wrap:wrap; }
+  .seg { display:flex; padding:3px; gap:3px; border-radius:9px; background:var(--well); }
+  .seg button { border:0; background:transparent; color:var(--muted); padding:6px 10px; border-radius:7px; cursor:pointer; font-weight:500; }
+  .seg button.on { background:var(--text); color:var(--bg); }
+  .seg button[disabled] { opacity:.35; cursor:default; }
+  .chk { display:flex; align-items:center; gap:6px; color:var(--muted); cursor:pointer; user-select:none; }
+  .tc { margin-left:auto; font:600 15px/1 'Outfit'; letter-spacing:-.01em; }
+  .tc span { color:var(--muted); font-weight:400; }
+
+  /* timeline */
+  .tl-body { position:relative; flex:1; min-height:0; padding:0 14px 12px; overflow:hidden; }
+  .lanes { position:relative; margin-left:62px; height:100%; }
+  .lane { position:relative; border-top:1px solid var(--line); }
+  .lane-label { position:absolute; left:-62px; top:50%; transform:translateY(-50%); font-size:10px; letter-spacing:3px; color:var(--muted); }
+  .lane.ruler { height:26px; border-top:0; }
+  .lane.scenes { height:44px; }
+  .lane.pins { height:30px; }
+  .lane.beats { height:22px; }
+  .tick { position:absolute; bottom:0; width:1px; height:6px; background:var(--muted); }
+  .tick b { position:absolute; bottom:8px; left:3px; font:500 11px/1 'Outfit'; color:var(--muted); white-space:nowrap; }
+  .scene { position:absolute; top:5px; bottom:5px; border-radius:6px; background:var(--card2); padding:4px 8px; overflow:hidden; white-space:nowrap;
+    text-overflow:ellipsis; font-size:12px; cursor:pointer; border:1px solid var(--line); }
+  .scene small { color:var(--muted); margin-right:6px; }
+  .scene.cur { border-color:var(--accent); color:var(--accent); }
+  .tpin { position:absolute; top:5px; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:var(--accent); color:#fff;
+    font:700 10.5px/20px 'Outfit'; text-align:center; cursor:pointer; }
+  .tpin.applied { background:var(--muted); }
+  .tpin.sel { box-shadow:0 0 0 3px rgba(255,107,26,.35); }
+  .beat { position:absolute; top:6px; bottom:6px; width:1px; background:var(--line); }
+  .beat.bar { background:var(--muted); }
+  .playhead { position:absolute; top:0; bottom:0; width:2px; margin-left:-1px; background:var(--accent); pointer-events:none; z-index:3; }
+  .playhead::before { content:''; position:absolute; top:-2px; left:-6px; width:14px; height:14px; border-radius:50%; background:var(--accent); }
+  .scrub { position:absolute; inset:0; cursor:ew-resize; z-index:2; }
+
+  /* right panel */
+  #right { overflow:hidden; }
+  .rscroll { overflow:auto; flex:1; min-height:0; padding:0 0 14px; }
+  .step { margin:10px 12px 4px; padding:12px; border-radius:10px; background:var(--card2); }
+  .step-h { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .step-h .num { width:22px; height:22px; border-radius:50%; background:var(--well); display:grid; place-items:center; font:700 12px/1 'Outfit'; }
+  .step.done .num { background:var(--ok); color:#fff; }
+  .step.active .num { background:var(--accent); color:#fff; }
+  .step-h b { font-weight:600; font-size:14.5px; }
+  .step-h .pills { margin-left:auto; display:flex; gap:4px; flex-wrap:wrap; }
+  .step-meta { color:var(--muted); font-size:12.5px; margin:6px 0 0; min-height:17px; }
+  .step-act { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .err { color:#e5484d; font-size:12.5px; margin-top:6px; }
+  .cmts { padding:0 12px; display:flex; flex-direction:column; gap:8px; }
+  .cmt { background:var(--card2); border-radius:8px; padding:9px 10px; border:1.5px solid transparent; }
+  .cmt.sel { border-color:var(--accent); }
+  .cmt.applied { opacity:.55; }
+  .cmt-h { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+  .cmt-h .n { width:20px; height:20px; border-radius:50%; background:var(--accent); color:#fff; font:700 10.5px/20px 'Outfit'; text-align:center; flex:none; }
+  .cmt.applied .n { background:var(--muted); }
+  .cmt-h .tchip { border:0; background:transparent; color:var(--accent); font-weight:600; cursor:pointer; padding:0; }
+  .cmt-h .x { margin-left:auto; border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:16px; line-height:1; padding:0 2px; }
+  .cmt-h .x:hover { color:var(--text); }
+  .cmt textarea { width:100%; margin-top:6px; min-height:40px; resize:vertical; border:0; border-radius:6px; background:var(--well); padding:7px 8px; outline:none;
+    box-shadow:3px 3px 0 rgba(255,107,26,0); transition:box-shadow .3s; }
+  .cmt textarea:focus { box-shadow:3px 3px 0 rgba(255,107,26,1); }
+  .cmt .done { font-size:11.5px; color:var(--ok); margin-top:5px; }
+  .hint { color:var(--muted); font-size:12.5px; padding:4px 14px 8px; }
+  .scene-info { margin:6px 12px 0; padding:10px 12px; border-radius:8px; background:var(--well); font-size:13px; }
+  .scene-info b { font-weight:600; }
+  .scene-info p { margin:4px 0 0; color:var(--muted); }
+
+  /* dialogs */
+  dialog { width:min(640px, calc(100vw - 32px)); border:0; border-radius:12px; padding:0; background:var(--card); color:var(--text); box-shadow:8px 8px 0 var(--shadow); }
+  dialog::backdrop { background:rgba(0,0,0,.55); }
+  .dlg { padding:20px 22px; }
+  .dlg h3 { margin:0 0 4px; font-weight:500; font-size:22px; letter-spacing:-.5px; }
+  .dlg p.sub { margin:0 0 14px; color:var(--muted); }
+  .dlg textarea { width:100%; min-height:130px; border:0; border-radius:8px; background:var(--well); padding:12px; resize:vertical; outline:none;
+    box-shadow:4px 4px 0 rgba(255,107,26,0); transition:box-shadow .3s; }
+  .dlg textarea:focus { box-shadow:4px 4px 0 rgba(255,107,26,1); }
+  .field { display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .field label { width:110px; color:var(--muted); font-size:13px; }
+  .field select, .field input { background:var(--well); border:0; border-radius:7px; padding:7px 9px; outline:none; }
+  .opt { display:flex; gap:4px; }
+  .opt button { border:0; border-radius:7px; padding:6px 10px; background:var(--well); color:var(--muted); cursor:pointer; }
+  .opt button.on { background:var(--text); color:var(--bg); }
+  .dlg .foot { display:flex; align-items:center; gap:10px; margin-top:18px; }
+  .dlg .foot .note { color:var(--muted); font-size:12.5px; margin-right:auto; }
+  .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:9px 14px; border-radius:8px;
+    font-weight:500; opacity:0; transition:opacity .2s; pointer-events:none; z-index:50; }
+  .toast.show { opacity:1; }
+  .stage-wrap:fullscreen { background:#000; display:flex; align-items:center; justify-content:center; }
+
+  /* board: one card per still, in the RUBRIC Editor card style (raised in dark, ink frame in light) */
+  .board-area { flex:1; min-height:0; overflow:auto; padding:14px 16px 20px; display:none; }
+  .board { display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--bcol, 270px), 1fr)); gap:18px 16px; align-content:start; }
+  .bcard { min-width:0; background:var(--card2); border:2px solid var(--frame); border-radius:8px; padding:8px 8px 10px;
+    box-shadow:0 0 0 var(--shadow); transition:transform .18s ease, box-shadow .18s ease, border-color .18s; }
+  .bcard:hover { transform:translate(-2px,-3px); box-shadow:6px 6px 0 var(--shadow); }
+  .bcard.cur, .bcard.cur:hover { box-shadow:6px 6px 0 var(--accent); }
+  html[data-theme="light"] .bcard.cur { border-color:var(--accent); }
+  .bimg { position:relative; aspect-ratio:var(--bar, 16 / 9); border-radius:5px; overflow:hidden; background:#000; cursor:crosshair; }
+  .bimg img, .big-img img { position:absolute; inset:0; width:100%; height:100%; display:block; user-select:none; -webkit-user-drag:none; }
+  .bpins { position:absolute; inset:0; pointer-events:none; }
+  .bpins .spin { pointer-events:auto; }
+  .benl { position:absolute; right:7px; top:7px; z-index:6; width:30px; height:30px; border:0; border-radius:7px; padding:0; display:grid; place-items:center;
+    background:rgba(19,19,17,.72); color:#e8e2d2; cursor:pointer; opacity:.8; transition:opacity .15s, background .15s; }
+  .bcard:hover .benl { opacity:1; }
+  .benl:hover { background:var(--accent); color:#fff; }
+  .benl svg { width:16px; height:16px; }
+  .bcap { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:9px; align-items:baseline; padding:10px 4px 0; cursor:pointer; }
+  .bn { font-weight:600; font-size:17px; letter-spacing:-.01em; line-height:1.1; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .bt { font-weight:500; font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .15s; }
+  .bc { margin-top:2px; font-size:12px; line-height:1.35; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .btime { font:600 12.5px/1 'Outfit'; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .bcard.cur .bn, .bcard.cur .bt { color:var(--accent); }
+  .seg.small button { padding:6px 9px; font-size:12.5px; }
+
+  /* one still, large, over the board (the comments panel stays usable beside it) */
+  .big { position:absolute; inset:0; z-index:9; display:none; flex-direction:column; background:var(--card); border-radius:10px; }
+  .big.show { display:flex; }
+  .big-h { display:flex; align-items:center; gap:12px; padding:12px 14px 6px; flex-wrap:wrap; }
+  .big-h .bn { font-size:22px; color:var(--accent); }
+  .big-h b { font-weight:600; font-size:17px; }
+  .big-h .btime { font-size:14px; }
+  .big-h .of { color:var(--muted); font-size:12.5px; }
+  .big-h .bigtools { margin-left:auto; display:flex; gap:8px; }
+  .big-body { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:4px 14px; }
+  .big-img { position:relative; border-radius:6px; overflow:hidden; background:#000; cursor:crosshair; box-shadow:0 0 0 1px var(--line); }
+  .big-cap { padding:8px 16px 14px; color:var(--muted); font-size:13.5px; min-height:20px; text-align:center; }
+
+  /* a comment's place (shot and spot) on one line */
+  .cmt-h .where { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* a shot can carry a short clip of itself: it loops muted over the still, and the still stays as its poster */
+  .bclip { position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; pointer-events:none; background:transparent; }
+  .bclip[hidden] { display:none; }
+  /* a board whose captions describe the motion shows them in full (a fixed number of lines, so every card is one height) */
+  .bc.full { white-space:normal; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:var(--bcl, 3); line-clamp:var(--bcl, 3);
+    min-height:calc(var(--bcl, 3) * 1.35em); }
+  /* which review comments a shot answers: numbered like the pins they answer */
+  .bans { display:flex; align-items:center; gap:5px; margin-top:6px; font-size:11.5px; line-height:1.3; color:var(--muted); white-space:nowrap; overflow:hidden; }
+  .bans > span { flex:none; letter-spacing:1.5px; text-transform:uppercase; font-size:10px; }
+  .bans .an { flex:none; width:18px; height:18px; border-radius:50%; padding:0; border:1.5px dashed var(--accent); background:transparent; color:var(--accent);
+    font:700 9.5px/15px 'Outfit'; text-align:center; cursor:pointer; }
+  .bans .an:hover { background:var(--accent); color:#fff; border-style:solid; }
+  .bans i { font-style:normal; min-width:0; overflow:hidden; text-overflow:ellipsis; margin-left:2px; }
+  .bans.long { flex-wrap:wrap; white-space:normal; gap:4px 16px; }
+  .bans.long .arow { display:flex; align-items:center; gap:6px; min-width:0; }
+  .bans.long .arow i { white-space:normal; overflow:visible; margin-left:0; }
+  .big-cap .bans.long { justify-content:center; margin-top:8px; font-size:12.5px; }
+  .scene-info .bans.long { display:block; margin-top:8px; }
+  .scene-info .bans.long .arow { margin-top:5px; }
+  /* comments your agent wrote while playing the reviewer: tagged in the list, hollow dashed pins, never counted as yours */
+  .simtag { display:inline-block; margin-top:6px; padding:3px 7px; border-radius:5px; border:1px dashed var(--accent); color:var(--accent);
+    font:600 11px/1.2 'Outfit'; letter-spacing:.3px; }
+  .cmt.sim.applied { opacity:.85; }
+  .spin.sim, .tpin.sim { background:#131311; color:#ff6b1a; border:2px dashed #ff6b1a; line-height:18px; box-shadow:none; }
+  .tpin.sim { line-height:16px; }
+  .spin.sim.applied, .tpin.sim.applied { color:#e8e2d2; border-color:#e8e2d2; background:#131311; }
+  .spin.sim.sel { box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(255,107,26,.5); }
+  .alink { border:0; background:transparent; padding:0; color:var(--ok); font:inherit; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  /* a director's note on what moves in a shot (board field `animate`): two lines on a card, in full beside the shot */
+  .banim { margin-top:6px; font-size:11.5px; line-height:1.35; color:var(--text); opacity:.8; display:-webkit-box; -webkit-box-orient:vertical;
+    -webkit-line-clamp:2; line-clamp:2; overflow:hidden; min-height:calc(2 * 1.35em); }
+  .banim > span, .sanim > span { letter-spacing:1.5px; text-transform:uppercase; font-size:10px; color:var(--muted); margin-right:6px; }
+  .sanim { margin-top:10px; padding-top:9px; border-top:1px solid var(--line); }
+  .sanim p { margin:4px 0 0; color:var(--text); font-size:13px; line-height:1.5; }
+  .big-cap .sanim { max-width:980px; margin:10px auto 0; text-align:left; }
+  /* a pitch: a board of planned stills with no final and no video yet */
+  .pill.pitch { border-color:var(--text); color:var(--text); }
+
+  /* the brief: one line above the board (title, length, what it is, its downloads); a click opens the treatment as bullets */
+  .brief { flex:none; margin:10px 12px 0; border-radius:8px; background:var(--card2); }
+  .brief[hidden] { display:none; }
+  .brief-row { display:flex; align-items:center; gap:10px; padding:5px 6px 5px 12px; min-height:42px; }
+  .brief-tog { display:flex; align-items:center; gap:10px; flex:1; min-width:0; border:0; background:transparent; padding:4px 0; cursor:pointer; text-align:left; }
+  .brief-tog .kick { flex:none; letter-spacing:3px; }
+  .brief-tog b { flex:0 1 auto; min-width:0; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .brief-meta { flex:0 1 auto; min-width:0; color:var(--muted); font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .brief-tog .chev { flex:none; display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:12px; white-space:nowrap; }
+  .brief-tog .chev i { font-style:normal; display:inline-block; transition:transform .2s; }
+  .brief-tog:hover .chev { color:var(--text); }
+  .brief.open .brief-tog .chev i { transform:rotate(180deg); }
+  .brief-pills { display:flex; gap:4px; flex:none; }
+  .brief-acts { display:flex; gap:6px; flex:none; align-items:center; }
+  .brief-acts .btn .lt { display:inline-block; max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
+  /* a panel heading with its count under it, so a long heading never wraps into the button beside it */
+  .hstack { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .hstack .hint { padding:0; font-size:11.5px; white-space:nowrap; }
+  .hstack .hint:empty { display:none; }
+  .brief-body { padding:4px 16px 14px; max-height:38vh; overflow:auto; border-top:1px solid var(--line); }
+  .brief-body[hidden] { display:none; }
+  .brief-body p { margin:10px 0 0; font-size:13px; line-height:1.5; }
+  .brief-body .src { color:var(--muted); font-size:11.5px; overflow-wrap:anywhere; }
+  .brief-body .err { margin-top:8px; }
+
+  /* quick bullets: a bold short label, then one short sentence in plain words */
+  .qb { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:7px 26px; }
+  .qb li { position:relative; padding-left:14px; font-size:13px; line-height:1.45; }
+  .qb li::before { content:''; position:absolute; left:1px; top:.6em; width:5px; height:5px; border-radius:1px; background:var(--muted); }
+  .qb b { font-weight:600; }
+  .qb span { opacity:.82; }
+  .brief-body .qb { grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); }
+  .big-cap .qb { max-width:1180px; margin:2px auto 0; text-align:left; color:var(--text); grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); }
+  .big-cap .qb li { font-size:14px; }
+  /* on a tile: one bullet per line pair, the whole bullet on hover */
+  .bbul { list-style:none; margin:8px 0 0; padding:0 4px; display:flex; flex-direction:column; gap:3px; }
+  .bbul li { font-size:12px; line-height:1.35; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
+  .bbul b { font-weight:600; }
+  .bbul span { opacity:.72; }
+
+  /* overall comments: about the whole video, not a spot or a time */
+  .ovbox { margin:0 12px; }
+  .ovbox textarea { width:100%; min-height:54px; resize:vertical; border:0; border-radius:8px; background:var(--card2); padding:9px 10px; outline:none;
+    box-shadow:3px 3px 0 rgba(255,107,26,0); transition:box-shadow .3s; display:block; }
+  .ovbox textarea:focus { box-shadow:3px 3px 0 rgba(255,107,26,1); }
+  .ovbox .ovfoot { display:flex; align-items:center; gap:8px; margin-top:7px; }
+  .ovbox .ovfoot .hint { padding:0; font-size:11.5px; margin-right:auto; }
+  #ocmts { margin-top:8px; }
+  #ocmts:empty { display:none; }
+  .cmt-h .n.ov { background:transparent; color:var(--text); border:1.5px solid var(--text); border-radius:5px; line-height:17px; }
+  .rsec[hidden] { display:none; }
+
+  /* a pitch's timeline: drag the edge between two shots to move it; the hatched zone past the end is room to grow */
+  .edge { position:absolute; top:2px; bottom:2px; width:16px; margin-left:-8px; z-index:4; cursor:ew-resize; touch-action:none; }
+  .edge i { position:absolute; left:6px; top:8px; bottom:8px; width:4px; border-radius:2px; background:var(--muted); opacity:.85; transition:background .15s, opacity .15s; }
+  .edge:hover i, .edge.drag i { background:var(--accent); opacity:1; }
+  .edge .tip { display:none; position:absolute; bottom:calc(100% + 1px); left:50%; transform:translateX(-50%); padding:4px 7px; border-radius:5px;
+    background:var(--text); color:var(--bg); font:600 11.5px/1.2 'Outfit'; white-space:nowrap; pointer-events:none; font-variant-numeric:tabular-nums; }
+  .edge .tip span { font-weight:400; opacity:.75; margin-left:6px; }
+  .edge.tip-l .tip { left:0; transform:none; }
+  .edge.tip-r .tip { left:auto; right:0; transform:none; }
+  .edge.drag .tip { display:block; }
+  .tl-after { position:absolute; top:5px; bottom:5px; border-radius:6px; border:1px dashed var(--line);
+    background:repeating-linear-gradient(135deg, transparent 0 6px, var(--hover) 6px 12px); pointer-events:none; }
+  body.tdrag, body.tdrag * { cursor:ew-resize !important; user-select:none; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6l18 10v16L24 42 6 32V16Z" fill="none" stroke="#ff6b1a" stroke-width="3" stroke-linejoin="round"/><path d="M6 16l18 10 18-10M24 26v16" fill="none" stroke="#ff6b1a" stroke-width="3" stroke-linejoin="round"/></svg>
+    <div><b>RUBRIC</b><span class="beta">BETA</span><small>Storyboards</small></div>
+  </div>
+  <div class="kicker" id="kicker" title="Click to rename">Storyboard a video, then build it</div>
+  <div class="tools">
+    <button class="btn ghost" id="copyBtn">Copy comments</button>
+    <button class="btn" id="themeBtn" aria-label="Dark or light">◐</button>
+  </div>
+</header>
+
+<main id="layout">
+  <aside class="win" id="side">
+    <div class="win-h"><span class="kick">Videos</span><button class="btn primary sm" id="newBtn" style="margin-left:auto">+ New video</button></div>
+    <div id="projList"></div>
+  </aside>
+  <div class="gutter" data-g="side"></div>
+
+  <section id="center">
+    <div class="win" id="stageWin">
+      <div class="brief" id="brief" hidden>
+        <div class="brief-row">
+          <button class="brief-tog" id="briefTog" aria-expanded="false" aria-controls="briefBody" title="Open the brief">
+            <span class="kick">Brief</span><b id="briefTitle"></b><span class="brief-meta" id="vidMeta"></span><span class="chev"><em id="briefWord" style="font-style:normal">Show</em><i>▾</i></span>
+          </button>
+          <div class="brief-pills"><span class="pill" id="vidHead"></span><span id="vidPills" style="display:contents"></span></div>
+          <div class="brief-acts">
+            <button class="btn sm" id="vidLink" hidden></button>
+            <button class="btn sm" id="briefExport" hidden>Export MP4</button>
+            <a class="btn sm" id="vidDl" download hidden>Download MP4</a>
+          </div>
+        </div>
+        <div class="brief-body" id="briefBody" hidden></div>
+      </div>
+      <div class="stage-area" id="stageArea">
+        <div class="stage-wrap" id="stageWrap">
+          <div class="stage" id="stage">
+            <canvas id="wf"></canvas>
+            <div class="final" id="finalBox"></div>
+            <div class="clicklayer" id="clickLayer" title="Click the picture to comment on that spot"></div>
+            <div class="stage-tag" id="stageTag">WIREFRAME</div>
+            <div id="stagePins"></div>
+          </div>
+        </div>
+        <div class="empty" id="empty">
+          <div>
+            <h2>RUBRIC Storyboards</h2>
+            <p>A quick storyboard first, so the look, pacing and words get fixed while changes are cheap. Then the real build.</p>
+            <div class="steps-art">
+              <div><span class="kick">Step 1</span><b>Wireframe</b><span>Describe the video. A fast model sketches a storyboard you can play, scrub and comment on. About a minute.</span></div>
+              <div><span class="kick">Step 2</span><b>Final video</b><span>The storyboard and your comments go to your agent. It builds the real motion graphics, then you export an MP4.</span></div>
+              <div><span class="kick">Or</span><b>Review a video</b><span>A finished video comes in as a board of stills, one per shot. Click a still to pin a comment on it.</span></div>
+            </div>
+            <button class="btn primary" id="newBtn2">+ New video</button>
+          </div>
+        </div>
+        <div class="job" id="job">
+          <div><div class="jk" id="jobKind"></div><div class="jt" id="jobTime">0:00</div></div>
+          <div><div class="jm" id="jobMeta"></div><div class="jp" id="jobProg"></div></div>
+          <button class="btn sm" id="cancelBtn">Cancel</button>
+        </div>
+      </div>
+      <div class="board-area" id="boardArea"><div class="board" id="board"></div></div>
+      <div class="big" id="big">
+        <div class="big-h">
+          <span class="bn" id="bigNum"></span><b id="bigTitle"></b><span class="btime" id="bigTime"></span><span class="of" id="bigOf"></span>
+          <div class="bigtools">
+            <button class="btn sm" id="bigPrev">‹ Previous <kbd>←</kbd></button>
+            <button class="btn sm" id="bigNext">Next › <kbd>→</kbd></button>
+            <button class="btn sm ghost" id="bigClose">Back to the board <kbd>Esc</kbd></button>
+          </div>
+        </div>
+        <div class="big-body" id="bigBody"><div class="big-img" id="bigImg"><img id="bigPic" alt="" draggable="false"><video class="bclip" id="bigClip" muted loop playsinline preload="auto" hidden></video><div class="bpins" id="bigPins"></div></div></div>
+        <div class="big-cap" id="bigCap"></div>
+      </div>
+      <div class="transport">
+        <button class="btn" id="playBtn">▶ Play <kbd>Space</kbd></button>
+        <div class="seg" id="viewSeg">
+          <button data-view="wf">Wireframe <kbd>1</kbd></button>
+          <button data-view="final">Final <kbd>2</kbd></button>
+        </div>
+        <div class="seg small" id="sizeSeg" style="display:none" title="Size of the stills">
+          <button data-size="fit" title="As large as they can be with every still in view">Fit all</button><button data-size="m">Medium</button><button data-size="l">Large</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="notesChk"> Notes <kbd>N</kbd></label>
+        <button class="btn ghost" id="fsBtn">⛶ Full screen <kbd>F</kbd></button>
+        <div class="tc" id="tc">0.00 <span>/ 0.00s</span></div>
+      </div>
+    </div>
+    <div class="gutter h" data-g="tl"></div>
+    <div class="win" id="tlWin">
+      <div class="win-h"><span class="kick">Timeline</span><span class="hint" style="padding:0" id="tlHint">Click to jump · A adds a comment at the playhead</span></div>
+      <div class="tl-body">
+        <div class="lanes" id="lanes">
+          <div class="lane ruler" id="laneRuler"></div>
+          <div class="lane scenes" id="laneScenes"><span class="lane-label">SCENE</span></div>
+          <div class="lane pins" id="lanePins"><span class="lane-label">PINS</span></div>
+          <div class="lane beats" id="laneBeats"><span class="lane-label">BEAT</span></div>
+          <div class="playhead" id="playhead"></div>
+          <div class="scrub" id="scrub"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="gutter" data-g="right"></div>
+
+  <aside class="win" id="right">
+    <div class="rscroll">
+      <div class="rsec" id="ovSec" hidden>
+        <div class="win-h" style="padding-top:14px"><div class="hstack"><span class="kick">Overall comments</span><span class="hint" id="ovCount"></span></div></div>
+        <div class="ovbox">
+          <textarea id="ovIn" placeholder="A note on the whole video: the story, the feel, the length, anything not tied to one shot."></textarea>
+          <div class="ovfoot"><span class="hint">Enter adds it · Shift+Enter for a new line</span><button class="btn sm" id="ovAdd">Add note</button></div>
+          <div class="cmts" id="ocmts" style="padding:0"></div>
+        </div>
+      </div>
+      <div class="step" id="step1">
+        <div class="step-h"><span class="num">1</span><b>Wireframe</b><div class="pills" id="wfPills"></div></div>
+        <div class="step-meta" id="wfMeta"></div>
+        <div class="step-act"><button class="btn sm" id="reviseWfBtn">Revise wireframe</button></div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-h"><span class="num">2</span><b>Final video</b><div class="pills" id="finPills"></div></div>
+        <div class="step-meta" id="finMeta"></div>
+        <div class="step-act">
+          <button class="btn primary sm" id="makeFinalBtn">Make final video</button>
+          <button class="btn sm" id="reviseFinBtn">Revise final</button>
+          <button class="btn sm" id="exportBtn">Export MP4</button>
+          <a class="btn sm" id="dlBtn" download>Download MP4</a>
+        </div>
+      </div>
+      <div class="err" id="lastErr" style="margin:6px 14px 0"></div>
+      <div class="win-h" style="padding-top:16px"><div class="hstack"><span class="kick" id="cmtHead">Comments</span><span class="hint" id="cmtCount"></span></div>
+        <button class="btn sm" id="addCmtBtn" style="margin-left:auto">+ Comment <kbd>A</kbd></button></div>
+      <div class="hint" id="cmtHint">Click the picture to pin a comment on that spot, or press A to add one at the playhead.</div>
+      <div class="cmts" id="cmts"></div>
+      <div class="rsec" id="sceneSec">
+        <div class="win-h" style="padding-top:16px"><span class="kick" id="sceneHead">This scene</span></div>
+        <div class="scene-info" id="sceneInfo"></div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="newDlg">
+  <form class="dlg" method="dialog" id="newForm">
+    <h3>New video</h3>
+    <p class="sub">Step 1 makes a quick wireframe storyboard you can play and comment on. Nothing expensive runs until you ask for the final.</p>
+    <textarea id="newReq" placeholder="What video do you want? e.g. a dynamic 15-second motion graphics showreel that shows what an incredible motion designer you are" required></textarea>
+    <div class="field"><label>Length</label><div class="opt" id="optLen"><button type="button" data-v="6">6s</button><button type="button" data-v="10">10s</button><button type="button" data-v="15" class="on">15s</button><button type="button" data-v="30">30s</button><button type="button" data-v="60">60s</button></div></div>
+    <div class="field"><label>Shape</label><div class="opt" id="optAspect"><button type="button" data-v="16:9" class="on">16:9</button><button type="button" data-v="9:16">9:16</button><button type="button" data-v="1:1">1:1</button></div></div>
+    <div class="field" id="newModelRow"><label>Wireframe model</label><select id="newModel"></select><select id="newEffort"><option value="low" selected>low effort</option><option value="medium">medium effort</option><option value="high">high effort</option></select></div>
+    <div class="foot"><span class="note" id="newNote">A fast model at low effort usually sketches it in a minute or two.</span>
+      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn primary" id="newGo" value="go">Make wireframe</button></div>
+  </form>
+</dialog>
+
+<dialog id="finalDlg">
+  <form class="dlg" method="dialog" id="finalForm">
+    <h3 id="finalTitle">Make the final video</h3>
+    <p class="sub" id="finalSub"></p>
+    <div class="field" id="finModelRow"><label>Model</label><select id="finModel"></select></div>
+    <div class="field" id="finEffortRow"><label>Effort</label><select id="finEffort"><option value="medium">medium</option><option value="high" selected>high</option><option value="xhigh">xhigh</option><option value="max">max</option></select></div>
+    <div class="field" id="finImagesRow"><label>AI images</label><select id="finImages"><option value="0" selected>off</option><option value="2">up to $2</option><option value="5">up to $5</option><option value="10">up to $10</option></select></div>
+    <div class="foot"><span class="note" id="finNote"></span>
+      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="go">Build it</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script src="/player.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+  const fmtT = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const fmtUsd = v => (v == null ? '' : v < 0.01 ? '<$0.01' : '$' + v.toFixed(2));
+  const fmtSecs = s => (s == null ? '' : s < 90 ? `${s} s` : `${Math.round(s / 60)} min`);
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2600); }
+
+  // every write is JSON (the server refuses anything else), plus the optional RUBRIC_TOKEN the server puts in the page
+  async function api(method, url, body) {
+    const headers = {};
+    if (window.RUBRIC_TOKEN) headers['x-rubric-token'] = window.RUBRIC_TOKEN;
+    const writes = method === 'POST' || method === 'PUT' || method === 'PATCH';
+    if (writes) headers['Content-Type'] = 'application/json';
+    const r = await fetch(url, { method, headers, body: writes ? JSON.stringify(body || {}) : undefined });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+    return j;
+  }
+
+  /* ---------------- theme + layout ---------------- */
+  const root = document.documentElement;
+  const applyTheme = t => { root.dataset.theme = t; root.style.colorScheme = t; };
+  applyTheme(store.get('rsb-theme', 'dark'));
+  $('themeBtn').onclick = () => { const t = root.dataset.theme === 'dark' ? 'light' : 'dark'; store.set('rsb-theme', t); applyTheme(t); };
+  const layout = store.get('rsb-layout', {});
+  const layoutVars = { side: '--side', right: '--right', tl: '--tl' };
+  for (const [k, v] of Object.entries(layout)) if (layoutVars[k]) root.style.setProperty(layoutVars[k], v + 'px');
+  document.querySelectorAll('.gutter').forEach(g => {
+    g.addEventListener('pointerdown', e => {
+      e.preventDefault(); g.setPointerCapture(e.pointerId); g.classList.add('drag');
+      const key = g.dataset.g, start = { x: e.clientX, y: e.clientY };
+      const base = key === 'side' ? $('side').offsetWidth : key === 'right' ? $('right').offsetWidth : $('tlWin').offsetHeight;
+      const move = ev => {
+        let v = key === 'side' ? base + (ev.clientX - start.x) : key === 'right' ? base - (ev.clientX - start.x) : base - (ev.clientY - start.y);
+        v = Math.round(Math.max(key === 'tl' ? 150 : 180, Math.min(key === 'tl' ? 420 : 560, v)));
+        root.style.setProperty(layoutVars[key], v + 'px'); layout[key] = v; fitStage();
+      };
+      const up = () => { g.classList.remove('drag'); g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); store.set('rsb-layout', layout); };
+      g.addEventListener('pointermove', move); g.addEventListener('pointerup', up);
+    });
+  });
+
+  /* ---------------- state ---------------- */
+  const S = {
+    meta: null, list: [], id: null, p: null, comments: [], view: 'wf', wfV: 0, finV: 0,
+    sb: null, t: 0, playing: false, playFrom: 0, playStart: 0, sel: null, undo: [], redo: [], lastJobKey: null, big: -1,
+    briefOpen: false, tDrag: false, tlSpan: 0, tVer: 0,
+  };
+  const player = new WireframePlayer($('wf'));
+  let reelLoadedFor = null;
+
+  /* a project made from a finished video (import-video.mjs) has kind "video", a video file and a board of stills;
+     any project can carry a board: one still per shot, shown as a grid you pin comments on */
+  const isVideo = () => S.p?.kind === 'video';
+  // kind "board": real frames of a video built as HTML, plus its finals, with no wireframe step
+  const isBoardKind = () => S.p?.kind === 'board';
+  // a pitch: a board-kind project with planned stills and nothing produced yet (no final, no video)
+  const isPitch = () => isBoardKind() && !(S.p.finals || []).length && !S.p.video;
+  // every board project (an imported video, a video built as HTML, a pitch) has one layout: the brief strip above the
+  // board, and a right panel that holds only comments, the overall ones on top
+  const boardLayout = () => isVideo() || isBoardKind();
+  /** An overall comment is about the whole video: target "video" with no time and no spot. */
+  const isOverall = c => c.target === 'video' && c.t == null;
+  const byCreated = (a, b) => String(a.created).localeCompare(String(b.created));
+  const f1 = v => String(Math.round(v * 10) / 10);
+  const shotRange = b => `${f1(b.start)}-${f1(b.end)} s`;
+  /** Quick bullets ({label, text}): a bold short label, then one short sentence. */
+  const bulletsOf = b => (Array.isArray(b?.bullets) ? b.bullets.filter(x => x && (x.label || x.text)) : []);
+  const qbHtml = (list, cls) => `<ul class="${cls}">${list.map(x => `<li title="${esc(`${x.label} - ${x.text}`)}"><b>${esc(x.label)}</b> <span>- ${esc(x.text)}</span></li>`).join('')}</ul>`;
+  /** The director's note on what moves in a shot (a board without quick bullets): two lines on a card, in full in the large view. */
+  const animHtml = (b, long) => !b.animate ? '' : long ? `<div class="sanim"><span>Animate</span><p>${esc(b.animate)}</p></div>`
+    : `<div class="banim" title="${esc(b.animate)}"><span>Animate</span>${esc(b.animate)}</div>`;
+  const board = () => (Array.isArray(S.p?.board) ? S.p.board : []);
+  const hasBoard = () => board().length > 0;
+  const isPlayer = () => S.view === 'final' || S.view === 'video';
+  const pad2 = n => String(n).padStart(2, '0');
+  const panelIndex = id => board().findIndex(b => b.id === id);
+  const imgSrc = b => `/p/${encodeURIComponent(S.id)}/${b.file.split('/').map(encodeURIComponent).join('/')}?t=${b.t}`;
+  const boardSort = (a, b) => { const i = panelIndex(a.panel), j = panelIndex(b.panel); return (i < 0 ? 1e9 : i) - (j < 0 ? 1e9 : j) || String(a.created).localeCompare(String(b.created)); };
+  /** The board as a timeline: one block per still, from its time to the next still's (the first from 0), or the
+      shot's own start and end when the panel knows them. */
+  function boardSb() {
+    const B = board(), d = S.p.duration;
+    const scenes = B.length ? B.map((b, i) => ({ id: b.id, panel: i, name: b.title, start: b.start ?? (i ? b.t : 0),
+      end: b.end ?? (i < B.length - 1 ? B[i + 1].t : d), t: b.t, idea: b.caption || '' }))
+      : [{ id: 'all', panel: -1, name: S.p.title, start: 0, end: d, t: 0, idea: '' }];
+    return { board: true, title: S.p.title, duration: d, aspect: S.p.aspect, bpm: 0, scenes };
+  }
+  /** The shot the playhead is in, when the timeline is the board's. */
+  function curPanel() { if (!S.sb?.board || !hasBoard()) return -1; const i = S.sb.scenes.findIndex(s => S.t < s.end); return i < 0 ? S.sb.scenes.length - 1 : i; }
+  function playVideo(v) {
+    const pr = v.play();
+    if (pr && pr.catch) pr.catch(() => { if (v.paused) { S.playing = false; updatePlayBtn(); } });
+  }
+
+  /* ---------------- stage ---------------- */
+  function dims() { return (WIREFRAME_SIZES[S.p?.aspect] || [1920, 1080]); }
+  function fitStage() {
+    const area = $('stageArea');
+    const [W, H] = dims();
+    const aw = area.clientWidth - 24, ah = area.clientHeight - 24;
+    if (aw <= 0 || ah <= 0) return;
+    const fs = document.fullscreenElement === $('stageWrap');
+    const bw = fs ? innerWidth : aw, bh = fs ? innerHeight : ah;
+    const s = Math.min(bw / W, bh / H);
+    const st = $('stage');
+    st.style.width = Math.floor(W * s) + 'px'; st.style.height = Math.floor(H * s) + 'px';
+    const fb = $('finalBox');
+    fb.style.width = W + 'px'; fb.style.height = H + 'px'; fb.style.transform = `scale(${s})`;
+    const ifr = fb.querySelector('iframe'); if (ifr) { ifr.width = W; ifr.height = H; }
+    const vid = fb.querySelector('video'); if (vid) { vid.style.width = W + 'px'; vid.style.height = H + 'px'; }
+    renderPins();
+  }
+  new ResizeObserver(fitStage).observe($('stageArea'));
+  document.addEventListener('fullscreenchange', fitStage);
+
+  function reel() {
+    // an imported video plays in a plain <video>; it answers the same calls as a final's window.__reel
+    const vid = $('finalBox').querySelector('video');
+    if (vid) return { seek: t => { try { vid.currentTime = t; } catch (e) {} }, play: () => playVideo(vid), pause: () => vid.pause(),
+      time: () => (vid.readyState >= 1 ? vid.currentTime : null) };
+    const ifr = $('finalBox').querySelector('iframe');
+    try { return ifr && ifr.contentWindow && ifr.contentWindow.__reel ? ifr.contentWindow.__reel : null; } catch (e) { return null; }
+  }
+  const curFinal = () => S.p?.finals.find(f => f.v === S.finV) || null;
+  const curWf = () => S.p?.wireframes.find(w => w.v === S.wfV) || null;
+  const duration = () => S.sb?.duration || S.p?.duration || 0;
+
+  /** The views this project has: [view, label, key, enabled]. */
+  function viewList() {
+    const p = S.p;
+    if (!p) return [['wf', 'Wireframe', '1', false], ['final', 'Final', '2', false]];
+    const v = [];
+    if (hasBoard()) v.push(['board', 'Board', isVideo() || isBoardKind() ? '1' : 'B', true]);
+    if (isVideo()) v.push(['video', 'Video', '2', true]);
+    else if (isPitch()) { /* a pitch has only its board */ }
+    else if (isBoardKind()) v.push(['final', 'Final', '2', !!curFinal()]);
+    else v.push(['wf', 'Wireframe', '1', !!p.wireframes.length], ['final', 'Final', '2', !!curFinal()]);
+    return v;
+  }
+  const canView = v => viewList().some(x => x[0] === v && x[3]);
+
+  function showView() {
+    const views = viewList(), ok = views.filter(v => v[3]).map(v => v[0]);
+    if (!ok.includes(S.view)) S.view = S.view === 'final' && ok.includes('wf') ? 'wf' : ok[0] || 'wf';
+    $('viewSeg').innerHTML = views.map(([v, label, key, en]) => `<button data-view="${v}"${v === S.view ? ' class="on"' : ''}${en ? '' : ' disabled'}>${label} <kbd>${key}</kbd></button>`).join('');
+    const onBoard = S.view === 'board';
+    if (onBoard) S.playing = false; else closeBig();
+    $('stageArea').style.display = onBoard ? 'none' : '';
+    $('boardArea').style.display = onBoard ? 'block' : 'none';
+    $('sizeSeg').style.display = onBoard ? '' : 'none';
+    $('playBtn').style.display = isPitch() ? 'none' : '';
+    $('fsBtn').style.display = onBoard ? 'none' : '';
+    $('notesChk').closest('label').style.display = S.view === 'wf' || (S.view === 'final' && !isBoardKind()) ? '' : 'none';
+    $('tlHint').textContent = canTime() ? 'Drag the edge between two shots to set their times · Ctrl+Z undoes · Click a shot to jump to it'
+      : S.sb?.board ? 'Click a shot to jump to it · A adds a comment on the current shot' : 'Click to jump · A adds a comment at the playhead';
+    $('wf').style.display = S.view === 'wf' ? 'block' : 'none';
+    $('finalBox').style.display = isPlayer() ? 'block' : 'none';
+    $('stageTag').textContent = S.view === 'final' ? `FINAL v${S.finV}` : S.view === 'video' ? 'VIDEO' : S.sb ? `WIREFRAME v${S.wfV}` : '';
+    $('stageTag').style.display = S.sb && !onBoard ? 'block' : 'none';
+    if (S.view === 'video') {
+      const src = `/p/${encodeURIComponent(S.id)}/${encodeURIComponent(S.p.video?.file || 'video.mp4')}`;
+      const key = S.id + src;
+      if (reelLoadedFor !== key) {
+        reelLoadedFor = key;
+        $('finalBox').innerHTML = `<video src="${src}" playsinline preload="auto" loop></video>`;
+        S.playing = true;
+        const vid = $('finalBox').querySelector('video');
+        vid.addEventListener('loadedmetadata', () => { try { vid.currentTime = S.t; } catch (e) {} if (S.playing) playVideo(vid); });
+        fitStage();
+      }
+    } else if (S.view === 'final') {
+      const f = curFinal();
+      const src = `/p/${encodeURIComponent(S.id)}/${encodeURIComponent(f.dir)}/index.html`;
+      const key = S.id + src;
+      if (reelLoadedFor !== key) {
+        reelLoadedFor = key;
+        $('finalBox').innerHTML = `<iframe allow="autoplay; fullscreen" src="${src}"></iframe>`;
+        S.playing = true;
+        const ifr = $('finalBox').querySelector('iframe');
+        ifr.addEventListener('load', () => { const r = reel(); if (r && S.t > 0) { try { r.seek(S.t); if (S.playing) r.play(); } catch (e) {} } });
+        fitStage();
+      }
+    } else {
+      // a hidden final or video would keep playing (and sounding) behind the other views
+      if ($('finalBox').firstChild) $('finalBox').innerHTML = '';
+      reelLoadedFor = null;
+    }
+    if (onBoard) renderBoard();
+    updatePlayBtn();
+    renderComments(); renderTimeline();
+  }
+
+  async function switchView(v) {
+    if (v === S.view || !canView(v)) return;
+    S.view = v;
+    if (v === 'board') S.playing = false;
+    await loadStoryboard(); renderAll();
+  }
+
+  function seek(t) {
+    const d = duration(); if (!d) return;
+    S.t = Math.max(0, Math.min(d - 1e-3, t));
+    S.playFrom = S.t; S.playStart = performance.now();
+    if (isPlayer()) { const r = reel(); if (r) { try { r.seek(S.t); if (S.playing) r.play(); } catch (e) {} } }
+  }
+  function togglePlay() {
+    if (!S.sb) return;
+    if (S.view === 'board') { playFromBoard(); return; }
+    S.playing = !S.playing;
+    S.playFrom = S.t; S.playStart = performance.now();
+    if (isPlayer()) { const r = reel(); if (r) { try { S.playing ? r.play() : r.pause(); } catch (e) {} } }
+    updatePlayBtn();
+  }
+  /** Play on the board = play the video (or the final) from the current shot. */
+  async function playFromBoard() {
+    const t = S.t;
+    const v = isVideo() ? 'video' : curFinal() ? 'final' : S.p?.wireframes.length ? 'wf' : null;
+    if (!v) return;
+    S.view = v;
+    await loadStoryboard(); renderAll();
+    S.playing = true; seek(t); updatePlayBtn();
+  }
+  function updatePlayBtn() {
+    $('playBtn').innerHTML = S.view === 'board' ? '▶ Play from this shot <kbd>Space</kbd>' : (S.playing ? '❚❚ Pause' : '▶ Play') + ' <kbd>Space</kbd>';
+  }
+
+  let lastScene = -1;
+  function frame(now) {
+    const d = duration();
+    if (S.sb && d) {
+      if (S.view === 'wf') {
+        if (S.playing) S.t = (S.playFrom + (now - S.playStart) / 1000) % d;
+        player.draw(S.t);
+      } else {
+        const r = reel();
+        if (r) { try { const t = r.time(); if (typeof t === 'number' && isFinite(t)) S.t = t; } catch (e) {} }
+        else if (S.playing) S.t = (S.playFrom + (now - S.playStart) / 1000) % d;
+      }
+      $('playhead').style.left = (S.t / tlSpan() * 100) + '%';
+      $('tc').innerHTML = `${S.t.toFixed(2)} <span>/ ${d.toFixed(2)}s</span>`;
+      const si = S.sb.scenes.findIndex(s => S.t < s.end);
+      if (si !== lastScene) { lastScene = si; renderSceneInfo(); document.querySelectorAll('.scene').forEach((el, i) => el.classList.toggle('cur', i === si)); markBoardCur(); }
+      if (Math.floor(now / 100) !== frame.last) { frame.last = Math.floor(now / 100); renderPins(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ---------------- projects ---------------- */
+  function renderList() {
+    const order = store.get('rsb-order', []);
+    const list = [...S.list].sort((a, b) => {
+      const ia = order.indexOf(a.id), ib = order.indexOf(b.id);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 1e9 : ia) - (ib === -1 ? 1e9 : ib);
+      return b.updated.localeCompare(a.updated);
+    });
+    $('projList').innerHTML = list.map(p => {
+      const status = p.job ? `<span class="pill busy"><span class="dot"></span>${p.job.kind.includes('final') ? 'Building final' : p.job.kind === 'export' ? 'Exporting' : 'Sketching'}</span>`
+        : p.kind === 'video' ? '<span class="pill ok">Video</span>'
+        : p.kind === 'board' && !p.final ? '<span class="pill pitch">Pitch</span>'
+        : p.final ? `<span class="pill ok">Final v${p.final}</span>` : p.wireframe ? `<span class="pill">Wireframe v${p.wireframe}</span>`
+        : p.kind === 'board' ? '<span class="pill">Board</span>' : '<span class="pill">New</span>';
+      return `<div class="proj${p.id === S.id ? ' on' : ''}" data-id="${esc(p.id)}" draggable="true"><h4>${esc(p.title)}</h4>
+        <div class="meta">${status}<span>${esc(p.duration)}s · ${esc(p.aspect)}${p.shots ? ` · ${p.shots} shots` : ''}</span>${p.open ? `<span>· ${p.open} open</span>` : ''}</div></div>`;
+    }).join('') || '<div class="hint">No videos yet.</div>';
+  }
+  $('projList').addEventListener('click', e => { const el = e.target.closest('.proj'); if (el) openProject(el.dataset.id); });
+  (function sortable() {
+    let drag = null;
+    const box = $('projList');
+    box.addEventListener('dragstart', e => { drag = e.target.closest('.proj'); if (!drag) return; drag.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    box.addEventListener('dragover', e => {
+      if (!drag) return; e.preventDefault();
+      let before = null, best = -Infinity;
+      box.querySelectorAll('.proj:not(.dragging)').forEach(el => { const b = el.getBoundingClientRect(), off = e.clientY - (b.top + b.height / 2); if (off < 0 && off > best) { best = off; before = el; } });
+      box.insertBefore(drag, before);
+    });
+    box.addEventListener('dragend', () => { if (!drag) return; drag.classList.remove('dragging'); drag = null; store.set('rsb-order', [...box.querySelectorAll('.proj')].map(el => el.dataset.id)); });
+  })();
+
+  async function loadList() { try { S.list = await api('GET', '/api/projects'); renderList(); } catch (e) { /* app restarting */ } }
+
+  async function openProject(id, keepView) {
+    const prevId = S.id;
+    const j = await api('GET', `/api/projects/${encodeURIComponent(id)}`);
+    S.id = id; S.p = j.project; S.comments = j.comments;
+    store.set('rsb-last', id); location.hash = id;
+    if (prevId !== id) { S.undo = []; S.redo = []; S.sel = null; S.t = 0; S.playing = true; S.playFrom = 0; S.playStart = performance.now(); reelLoadedFor = null; $('finalBox').innerHTML = ''; closeBig(); S.briefOpen = false; $('ovIn').value = ''; }
+    const lw = S.p.wireframes.length, lf = S.p.finals.length;
+    // a project with a board opens on the board
+    if (prevId !== id || !keepView) { S.wfV = lw; S.finV = lf; S.view = hasBoard() ? 'board' : isVideo() ? 'video' : lf ? 'final' : 'wf'; }
+    if (S.view === 'board') S.playing = false;
+    S.wfV = Math.min(S.wfV || lw, lw); S.finV = Math.min(S.finV || lf, lf);
+    await loadStoryboard();
+    S.lastJobKey = jobKey();
+    renderAll();
+  }
+
+  async function loadStoryboard() {
+    // the board, an imported video, and a final built without a wireframe are timed by the board's stills
+    if (S.p && (isVideo() || (hasBoard() && (S.view === 'board' || (S.view === 'final' && curFinal() && !curFinal().fromWireframe))))) { S.sb = boardSb(); fitStage(); return; }
+    // the final is timed by the wireframe it was built from, so its timeline shows those scenes
+    const v = S.view === 'final' && curFinal() ? curFinal().fromWireframe : S.wfV;
+    if (!v) { S.sb = null; return; }
+    S.sb = await api('GET', `/api/projects/${encodeURIComponent(S.id)}/wireframe/${v}`);
+    player.load(S.sb);
+    player.notes = $('notesChk').checked;
+    fitStage();
+  }
+
+  function renderAll() {
+    renderList(); renderHeader(); renderSteps(); showView(); renderSceneInfo(); fitStage();
+    $('empty').classList.toggle('show', !S.p || (!S.sb && !S.p.job));
+    renderJob();
+  }
+
+  function renderHeader() { $('kicker').textContent = S.p ? S.p.title : 'Storyboard a video, then build it'; document.title = S.p ? `${S.p.title} · RUBRIC Storyboards (beta)` : 'RUBRIC Storyboards (beta)'; }
+  $('kicker').onclick = async () => {
+    if (!S.p) return;
+    const t = prompt('Name this video', S.p.title);
+    if (!t) return;
+    await api('PATCH', `/api/projects/${encodeURIComponent(S.id)}`, { title: t });
+    await openProject(S.id, true); loadList();
+  };
+
+  function openCount(target, v) { return S.comments.filter(c => c.target === target && c.v === v && c.status === 'open').length; }
+
+  /** The project this one answers (its `from`), or the newest project that answers this one. */
+  function linkedProject() {
+    if (!S.p) return null;
+    if (S.p.from) return { id: S.p.from, title: S.list.find(x => x.id === S.p.from)?.title || S.p.from, dir: 'from' };
+    const a = S.list.filter(x => x.from === S.p.id).sort((x, y) => y.updated.localeCompare(x.updated))[0];
+    return a ? { id: a.id, title: a.title, dir: 'to' } : null;
+  }
+
+  function renderSteps() {
+    const p = S.p, busy = !!p?.job, bl = !!p && boardLayout();
+    // a board project keeps its facts, downloads and links in the brief strip, so the right panel holds only comments
+    $('brief').hidden = !bl; $('ovSec').hidden = !bl; $('sceneSec').hidden = bl;
+    $('step1').hidden = bl; $('step2').hidden = bl;
+    $('cmtHead').textContent = bl ? 'Shot comments' : 'Comments';
+    if (bl) { renderBrief(); $('lastErr').textContent = ''; return; }
+    const wf = curWf(), fin = curFinal();
+    $('wfPills').innerHTML = (p?.wireframes || []).map(w => `<button class="pill${w.v === S.wfV && S.view === 'wf' ? ' on' : ''}" data-wf="${+w.v}">v${+w.v}</button>`).join('');
+    $('finPills').innerHTML = (p?.finals || []).map(f => `<button class="pill${f.v === S.finV && S.view === 'final' ? ' on' : ''}" data-fin="${+f.v}">v${+f.v}</button>`).join('');
+    $('step1').className = 'step' + (p?.wireframes.length ? ' done' : busy ? ' active' : '');
+    $('step2').className = 'step' + (p?.finals.length ? ' done' : p?.wireframes.length ? ' active' : '');
+    const dot = list => list.filter(Boolean).join(' · ');
+    $('wfMeta').textContent = wf ? dot([modelName(wf.model), wf.effort, fmtSecs(wf.seconds), fmtUsd(wf.cost)])
+      : p?.job ? 'Sketching…' : p && !agentOn() ? AGENT_OFF : '';
+    $('finMeta').textContent = fin ? (fin.by ? [fin.by, fin.export ? `MP4 ${fmtSecs(fin.export.seconds)} to export` : 'not exported yet'].join(' · ')
+      : dot([modelName(fin.model), fin.effort, fmtSecs(fin.seconds), fmtUsd(fin.cost), fin.imageSpent ? `images ${fmtUsd(fin.imageSpent)}` : '']))
+      : p?.wireframes.length ? (agentOn() ? 'Happy with the wireframe? Build the real thing.' : AGENT_OFF) : 'Comes after the wireframe.';
+    const wfOpen = wf ? openCount('wf', wf.v) : 0, finOpen = fin ? openCount('final', fin.v) : 0;
+    $('reviseWfBtn').textContent = wfOpen ? `Revise wireframe · ${wfOpen}` : 'Revise wireframe';
+    $('reviseWfBtn').disabled = busy || !agentOn() || !wf || !wfOpen || wf.v !== p.wireframes.length;
+    $('makeFinalBtn').disabled = busy || !agentOn() || !p?.wireframes.length;
+    $('makeFinalBtn').textContent = p?.finals.length ? 'New final from wireframe' : 'Make final video';
+    $('reviseFinBtn').textContent = finOpen ? `Revise final · ${finOpen}` : 'Revise final';
+    $('reviseFinBtn').disabled = busy || !agentOn() || !fin || !finOpen || fin.v !== p.finals.length;
+    $('exportBtn').disabled = busy || !fin;
+    $('exportBtn').style.display = fin && !fin.export ? '' : 'none';
+    $('dlBtn').style.display = fin?.export ? '' : 'none';
+    if (fin?.export) { $('dlBtn').href = `/p/${encodeURIComponent(S.id)}/${String(fin.export.file).split('/').map(encodeURIComponent).join('/')}`; $('dlBtn').setAttribute('download', `${(p.title || 'video').replace(/[^\w-]+/g, '-')}-v${fin.v}.mp4`); }
+    $('lastErr').textContent = lastRunNote(p?.lastJob);
+  }
+  /** The model names come from WIREFRAME_MODELS and FINAL_MODELS in env.local; an unlisted id shows as itself. */
+  const modelName = id => ([...(S.meta?.models?.wireframe || []), ...(S.meta?.models?.final || [])].find(m => m[0] === id)?.[1] || id || '');
+  const agentOn = () => !!S.meta?.agent?.configured;
+  const AGENT_OFF = 'Connect your agent to use this step: set AGENT_CMD in env.local (see the README), then restart the app.';
+  /** What the last run left to say: a failure, or where a dry run put the command it would have run. */
+  const lastRunNote = lj => (!lj || lj.ok || !lj.error || lj.error === 'cancelled' ? '' : lj.dry ? `Dry run: ${lj.error.replace(/^dry run:\s*/i, '')}` : `Last run failed: ${lj.error}`);
+
+  /** A treatment written as "Label: text" lines reads as bullets; any other line stays a paragraph. */
+  function requestHtml(text) {
+    const out = [];
+    let items = [];
+    const flush = () => { if (items.length) out.push(qbHtml(items, 'qb')); items = []; };
+    for (const line of String(text || '').split(/\n+/).map(s => s.trim()).filter(Boolean)) {
+      const m = /^([^:.]{2,40}):\s+(.+)$/.exec(line);
+      if (m) items.push({ label: m[1], text: m[2] }); else { flush(); out.push(`<p>${esc(line)}</p>`); }
+    }
+    flush();
+    return out.join('');
+  }
+  let briefKey = null;
+  /** The brief strip over a board project: one line (working title, length, what it is, downloads and links); a click opens
+      the treatment (a pitch's `briefBullets`, else the request) with where it came from. Collapsed when a project opens. */
+  function renderBrief() {
+    const p = S.p, vid = isVideo(), pitch = isPitch(), [w, h] = dims(), fin = curFinal(), v = p.video || {};
+    const clips = board().filter(b => b.clip).length;
+    $('briefTitle').textContent = pitch ? String(p.title).replace(/^pitch\s*[-:]\s*/i, '') : p.title;
+    // the line holds the length and the shots; the rest of the facts sit in the open brief
+    $('vidMeta').textContent = `${f1(Number(p.duration))} s${pitch ? ' planned' : ''} · ${board().length} shots`;
+    const facts = (vid ? [v.width ? `${v.width}x${v.height}` : '', v.fps ? `${Math.round(v.fps)} fps` : '', v.audio === false ? 'no sound' : v.audio ? 'with sound' : '']
+      : pitch ? [p.aspect, `${w}x${h}`, 'stills only, nothing produced yet']
+      : [`${w}x${h}`, p.fps ? `${p.fps} fps` : '', clips ? `${clips} animated` : '', 'frames from the real HTML']).filter(Boolean).join(' · ');
+    $('vidHead').textContent = vid ? 'Imported video' : pitch ? 'Pitch' : 'Storyboard';
+    $('vidHead').className = `pill${pitch ? ' pitch' : ''}`;
+    $('vidPills').innerHTML = vid || pitch ? '' : (p.finals || []).map(f => `<button class="pill${f.v === S.finV && S.view === 'final' ? ' on' : ' ok'}" data-fin="${+f.v}" title="Play final v${+f.v}">Final v${+f.v}</button>`).join('');
+    const link = linkedProject();
+    $('vidLink').hidden = !link;
+    if (link) {
+      const txt = `${link.dir === 'from' ? 'Answers' : 'Answered in'}: ${link.title}`;
+      $('vidLink').innerHTML = `<span class="lt">${esc(txt)}</span> ›`; $('vidLink').title = `Open ${link.title}`; $('vidLink').dataset.go = link.id;
+    }
+    // the download: the imported video, or the exported final on screen
+    const dl = vid ? `/p/${encodeURIComponent(S.id)}/${encodeURIComponent(v.file || 'video.mp4')}` : fin?.export ? `/p/${encodeURIComponent(S.id)}/${String(fin.export.file).split('/').map(encodeURIComponent).join('/')}` : '';
+    $('vidDl').hidden = !dl;
+    if (dl) { $('vidDl').href = dl; $('vidDl').setAttribute('download', `${(p.title || 'video').replace(/[^\w-]+/g, '-')}${vid ? '' : `-v${fin.v}`}.mp4`); }
+    $('briefExport').hidden = vid || pitch || !fin || !!fin.export;
+    $('briefExport').disabled = !!p.job;
+    const err = lastRunNote(p.lastJob);
+    const bb = Array.isArray(p.briefBullets) ? p.briefBullets.filter(x => x && (x.label || x.text)) : [];
+    const src = vid ? v.source : p.source;
+    const body = (facts ? `<p class="src">${esc(facts)}</p>` : '') + (bb.length ? qbHtml(bb, 'qb') : requestHtml(p.request))
+      + (fin && !pitch ? `<p class="src">Final v${fin.v}: ${esc(fin.by || [modelName(fin.model), fin.effort].filter(Boolean).join(' · '))} · ${fin.export ? 'MP4 exported' : 'not exported yet'}</p>` : '')
+      + (src ? `<p class="src">${pitch ? 'Key frames from' : 'From'} ${esc(src)}</p>` : '')
+      + (err ? `<div class="err">${esc(err)}</div>` : '');
+    if (body !== briefKey) { briefKey = body; $('briefBody').innerHTML = body; }
+    const open = !!S.briefOpen;
+    $('brief').classList.toggle('open', open); $('briefBody').hidden = !open;
+    $('briefTog').setAttribute('aria-expanded', String(open));
+    $('briefTog').title = open ? 'Close the brief' : 'Open the brief';
+    $('briefWord').textContent = open ? 'Hide brief' : 'Show brief';
+  }
+  $('briefTog').onclick = () => { S.briefOpen = !S.briefOpen; renderBrief(); };
+  $('briefExport').onclick = () => $('exportBtn').onclick();
+  $('vidPills').addEventListener('click', async e => { const b = e.target.closest('[data-fin]'); if (!b) return; S.finV = +b.dataset.fin; S.view = 'final'; reelLoadedFor = null; await loadStoryboard(); renderAll(); });
+  $('wfPills').addEventListener('click', async e => { const b = e.target.closest('[data-wf]'); if (!b) return; S.wfV = +b.dataset.wf; S.view = 'wf'; await loadStoryboard(); renderAll(); });
+  $('finPills').addEventListener('click', async e => { const b = e.target.closest('[data-fin]'); if (!b) return; S.finV = +b.dataset.fin; S.view = 'final'; reelLoadedFor = null; await loadStoryboard(); renderAll(); });
+  $('viewSeg').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b && !b.disabled) switchView(b.dataset.view); });
+
+  /* ---------------- job banner ---------------- */
+  function jobKey() { const p = S.p; return p ? JSON.stringify([p.job?.id, p.wireframes.length, p.finals.length, p.finals.map(f => !!f.export), p.lastJob?.ended]) : ''; }
+  function renderJob() {
+    const j = S.p?.job, el = $('job');
+    el.classList.toggle('show', !!j);
+    if (!j) return;
+    el.classList.toggle('full', !S.sb);
+    const names = { wireframe: 'Sketching the storyboard', 'revise-wireframe': 'Revising the storyboard', final: 'Building the final video', 'revise-final': 'Revising the final video', export: 'Exporting the MP4' };
+    $('jobKind').textContent = names[j.kind] || j.kind;
+    $('jobMeta').textContent = j.kind === 'export' ? `Final v${j.v} · frame by frame`
+      : [modelName(j.model) || 'your agent', j.effort ? `${j.effort} effort` : '', j.imageBudget ? `images up to $${j.imageBudget}` : ''].filter(Boolean).join(' · ');
+    const g = j.progress || {};
+    const bits = [];
+    if (g.thinking) bits.push(`≈ ${Math.round(g.thinking / 1000)}k thinking`);
+    if (g.tools) bits.push(`${g.tools} tool calls`);
+    if (g.files?.length) bits.push(`wrote ${g.files.slice(-3).join(', ')}`);
+    if (g.last && j.kind === 'export') bits.push(g.last);
+    else if (g.last) bits.push(`last: ${g.last}`);
+    $('jobProg').textContent = bits.join(' · ') || (j.kind.includes('final') ? 'Planning. The first file usually lands after a few minutes of thinking.' : 'Working…');
+  }
+  setInterval(() => { const j = S.p?.job; if (j) $('jobTime').textContent = fmtT((Date.now() - Date.parse(j.started)) / 1000); }, 500);
+  $('cancelBtn').onclick = async () => { if (!S.p?.job) return; if (!confirm('Stop this run? Anything it has not finished is lost.')) return; await api('POST', `/api/projects/${encodeURIComponent(S.id)}/cancel`); toast('Stopping…'); };
+
+  async function poll() {
+    await loadList();
+    if (S.id) {
+      try {
+        const tv = S.tVer, id = S.id;
+        const j = await api('GET', `/api/projects/${encodeURIComponent(S.id)}`);
+        // a drag on the timeline, or a save of its times, is newer than what this poll read
+        if (S.tDrag || tv !== S.tVer || id !== S.id) throw new Error('stale');
+        const before = jobKey(), tk = timingKey();
+        S.p = j.project;
+        if (S.sb?.board && hasBoard()) { S.sb = boardSb(); if (timingKey() !== tk) refreshTiming(true); }
+        const editing = document.activeElement && document.activeElement.closest && document.activeElement.closest('#cmts, #ocmts');
+        if (!editing) S.comments = j.comments;
+        const after = jobKey();
+        if (before !== after) {
+          const lw = S.p.wireframes.length, lf = S.p.finals.length;
+          const grewWf = lw > S.wfV, grewFin = lf > S.finV;
+          if (grewWf) { S.wfV = lw; if (!grewFin) S.view = 'wf'; toast(`Wireframe v${lw} is ready`); }
+          if (grewFin) { S.finV = lf; S.view = 'final'; reelLoadedFor = null; toast(`Final v${lf} is ready`); }
+          if (S.p.finals.some(f => f.export) && !before.includes('true') && after.includes('true')) toast('MP4 ready to download');
+          if (S.p.lastJob && !S.p.lastJob.ok && S.p.lastJob.error !== 'cancelled' && !S.p.job) toast(S.p.lastJob.dry ? 'Dry run done: nothing ran. See the note under the steps.' : 'The run failed. See the note under the steps.');
+          await loadStoryboard();
+          renderAll();
+        } else { renderSteps(); renderJob(); if (!editing) renderComments(); }
+      } catch (e) { /* app restarting */ }
+    }
+    setTimeout(poll, S.p?.job || S.list.some(p => p.job) ? 1500 : 5000);
+  }
+
+  /* ---------------- comments ---------------- */
+  // wf and final comments belong to a version; board comments to a still; video comments to the imported video
+  const target = () => (S.view === 'board' ? 'board' : S.view === 'video' ? 'video' : S.view === 'final' ? 'final' : 'wf');
+  const targetV = () => (S.view === 'final' ? S.finV : S.view === 'wf' ? S.wfV : null);
+  const visible = () => {
+    const tg = target(), v = targetV();
+    // overall comments have their own list at the top of the panel, never a pin or a time
+    const list = S.comments.filter(c => c.target === tg && !isOverall(c) && (v == null || c.v === v));
+    return tg === 'board' ? list.sort(boardSort) : list.sort((a, b) => a.t - b.t || a.created.localeCompare(b.created));
+  };
+  const sceneOf = t => S.sb?.scenes.findIndex(s => t < s.end);
+  const HINTS = {
+    board: 'Click a still to pin a comment on that spot. Double-click a still, or use its enlarge button, to open it large.',
+    video: 'Click the picture to pin a comment on that spot, or press A to add one at the playhead.',
+    other: 'Click the picture to pin a comment on that spot, or press A to add one at the playhead.',
+  };
+
+  function renderComments() {
+    const list = visible();
+    const open = list.filter(c => c.status === 'open').length;
+    $('cmtCount').textContent = list.length ? `${open} open${list.length > open ? ` · ${list.length - open} applied` : ''}` : '';
+    $('cmtHint').style.display = list.length ? 'none' : 'block';
+    $('cmtHint').textContent = HINTS[S.view] || HINTS.other;
+    $('cmts').innerHTML = list.map((c, i) => {
+      let chip, where;
+      if (c.target === 'board') {
+        const pi = panelIndex(c.panel), b = board()[pi];
+        chip = `<button class="tchip" data-panel="${esc(c.panel)}">${b ? `${pad2(pi + 1)} · ${esc(timeLabel(b))}` : 'shot removed'}</button>`;
+        where = `${b ? esc(b.title) : ''}${c.x != null ? ` · ${Math.round(c.x)}%, ${Math.round(c.y)}%` : ''}`;
+      } else {
+        const si = sceneOf(c.t), s = S.sb?.scenes[si];
+        chip = `<button class="tchip" data-seek="${+c.t || 0}">${(+c.t || 0).toFixed(2)}s</button>`;
+        where = `${s ? (S.sb.board ? `${pad2(si + 1)} ${esc(s.name)}` : `S${si + 1} ${esc(s.name)}`) : ''}${c.x != null ? ` · ${Math.round(c.x)}%, ${Math.round(c.y)}%` : ''}`;
+      }
+      const applied = esc(c.appliedIn || 'a later version');
+      return `<div class="cmt${c.status === 'applied' ? ' applied' : ''}${c.simulated ? ' sim' : ''}${S.sel === c.id ? ' sel' : ''}" data-id="${esc(c.id)}">
+        <div class="cmt-h"><span class="n">${i + 1}</span>${chip}
+          <span class="where">${where}</span>
+          <button class="x" title="Delete" data-del="${esc(c.id)}">×</button></div>
+        ${c.simulated ? `<span class="simtag" title="Your agent wrote this while playing the reviewer. It is not your note.">Simulated (${esc(c.author || 'Agent as reviewer')})</span>` : ''}
+        <textarea placeholder="${c.target === 'board' ? 'What should change in this shot?' : 'What should change here?'}" data-edit="${esc(c.id)}">${esc(c.text)}</textarea>
+        ${c.status === 'applied' ? `<div class="done">✓ Applied in ${c.appliedRef ? `<button class="alink" data-ref="${esc(c.appliedRef)}">${applied}</button>` : applied}</div>` : ''}</div>`;
+    }).join('');
+    renderOverall();
+    renderTimelinePins(); renderPins(); renderBoardPins(); renderSteps();
+  }
+
+  /* overall comments: notes on the whole video, at the top of the panel (target "video", no time, no spot) */
+  const overallList = () => S.comments.filter(isOverall).sort(byCreated);
+  const whenOf = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+  function renderOverall() {
+    if (!S.p || !boardLayout()) { if ($('ocmts').firstChild) $('ocmts').innerHTML = ''; $('ovCount').textContent = ''; return; }
+    const list = overallList(), open = list.filter(c => c.status === 'open').length;
+    $('ovCount').textContent = list.length ? `${open} open${list.length > open ? ` · ${list.length - open} applied` : ''}` : '';
+    $('ocmts').innerHTML = list.map((c, i) => `<div class="cmt ov${c.status === 'applied' ? ' applied' : ''}${c.simulated ? ' sim' : ''}${S.sel === c.id ? ' sel' : ''}" data-id="${esc(c.id)}">
+        <div class="cmt-h"><span class="n ov">${i + 1}</span><span class="where">Whole video${c.created ? ` · ${esc(whenOf(c.created))}` : ''}</span>
+          <button class="x" title="Delete" data-del="${esc(c.id)}">×</button></div>
+        ${c.simulated ? `<span class="simtag" title="Your agent wrote this while playing the reviewer. It is not your note.">Simulated (${esc(c.author || 'Agent as reviewer')})</span>` : ''}
+        <textarea placeholder="A note on the whole video" data-edit="${esc(c.id)}">${esc(c.text)}</textarea>
+        ${c.status === 'applied' ? `<div class="done">✓ Applied in ${esc(c.appliedIn || 'a later version')}</div>` : ''}</div>`).join('');
+  }
+  async function addOverall() {
+    const box = $('ovIn'), text = box.value.trim();
+    if (!S.p || !boardLayout() || !text) { box.focus(); return; }
+    let c;
+    try { c = await api('POST', `/api/projects/${encodeURIComponent(S.id)}/comments`, { target: 'video', t: null, x: null, y: null, text }); }
+    catch (err) { toast(`Could not add the note: ${err.message}`); return; }
+    box.value = '';
+    S.comments.push(c);
+    S.undo.push({ op: 'add', c }); S.redo = [];
+    renderComments();
+    toast('Added to the overall comments');
+    box.focus();
+  }
+  $('ovAdd').onclick = addOverall;
+  $('ovIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); addOverall(); } });
+
+  function renderPins() {
+    const d = duration(), box = $('stagePins');
+    if (!d || !S.sb || S.view === 'board') { if (box.firstChild) box.innerHTML = ''; return; }
+    const list = visible();
+    box.innerHTML = list.map((c, i) => {
+      if (c.x == null) return '';
+      const near = Math.abs(c.t - S.t) < 0.6 || (!S.playing && S.sel === c.id);
+      if (!near) return '';
+      return `<div class="spin${c.status === 'applied' ? ' applied' : ''}${c.simulated ? ' sim' : ''}${S.sel === c.id ? ' sel' : ''}" data-pin="${esc(c.id)}" style="left:${+c.x || 0}%;top:${+c.y || 0}%">${i + 1}</div>`;
+    }).join('');
+  }
+  $('stagePins').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if (p) selectComment(p.dataset.pin, true); });
+
+  function selectComment(id, focus) {
+    S.sel = id;
+    document.querySelectorAll('.cmt').forEach(el => el.classList.toggle('sel', el.dataset.id === id));
+    document.querySelectorAll('.tpin').forEach(el => el.classList.toggle('sel', el.dataset.id === id));
+    document.querySelectorAll('.spin[data-pin]').forEach(el => el.classList.toggle('sel', el.dataset.pin === id));
+    // a board comment takes the board to its still
+    const c = S.comments.find(x => x.id === id);
+    if (c && c.target === 'board' && S.view === 'board') {
+      const pi = panelIndex(c.panel);
+      if (pi >= 0) {
+        if (curPanel() !== pi) seek(board()[pi].t);
+        markBoardCur();
+        if (bigOpen()) { if (S.big !== pi) openBig(pi); } else scrollCard(pi);
+      }
+    }
+    const el = document.querySelector(`.cmt[data-id="${id}"]`);
+    if (el) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (focus) el.querySelector('textarea').focus(); }
+  }
+
+  async function addComment({ t, x = null, y = null }) {
+    if (!S.p || !S.sb) return;
+    if (S.view === 'board') { const i = curPanel(); if (i >= 0) await addBoardComment(i, null, null); return; }
+    if (S.view === 'final' && !curFinal()) return;
+    if (S.playing) togglePlay();
+    const c = await api('POST', `/api/projects/${encodeURIComponent(S.id)}/comments`, { target: target(), v: targetV(), t, x, y, text: '' });
+    S.comments.push(c);
+    S.undo.push({ op: 'add', c }); S.redo = [];
+    renderComments();
+    selectComment(c.id, true);
+  }
+
+  /* ---------------- board ---------------- */
+  const ENLARGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>';
+  const BOARD_SIZES = { m: 270, l: 380 };
+  const boardSize = () => { const k = store.get('rsb-board-size', 'fit'); return k === 'fit' || BOARD_SIZES[k] ? k : 'fit'; };
+  /** Fit all: the fewest columns (so the largest stills) that show every still without scrolling, never under 200px a card.
+      When even that can't fit, it falls back to Medium and the board scrolls. */
+  function layoutBoard() {
+    const box = $('board'), area = $('boardArea'), k = boardSize();
+    document.querySelectorAll('#sizeSeg button').forEach(b => b.classList.toggle('on', b.dataset.size === k));
+    box.style.setProperty('--bcol', (BOARD_SIZES[k] || BOARD_SIZES.m) + 'px');
+    let cols = 0;
+    if (k === 'fit' && S.view === 'board' && box.children.length) {
+      const cs = getComputedStyle(area), bs = getComputedStyle(box);
+      const W = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const H = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const card = box.children[0], img = card.querySelector('.bimg');
+      const chromeW = card.offsetWidth - img.offsetWidth;
+      // the tallest card's chrome, so a card with an extra line (an answers row) never pushes the last row out of view
+      const chromeH = Math.max(...[...box.children].map(k => k.offsetHeight - k.querySelector('.bimg').offsetHeight));
+      const gx = parseFloat(bs.columnGap) || 16, gy = parseFloat(bs.rowGap) || 18, [vw, vh] = dims(), n = box.children.length;
+      for (let c = 1; c <= n; c++) {
+        const cw = (W - (c - 1) * gx) / c;
+        if (cw < 200) break;
+        const rows = Math.ceil(n / c);
+        if (rows * ((cw - chromeW) * vh / vw + chromeH) + (rows - 1) * gy <= H) { cols = c; break; }
+      }
+    }
+    box.style.gridTemplateColumns = cols ? `repeat(${cols}, minmax(0, 1fr))` : '';
+  }
+  $('sizeSeg').addEventListener('click', e => { const b = e.target.closest('[data-size]'); if (!b) return; store.set('rsb-board-size', b.dataset.size); layoutBoard(); scrollCard(curPanel(), true); });
+  new ResizeObserver(() => layoutBoard()).observe($('boardArea'));
+
+  const clipSrc = b => `/p/${encodeURIComponent(S.id)}/${b.clip.split('/').map(encodeURIComponent).join('/')}`;
+  /** The comments (on the project this one answers) a shot answers, numbered like their pins. On a card: the chips,
+      then the notes as one line that truncates. Long (large view, side panel): one row per comment. */
+  function answersHtml(b, long) {
+    const A = Array.isArray(b.answers) ? b.answers : [];
+    if (!A.length) return '';
+    const label = a => `comment ${a.n}${a.simulated ? ' (simulated)' : ''}: ${a.note}`;
+    const chip = a => `<button class="an" data-ans="${esc(a.id)}" title="Open comment ${esc(a.n)} on the original">${esc(a.n)}</button>`;
+    if (long) return `<div class="bans long"><span>Answers</span>${A.map(a => `<div class="arow">${chip(a)}<i>${esc(label(a))}</i></div>`).join('')}</div>`;
+    return `<div class="bans" title="Answers ${esc(A.map(label).join(' · '))}"><span>Answers</span>${A.map(chip).join('')}<i>${esc(A.map(a => a.note).join(' · '))}</i></div>`;
+  }
+  let boardKey = null;
+  /** Builds the cards once per board (so the stills never reload); pins and the current shot update on their own. */
+  function renderBoard() {
+    const B = board(), box = $('board');
+    // shot times are left out of the key: a drag on a pitch's timeline updates the time labels in place, stills untouched
+    const key = S.id + '|' + isPitch() + '|' + B.map(b => [b.id, b.file, b.title, b.caption, b.clip, b.animate, JSON.stringify(b.answers || ''), JSON.stringify(b.bullets || '')].join('~')).join('|');
+    if (key !== boardKey) {
+      boardKey = key;
+      const [W, H] = dims(), full = S.p.captionLines > 0;
+      box.style.setProperty('--bar', `${W} / ${H}`);
+      box.style.setProperty('--bcl', S.p.captionLines || 1);
+      // a shot with quick bullets shows them (the whole bullet on hover, all of them in the large view) instead of the
+      // caption and the ANIMATE note
+      box.innerHTML = B.map((b, i) => { const bl = bulletsOf(b); return `<div class="bcard" data-panel="${esc(b.id)}">
+        <div class="bimg"><img src="${imgSrc(b)}" alt="${esc(b.title)}" draggable="false">${b.clip ? `<video class="bclip" src="${clipSrc(b)}" poster="${imgSrc(b)}" muted loop autoplay playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>` : ''}<div class="bpins"></div>
+          <button class="benl" data-enlarge title="Open large (or double-click the still)" aria-label="Open large">${ENLARGE}</button></div>
+        <div class="bcap"><span class="bn">${pad2(i + 1)}</span><div class="btx"><div class="bt" title="${esc(b.title)}">${esc(b.title)}</div>${bl.length ? '' : `<div class="bc${full ? ' full' : ''}" title="${esc(b.caption)}">${esc(b.caption)}</div>`}${answersHtml(b)}${bl.length ? '' : animHtml(b)}</div><span class="btime"></span></div>
+        ${bl.length ? qbHtml(bl, 'bbul') : ''}
+      </div>`; }).join('');
+      // muted clips may autoplay; nudge them in case the attribute was not enough
+      box.querySelectorAll('video.bclip').forEach(v => { v.muted = true; const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); });
+    }
+    updateBoardTimes(); layoutBoard(); markBoardCur(); renderBoardPins();
+  }
+  /** Open a comment on the project this one answers: that project, its still large, the comment picked. */
+  async function gotoAnswer(cid) {
+    const from = S.p?.from; if (!from) return;
+    await openProject(from);
+    const c = S.comments.find(x => x.id === cid); if (!c) { toast('That comment is gone from the original'); return; }
+    const pi = panelIndex(c.panel); if (pi >= 0) openBig(pi);
+    selectComment(c.id);
+  }
+  /** Follow "<project>#<panel>" to that project and that still. */
+  async function gotoRef(ref) {
+    const [pid, panel] = String(ref).split('#');
+    if (!S.list.some(x => x.id === pid)) { toast('That project is not here any more'); return; }
+    await openProject(pid);
+    const pi = panelIndex(panel); if (pi >= 0) { S.view === 'board' ? openBig(pi) : seek(board()[pi].t); }
+  }
+  function pinHtml(c, n) {
+    return `<div class="spin${c.status === 'applied' ? ' applied' : ''}${c.simulated ? ' sim' : ''}${S.sel === c.id ? ' sel' : ''}" data-pin="${esc(c.id)}" style="left:${+c.x || 0}%;top:${+c.y || 0}%" title="${c.simulated ? '[simulated] ' : ''}${esc(c.text)}">${n}</div>`;
+  }
+  function renderBoardPins() {
+    if (!hasBoard()) return;
+    const list = S.comments.filter(c => c.target === 'board').sort(boardSort);
+    const num = new Map(list.map((c, i) => [c.id, i + 1]));
+    const pinsFor = id => list.filter(c => c.panel === id && c.x != null).map(c => pinHtml(c, num.get(c.id))).join('');
+    document.querySelectorAll('#board .bcard').forEach(card => { card.querySelector('.bpins').innerHTML = pinsFor(card.dataset.panel); });
+    if (bigOpen()) $('bigPins').innerHTML = pinsFor(board()[S.big].id);
+  }
+  function markBoardCur() {
+    const i = S.view === 'board' ? curPanel() : -1;
+    document.querySelectorAll('#board .bcard').forEach((el, k) => el.classList.toggle('cur', k === i));
+  }
+  function scrollCard(i, instant) { const el = $('board').children[i]; if (el && S.view === 'board') el.scrollIntoView({ block: 'nearest', behavior: instant ? 'auto' : 'smooth' }); }
+  function gotoPanel(i, scroll) {
+    const B = board(); if (!B.length) return;
+    i = Math.max(0, Math.min(B.length - 1, i));
+    seek(B[i].t); markBoardCur();
+    if (bigOpen()) openBig(i); else if (scroll) scrollCard(i);
+  }
+  function spotIn(el, e) {
+    const r = el.getBoundingClientRect();
+    return [Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)), Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100))];
+  }
+
+  async function addBoardComment(i, x, y) {
+    const b = board()[i]; if (!b) return null;
+    let c;
+    try { c = await api('POST', `/api/projects/${encodeURIComponent(S.id)}/comments`, { target: 'board', panel: b.id, t: b.t, x, y, text: '' }); }
+    catch (err) { toast(`Could not add the comment: ${err.message}`); return null; }
+    S.comments.push(c);
+    S.undo.push({ op: 'add', c }); S.redo = [];
+    if (curPanel() !== i) seek(b.t);
+    markBoardCur();
+    renderComments();
+    selectComment(c.id, true);
+    return c;
+  }
+
+  // one click pins a comment; a double-click opens the still large instead, so the pin waits a moment to see which it is
+  let boardClick = null, lastBoardAdd = null;
+  $('board').addEventListener('click', e => {
+    const card = e.target.closest('.bcard'); if (!card) return;
+    const i = panelIndex(card.dataset.panel);
+    const ans = e.target.closest('[data-ans]'); if (ans) { clearTimeout(boardClick); gotoAnswer(ans.dataset.ans); return; }
+    if (e.target.closest('[data-enlarge]')) { clearTimeout(boardClick); openBig(i); return; }
+    const pin = e.target.closest('[data-pin]'); if (pin) { selectComment(pin.dataset.pin, true); return; }
+    const img = e.target.closest('.bimg');
+    if (!img) { gotoPanel(i); return; }
+    clearTimeout(boardClick);
+    if (e.detail >= 2) { dropStrayPin(); openBig(i); return; }
+    const [x, y] = spotIn(img, e);
+    boardClick = setTimeout(() => { lastBoardAdd = { at: performance.now(), pr: addBoardComment(i, x, y) }; }, 240);
+  });
+  /** A slow double-click can land its first click as a pin before the second arrives: take that empty pin back. */
+  async function dropStrayPin() {
+    const l = lastBoardAdd; lastBoardAdd = null;
+    if (!l || performance.now() - l.at > 600) return;
+    const c = await l.pr;
+    if (!c || c.text) return;
+    try { await api('DELETE', `/api/projects/${encodeURIComponent(S.id)}/comments/${c.id}`); } catch (e) { return; }
+    S.comments = S.comments.filter(x => x.id !== c.id);
+    S.undo = S.undo.filter(op => !(op.op === 'add' && op.c.id === c.id));
+    if (S.sel === c.id) S.sel = null;
+    renderComments();
+  }
+
+  /* one still, large */
+  const bigOpen = () => S.big >= 0;
+  function openBig(i) {
+    const B = board(); if (!B[i]) return;
+    S.big = i;
+    const b = B[i];
+    $('big').classList.add('show');
+    $('bigNum').textContent = pad2(i + 1);
+    $('bigTitle').textContent = b.title;
+    setBigTime(b);
+    $('bigOf').textContent = `${i + 1} of ${B.length}`;
+    // the full quick bullets under the still, or the caption, the answers and the ANIMATE note
+    const bl = bulletsOf(b);
+    $('bigCap').innerHTML = bl.length ? qbHtml(bl, 'qb') + answersHtml(b, true) : esc(b.caption || '') + answersHtml(b, true) + animHtml(b, true);
+    const src = imgSrc(b);
+    if ($('bigPic').getAttribute('src') !== src) { $('bigPic').src = src; $('bigPic').alt = b.title; }
+    const clip = $('bigClip');
+    if (b.clip) {
+      const cs = clipSrc(b);
+      if (clip.getAttribute('src') !== cs) { clip.poster = src; clip.src = cs; }
+      clip.hidden = false; clip.muted = true; const pr = clip.play(); if (pr && pr.catch) pr.catch(() => {});
+    } else if (!clip.hidden) { clip.pause(); clip.hidden = true; clip.removeAttribute('src'); clip.load(); }
+    $('bigPrev').disabled = i === 0; $('bigNext').disabled = i === B.length - 1;
+    if (curPanel() !== i) seek(b.t);
+    markBoardCur(); fitBig(); renderBoardPins();
+  }
+  function setBigTime(b) { if (b) $('bigTime').textContent = isPitch() && b.start != null ? `${shotRange(b)} · ${f1(b.end - b.start)} s long` : `${b.t.toFixed(2)}s`; }
+  function closeBig() {
+    if (S.big < 0) return;
+    const i = S.big;
+    S.big = -1; $('big').classList.remove('show');
+    if (!$('bigClip').hidden) $('bigClip').pause();
+    scrollCard(i, true);
+  }
+  function fitBig() {
+    if (!bigOpen()) return;
+    const body = $('bigBody'), [W, H] = dims();
+    const s = Math.min((body.clientWidth - 28) / W, (body.clientHeight - 8) / H);
+    if (!(s > 0)) return;
+    $('bigImg').style.width = Math.floor(W * s) + 'px'; $('bigImg').style.height = Math.floor(H * s) + 'px';
+  }
+  new ResizeObserver(fitBig).observe($('bigBody'));
+  $('bigImg').addEventListener('click', e => {
+    const pin = e.target.closest('[data-pin]'); if (pin) { selectComment(pin.dataset.pin, true); return; }
+    if (e.detail >= 2) return;
+    const [x, y] = spotIn($('bigImg'), e);
+    addBoardComment(S.big, x, y);
+  });
+  $('bigPrev').onclick = () => openBig(S.big - 1);
+  $('bigNext').onclick = () => openBig(S.big + 1);
+  $('bigClose').onclick = closeBig;
+
+  $('clickLayer').addEventListener('click', e => {
+    const r = $('stage').getBoundingClientRect();
+    addComment({ t: S.t, x: (e.clientX - r.left) / r.width * 100, y: (e.clientY - r.top) / r.height * 100 });
+  });
+  $('addCmtBtn').onclick = () => addComment({ t: S.t });
+
+  const editStart = {};
+  const saveTimers = {};
+  // the shot comments and the overall comments edit, save and delete the same way
+  for (const box of [$('cmts'), $('ocmts')]) {
+    box.addEventListener('focusin', e => { const id = e.target.dataset?.edit; if (id) { editStart[id] = e.target.value; selectComment(id); } });
+    box.addEventListener('input', e => {
+      const id = e.target.dataset?.edit; if (!id) return;
+      const c = S.comments.find(x => x.id === id); if (c) c.text = e.target.value;
+      clearTimeout(saveTimers[id]);
+      saveTimers[id] = setTimeout(() => api('PUT', `/api/projects/${encodeURIComponent(S.id)}/comments/${id}`, { text: e.target.value }).catch(() => toast('Could not save that comment')), 500);
+    });
+    box.addEventListener('focusout', e => {
+      const id = e.target.dataset?.edit; if (!id) return;
+      if (editStart[id] !== undefined && editStart[id] !== e.target.value) { S.undo.push({ op: 'edit', id, before: editStart[id], after: e.target.value }); S.redo = []; }
+      delete editStart[id];
+    });
+    box.addEventListener('click', async e => {
+      const ref = e.target.closest('[data-ref]'); if (ref) { gotoRef(ref.dataset.ref); return; }
+      const sk = e.target.closest('[data-seek]'); if (sk) { if (S.playing) togglePlay(); seek(+sk.dataset.seek); selectComment(sk.closest('.cmt').dataset.id); return; }
+      const pk = e.target.closest('[data-panel]'); if (pk) { selectComment(pk.closest('.cmt').dataset.id); return; }
+      const del = e.target.closest('[data-del]');
+      if (del) {
+        const c = S.comments.find(x => x.id === del.dataset.del); if (!c) return;
+        await api('DELETE', `/api/projects/${encodeURIComponent(S.id)}/comments/${c.id}`);
+        S.comments = S.comments.filter(x => x.id !== c.id);
+        S.undo.push({ op: 'del', c }); S.redo = [];
+        renderComments();
+      }
+    });
+  }
+  $('vidLink').onclick = () => { const id = $('vidLink').dataset.go; if (id) openProject(id); };
+  $('bigCap').addEventListener('click', e => { const a = e.target.closest('[data-ans]'); if (a) gotoAnswer(a.dataset.ans); });
+  $('sceneInfo').addEventListener('click', e => { const a = e.target.closest('[data-ans]'); if (a) gotoAnswer(a.dataset.ans); });
+
+  async function applyOp(op, dir) {
+    const id = encodeURIComponent(S.id);
+    if ((op.op === 'add' && dir === 'undo') || (op.op === 'del' && dir === 'redo')) {
+      await api('DELETE', `/api/projects/${id}/comments/${op.c.id}`); S.comments = S.comments.filter(x => x.id !== op.c.id);
+    } else if ((op.op === 'add' && dir === 'redo') || (op.op === 'del' && dir === 'undo')) {
+      const c = await api('POST', `/api/projects/${id}/comments`, op.c); S.comments.push(c);
+    } else if (op.op === 'edit') {
+      const text = dir === 'undo' ? op.before : op.after;
+      await api('PUT', `/api/projects/${id}/comments/${op.id}`, { text }); const c = S.comments.find(x => x.id === op.id); if (c) c.text = text;
+    } else if (op.op === 'timing') {
+      // shot times dragged on a pitch's timeline: put the other set back, on screen and on disk
+      const list = dir === 'undo' ? op.before : op.after;
+      applyTiming(list); refreshTiming(true);
+      await saveTiming(list);
+    }
+    renderComments();
+  }
+  async function undo() { const op = S.undo.pop(); if (!op) return toast('Nothing to undo'); await applyOp(op, 'undo'); S.redo.push(op); toast('Undone'); }
+  async function redo() { const op = S.redo.pop(); if (!op) return toast('Nothing to redo'); await applyOp(op, 'redo'); S.undo.push(op); toast('Redone'); }
+
+  $('copyBtn').onclick = async () => {
+    if (!S.p) return;
+    const count = k => `${k} open comment${k === 1 ? '' : 's'}`;
+    const sim = c => (c.simulated ? `[simulated, ${c.author || 'Agent as reviewer'}] ` : '');
+    const boardLine = c => {
+      const pi = panelIndex(c.panel), b = board()[pi];
+      return `Shot ${pad2(pi + 1)} "${b ? b.title : c.panel}" at ${b && isPitch() ? shotRange(b) : `${(b ? b.t : c.t).toFixed(2)}s`}${c.x != null ? `, pin at ${Math.round(c.x)}% across, ${Math.round(c.y)}% down` : ', no pin'}${b ? ` (still: ${b.file})` : ''}`;
+    };
+    const timeLine = c => {
+      const si = sceneOf(c.t), s = S.sb?.scenes[si];
+      return `${c.t.toFixed(2)}s${s ? ` (${S.sb.board ? `shot ${pad2(si + 1)}` : `S${si + 1}`} ${s.name})` : ''}${c.x != null ? ` at ${Math.round(c.x)}%, ${Math.round(c.y)}%` : ''}`;
+    };
+    // the overall comments first, then the board's, plus the timed comments of the view on screen (on the board of an
+    // imported video: the video's)
+    const sections = [];
+    if (boardLayout()) {
+      const ov = overallList().filter(c => c.status === 'open');
+      if (ov.length) sections.push(['Overall', ov, () => '']);
+    }
+    if (hasBoard()) sections.push(['Board', S.comments.filter(c => c.target === 'board' && c.status === 'open').sort(boardSort), boardLine]);
+    const tg = S.view === 'board' ? (isVideo() ? 'video' : null) : target(), v = S.view === 'board' ? null : targetV();
+    if (tg) {
+      const list = S.comments.filter(c => c.target === tg && !isOverall(c) && c.status === 'open' && (v == null || c.v === v)).sort((a, b) => a.t - b.t);
+      const name = tg === 'video' ? 'Video' : tg === 'final' ? `Final v${S.finV}` : `Wireframe v${S.wfV}`;
+      if (list.length || S.view !== 'board') sections.push([name, list, timeLine]);
+    }
+    // the project folder on this computer, so your agent can open comments.json and the stills itself
+    const where = `Project: ${S.meta?.projectsDir ? `${S.meta.projectsDir}/${S.p.id}/` : `projects/${S.p.id}/`}`;
+    const total = sections.reduce((n, s) => n + s[1].length, 0);
+    const out = [`RUBRIC Storyboards (beta) · ${S.p.title}`];
+    const line = fmt => (c, i) => { const w = fmt(c); return `${i + 1}. ${sim(c)}${w ? `${w}: ` : ''}${c.text || '(empty)'}`; };
+    if (sections.length === 1 && !hasBoard()) {
+      const [name, list, fmt] = sections[0];
+      out.push(`${name} · ${count(list.length)}`, where, '', ...list.map(line(fmt)));
+    } else {
+      out.push(where);
+      for (const [name, list, fmt] of sections) out.push('', `${name} · ${count(list.length)}`, ...list.map(line(fmt)));
+    }
+    try { await navigator.clipboard.writeText(out.join('\n')); toast(`Copied ${total} comment${total === 1 ? '' : 's'}`); } catch (e) { toast('Copy failed'); }
+  };
+
+  /* ---------------- timeline ---------------- */
+  /** A pitch's shot times can be dragged; an imported video's or a final's come from the real video, so they stay put. */
+  const canTime = () => !!S.p && isPitch() && !!S.sb?.board && hasBoard();
+  // the timeline's scale: the video's length, plus room past the end on a pitch (so its last shot can grow); it holds
+  // still while an edge drags, so the edge stays under the pointer
+  const tlSpan = () => S.tlSpan || (canTime() ? Math.max(duration() + 2, duration() * 1.1) : duration());
+  // a board comment sits at its still's time, which moves with the shot
+  const pinT = c => (c.target === 'board' ? board()[panelIndex(c.panel)]?.t ?? c.t : c.t);
+  const timeLabel = b => (isPitch() && b.start != null && b.end != null ? shotRange(b) : `${b.t.toFixed(2)}s`);
+
+  function renderTimeline() {
+    const d = duration(), span = tlSpan();
+    const pct = t => (t / span * 100) + '%';
+    if (!S.sb || !d) { $('laneRuler').innerHTML = ''; $('laneScenes').innerHTML = '<span class="lane-label">SCENE</span>'; $('laneBeats').innerHTML = '<span class="lane-label">BEAT</span>'; renderTimelinePins(); return; }
+    const step = span <= 20 ? 1 : span <= 60 ? 5 : 10;
+    let ticks = '';
+    for (let s = 0; s <= span + 1e-6; s += step) ticks += `<div class="tick" style="left:${pct(s)}"><b>${s}s</b></div>`;
+    $('laneRuler').innerHTML = ticks;
+    // the board's timeline has one block per still (its number, jumps to the still's time) and no beat lane; a pitch's
+    // also has a handle on each shot's end (the cut to the next shot, or the end of the video)
+    const shots = !!S.sb.board, edit = canTime();
+    $('laneScenes').innerHTML = `<span class="lane-label">${shots ? 'SHOT' : 'SCENE'}</span>` + S.sb.scenes.map((s, i) =>
+      `<div class="scene" title="${esc(shots ? (edit ? `${pad2(i + 1)} ${s.name} · ${f1(s.start)}-${f1(s.end)} s` : `${s.name}: ${s.idea}`) : s.idea)}"><small>${shots ? pad2(i + 1) : `S${i + 1}`}</small>${esc(s.name)}</div>`).join('')
+      + (edit ? '<div class="tl-after" id="tlAfter" title="Past the end: drag the last edge here to make the video longer"></div>'
+        + S.sb.scenes.map((s, i) => `<div class="edge" data-k="${i}"><i></i><b class="tip"></b></div>`).join('') : '');
+    layoutShots();
+    $('laneBeats').style.display = S.sb.bpm ? '' : 'none';
+    const beat = 60 / (S.sb.bpm || 120);
+    let beats = '<span class="lane-label">BEAT</span>';
+    if (S.sb.bpm) for (let b = 0, n = 0; b <= d + 1e-6; b += beat, n++) beats += `<div class="beat${n % 4 === 0 ? ' bar' : ''}" style="left:${pct(b)}"></div>`;
+    $('laneBeats').innerHTML = beats;
+    lastScene = -1;
+    renderTimelinePins();
+  }
+  /** Places the shot blocks and their edge handles (on their own during a drag, so the dragged handle is never rebuilt). */
+  function layoutShots() {
+    if (!S.sb) return;
+    const span = tlSpan(), pct = t => (t / span * 100) + '%', sc = S.sb.scenes, n = sc.length;
+    $('laneScenes').querySelectorAll('.scene').forEach((el, i) => {
+      const s = sc[i]; if (!s) return;
+      el.style.left = `calc(${pct(s.start)} + 1px)`; el.style.width = `calc(${pct(s.end - s.start)} - 3px)`;
+      el.dataset.t = S.sb.board ? s.t : s.start;
+    });
+    $('laneScenes').querySelectorAll('.edge').forEach((el, i) => {
+      const s = sc[i]; if (!s) return;
+      const f = s.end / span;
+      el.style.left = pct(s.end);
+      el.classList.toggle('tip-l', f < 0.12); el.classList.toggle('tip-r', f > 0.82);
+      if (!el.classList.contains('drag')) el.title = i < n - 1 ? `Drag to move the cut between shot ${pad2(i + 1)} and shot ${pad2(i + 2)} (now ${f1(s.end)} s)`
+        : `Drag to set where shot ${pad2(i + 1)} and the video end (now ${f1(s.end)} s)`;
+    });
+    const after = $('tlAfter');
+    if (after) { after.style.left = `calc(${pct(duration())} + 2px)`; after.style.right = '0'; }
+  }
+  function renderTimelinePins() {
+    const d = duration(), span = tlSpan();
+    // board comments share their still's time, so the ones on one still sit side by side
+    const seen = {};
+    $('lanePins').innerHTML = '<span class="lane-label">PINS</span>' + (d ? visible().map((c, i) => {
+      const k = c.target === 'board' ? (seen[c.panel] = (seen[c.panel] || 0) + 1) - 1 : 0;
+      return `<div class="tpin${c.status === 'applied' ? ' applied' : ''}${c.simulated ? ' sim' : ''}${S.sel === c.id ? ' sel' : ''}" data-id="${esc(c.id)}" style="left:calc(${pinT(c) / span * 100}% + ${k * 16}px)" title="${c.simulated ? '[simulated] ' : ''}${esc(c.text)}">${i + 1}</div>`;
+    }).join('') : '');
+  }
+  (function scrubbing() {
+    const sc = $('scrub');
+    const at = e => { const r = sc.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * tlSpan(); };
+    sc.addEventListener('pointerdown', e => {
+      if (!S.sb) return;
+      const r = sc.getBoundingClientRect();
+      const pinRow = $('lanePins').getBoundingClientRect();
+      if (e.clientY >= pinRow.top && e.clientY <= pinRow.bottom) {
+        const t = at(e), span = tlSpan(), hit = visible().find(c => Math.abs(pinT(c) - t) / span * r.width < 12);
+        if (hit) { if (S.playing) togglePlay(); seek(pinT(hit)); selectComment(hit.id); return; }
+      }
+      // on the board's timeline a shot block jumps to its still's time (and keeps playing if it was)
+      const sceneRow = $('laneScenes').getBoundingClientRect();
+      if (S.sb.board && hasBoard() && e.clientY >= sceneRow.top && e.clientY <= sceneRow.bottom) {
+        const t = at(e), n = S.sb.scenes.length, i = S.sb.scenes.findIndex(s => t < s.end), k = i < 0 ? n - 1 : i;
+        seek(S.sb.scenes[k].t); markBoardCur();
+        if (S.view === 'board') { if (bigOpen()) openBig(k); else scrollCard(k); }
+        return;
+      }
+      sc.setPointerCapture(e.pointerId);
+      const wasPlaying = S.playing; if (wasPlaying) togglePlay();
+      const follow = () => { if (S.view !== 'board') return; markBoardCur(); const k = curPanel(); if (bigOpen()) { if (k !== S.big) openBig(k); } else scrollCard(k, true); };
+      seek(at(e)); follow();
+      const move = ev => { seek(at(ev)); follow(); };
+      const up = () => { sc.removeEventListener('pointermove', move); sc.removeEventListener('pointerup', up); if (wasPlaying) togglePlay(); };
+      sc.addEventListener('pointermove', move); sc.addEventListener('pointerup', up);
+    });
+  })();
+
+  /* a pitch's shot times: drag the edge between two shots (or the last shot's end), snapped to 0.1 s, never under 0.5 s */
+  const MIN_SHOT = 0.5, MAX_LENGTH = 600, snap = v => Math.round(v * 10) / 10;
+  const timingKey = () => board().map(b => `${b.start},${b.end},${b.t}`).join('|') + `|${S.p?.duration}`;
+  /** The shots as the timeline shows them, back to back from 0: [{id, start, end, t}]. */
+  function timingOf() {
+    const B = board();
+    let prev = 0;
+    return S.sb.scenes.map((s, i) => { const x = { id: B[i].id, start: prev, end: s.end, t: B[i].t }; prev = s.end; return x; });
+  }
+  /** Puts shot times on the board and the timeline, and keeps the playhead inside the video. */
+  function applyTiming(list) {
+    const by = new Map(list.map(x => [x.id, x]));
+    for (const b of board()) { const x = by.get(b.id); if (x) { b.start = x.start; b.end = x.end; b.t = x.t; } }
+    if (list.length) S.p.duration = list[list.length - 1].end;
+    S.sb = boardSb();
+    if (S.t >= S.p.duration) S.t = Math.max(0, S.p.duration - 1e-3);
+  }
+  /** Redraws what shows shot times: the timeline (in full, or only its blocks during a drag), the tiles, the large view. */
+  function refreshTiming(full) {
+    if (full) renderTimeline(); else { layoutShots(); renderTimelinePins(); }
+    updateBoardTimes();
+    if (bigOpen()) setBigTime(board()[S.big]);
+    lastScene = -1;
+  }
+  async function saveTiming(list, revert) {
+    S.tVer++;
+    try {
+      const j = await api('PATCH', `/api/projects/${encodeURIComponent(S.id)}/timing`, list.map(({ id, start, end, t }) => ({ id, start, end, t })));
+      S.p = j.project; S.sb = boardSb(); refreshTiming(true);
+      loadList();
+      return true;
+    } catch (err) {
+      toast(`Could not save the shot times: ${err.message}`);
+      if (revert) { applyTiming(revert); refreshTiming(true); }
+      return false;
+    } finally { S.tVer++; }
+  }
+  $('laneScenes').addEventListener('pointerdown', e => {
+    const el = e.target.closest('.edge');
+    if (!el || !canTime() || e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    // out of any comment box, so Ctrl+Z right after the drag undoes the drag
+    if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
+    el.setPointerCapture(e.pointerId);
+    const k = +el.dataset.k, before = timingOf(), last = k === before.length - 1;
+    const span = tlSpan(); S.tlSpan = span;
+    const box = $('laneScenes').getBoundingClientRect();
+    const lo = before[k].start + MIN_SHOT, hi = last ? MAX_LENGTH : before[k + 1].end - MIN_SHOT;
+    let cur = before;
+    S.tDrag = true; el.classList.add('drag'); el.removeAttribute('title'); document.body.classList.add('tdrag');
+    const tip = v => {
+      const a = `${pad2(k + 1)} · ${f1(v - before[k].start)} s`, b = last ? 'end' : `${pad2(k + 2)} · ${f1(before[k + 1].end - v)} s`;
+      el.querySelector('.tip').innerHTML = `${f1(v)} s<span>${a} | ${b}</span>`;
+    };
+    tip(before[k].end);
+    const move = ev => {
+      const v = Math.max(lo, Math.min(hi, snap((ev.clientX - box.left) / box.width * span)));
+      if (v === cur[k].end) return;
+      // the cut moves the end of this shot and the start of the next; each still stays inside its shot
+      cur = before.map((x, i) => {
+        const y = { ...x };
+        if (i === k) y.end = v;
+        if (i === k + 1) y.start = v;
+        y.t = +Math.min(Math.max(x.t, y.start), y.end - 0.1).toFixed(3);
+        return y;
+      });
+      applyTiming(cur); refreshTiming(false); tip(v);
+    };
+    const up = async () => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+      document.body.classList.remove('tdrag');
+      S.tDrag = false; S.tlSpan = 0;
+      const changed = cur.some((x, i) => x.start !== before[i].start || x.end !== before[i].end || x.t !== before[i].t);
+      renderTimeline();
+      if (!changed) return;
+      if (await saveTiming(cur, before)) { S.undo.push({ op: 'timing', before, after: cur }); S.redo = []; }
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+  /** The tiles' time labels (a pitch shows each shot's span, others the still's time), updated in place. */
+  function updateBoardTimes() {
+    const B = board();
+    document.querySelectorAll('#board .bcard').forEach((card, i) => {
+      const b = B[i], el = card.querySelector('.btime'); if (!b || !el) return;
+      el.textContent = timeLabel(b);
+      el.title = isPitch() && b.start != null ? `Shot ${pad2(i + 1)} runs ${f1(b.start)} to ${f1(b.end)} s (${f1(b.end - b.start)} s long)` : `The still is at ${b.t.toFixed(2)} s`;
+    });
+  }
+
+  function renderSceneInfo() {
+    // a board project shows each shot where the shot is (its tile and its large view), so the panel keeps to comments
+    if (S.p && boardLayout()) return;
+    $('sceneHead').textContent = S.sb?.board ? 'This shot' : 'This scene';
+    if (!S.sb) { $('sceneInfo').innerHTML = '<span class="hint" style="padding:0">No storyboard yet.</span>'; return; }
+    const i = Math.max(0, S.sb.scenes.findIndex(s => S.t < s.end)), s = S.sb.scenes[i];
+    if (S.sb.board) {
+      const b = board()[s.panel];
+      $('sceneInfo').innerHTML = b ? `<b>${pad2(i + 1)} · ${esc(b.title)}</b> <span class="hint" style="padding:0">${b.t.toFixed(2)}s of ${Number(S.p.duration).toFixed(1)}s</span><p>${esc(b.caption)}</p>${answersHtml(b, true)}${animHtml(b, true)}`
+        : `<b>${esc(S.p.title)}</b><p>${esc(S.p.request || '')}</p>`;
+      return;
+    }
+    $('sceneInfo').innerHTML = `<b>S${i + 1} · ${esc(s.name)}</b> <span class="hint" style="padding:0">${s.start.toFixed(1)}-${s.end.toFixed(1)}s ·${esc(s.camera)} · out: ${esc(s.transition)}</span>
+      <p>${esc(s.idea)}</p>${s.sfx ? `<p>♪ ${esc(s.sfx)}</p>` : ''}${i === 0 && S.sb.logline ? `<p><b>Logline</b> ${esc(S.sb.logline)}</p>` : ''}${i === 0 && S.sb.look ? `<p><b>Look</b> ${esc(S.sb.look)}</p>` : ''}`;
+  }
+
+  /* ---------------- dialogs ---------------- */
+  function opts(boxId) {
+    const box = $(boxId);
+    box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; box.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+    return () => box.querySelector('.on')?.dataset.v;
+  }
+  const lenVal = opts('optLen'), aspVal = opts('optAspect');
+  function openNew() {
+    const a = S.meta?.agent;
+    $('newGo').disabled = !agentOn();
+    $('newNote').textContent = !agentOn() ? (a?.error ? `AGENT_CMD in env.local has a problem: ${a.error}` : AGENT_OFF)
+      : a.dryRun ? 'Dry run is on (AGENT_DRY_RUN): the app writes the command and prompt to the project logs and runs nothing.'
+      : 'A fast model at low effort usually sketches it in a minute or two.';
+    $('newDlg').showModal(); setTimeout(() => $('newReq').focus(), 30);
+  }
+  $('newBtn').onclick = openNew; $('newBtn2').onclick = openNew;
+  $('newForm').addEventListener('submit', async e => {
+    if (e.submitter?.value !== 'go') return;
+    const req = $('newReq').value.trim();
+    if (!req) return;
+    try {
+      const p = await api('POST', '/api/projects', { request: req, duration: +lenVal(), aspect: aspVal(), model: $('newModel').value, effort: $('newEffort').value });
+      $('newReq').value = '';
+      await loadList(); await openProject(p.id);
+    } catch (err) { toast(err.message); }
+  });
+
+  function openFinal(revise) {
+    const p = S.p; if (!p) return;
+    const wf = p.wireframes[p.wireframes.length - 1];
+    const wfOpen = openCount('wf', wf.v), fin = curFinal(), finOpen = fin ? openCount('final', fin.v) : 0;
+    $('finalTitle').textContent = revise ? `Revise final v${fin.v}` : 'Make the final video';
+    $('finalSub').textContent = revise ? `Applies your ${finOpen} open comment${finOpen === 1 ? '' : 's'} on final v${fin.v} and keeps the rest.`
+      : `Built from wireframe v${wf.v}${wfOpen ? `, applying your ${wfOpen} open comment${wfOpen === 1 ? '' : 's'} on it` : ''}.`;
+    $('finalForm').dataset.revise = revise ? '1' : '';
+    // AI images only when the image tool is on, has its key, and AGENT_CMD passes {mcp_config}
+    const img = S.meta?.images;
+    $('finImagesRow').style.display = img?.available ? '' : 'none';
+    if (!img?.available) $('finImages').value = '0';
+    $('finalDlg').showModal(); finHint();
+  }
+  function finHint() {
+    const e = $('finEffort').value, m = $('finModel').value, a = S.meta?.agent || {};
+    const who = [a.usesModel ? modelName(m) || "your agent's default model" : 'your agent', a.usesEffort ? `at ${e} effort` : ''].filter(Boolean).join(' ');
+    $('finNote').textContent = a.dryRun ? 'Dry run is on (AGENT_DRY_RUN): nothing runs; the command and prompt go to the project logs.'
+      : `This is the long step: ${who} builds it, often in 10 to 40 minutes. Your agent's own pricing applies.`;
+  }
+  $('finEffort').onchange = finHint; $('finModel').onchange = finHint;
+  $('makeFinalBtn').onclick = () => openFinal(false);
+  $('reviseFinBtn').onclick = () => openFinal(true);
+  $('finalForm').addEventListener('submit', async e => {
+    if (e.submitter?.value !== 'go') return;
+    try {
+      await api('POST', `/api/projects/${encodeURIComponent(S.id)}/final`, { model: $('finModel').value, effort: $('finEffort').value, imageBudget: +$('finImages').value, revise: !!$('finalForm').dataset.revise });
+      toast('Building. You can keep commenting on the wireframe meanwhile.');
+      await openProject(S.id, true);
+    } catch (err) { toast(err.message); }
+  });
+  $('reviseWfBtn').onclick = async () => {
+    try { await api('POST', `/api/projects/${encodeURIComponent(S.id)}/wireframe`, { model: $('newModel').value, effort: $('newEffort').value }); toast('Revising the wireframe…'); await openProject(S.id, true); }
+    catch (err) { toast(err.message); }
+  };
+  $('exportBtn').onclick = async () => {
+    try { await api('POST', `/api/projects/${encodeURIComponent(S.id)}/export`, { v: S.finV }); toast('Exporting the MP4…'); await openProject(S.id, true); }
+    catch (err) { toast(err.message); }
+  };
+
+  /* ---------------- keys + misc ---------------- */
+  $('playBtn').onclick = togglePlay;
+  $('notesChk').onchange = () => { player.notes = $('notesChk').checked; };
+  function fullscreen() { if (document.fullscreenElement) document.exitFullscreen(); else $('stageWrap').requestFullscreen?.(); }
+  $('fsBtn').onclick = fullscreen;
+  document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTimeout(() => b.blur(), 0); });
+  document.addEventListener('keydown', e => {
+    if (document.querySelector('dialog[open]')) return;
+    const typing = e.target.closest && e.target.closest('textarea, input, select');
+    if (e.key === 'Escape') { if (typing) { e.target.blur(); return; } if (bigOpen()) { e.preventDefault(); closeBig(); return; } }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key;
+    if (k === ' ') { e.preventDefault(); togglePlay(); }
+    else if ((k === 'ArrowRight' || k === 'ArrowLeft') && S.view === 'board') { e.preventDefault(); gotoPanel(curPanel() + (k === 'ArrowRight' ? 1 : -1), true); }
+    else if (k === 'ArrowRight' || k === 'ArrowLeft') { e.preventDefault(); if (S.playing) togglePlay(); seek(S.t + (k === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 1 : 1 / 60)); }
+    else if (k === 'Enter' && S.view === 'board' && !bigOpen()) { e.preventDefault(); openBig(Math.max(0, curPanel())); }
+    else if (k === 'a' || k === 'A' || k === '+') { e.preventDefault(); addComment({ t: S.t }); }
+    else if (k === 'n' || k === 'N') { $('notesChk').checked = !$('notesChk').checked; player.notes = $('notesChk').checked; }
+    else if (k === 'f' || k === 'F') { if (S.view !== 'board') fullscreen(); }
+    else if (k === '1') switchView(isVideo() || isBoardKind() ? 'board' : 'wf');
+    else if (k === '2') switchView(isVideo() ? 'video' : 'final');
+    else if (k === 'b' || k === 'B') switchView('board');
+  });
+
+  /* ---------------- start ---------------- */
+  (async function init() {
+    try {
+      S.meta = await api('GET', '/api/meta');
+      // the model lists come from env.local; with none, your agent uses its own default model
+      const options = list => (list.length ? list : [['', "Your agent's default"]]).map(([id, n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
+      $('newModel').innerHTML = options(S.meta.models.wireframe);
+      $('finModel').innerHTML = options(S.meta.models.final);
+      const a = S.meta.agent || {};
+      $('newModel').style.display = a.usesModel ? '' : 'none';
+      $('newEffort').style.display = a.usesEffort ? '' : 'none';
+      $('newModelRow').style.display = a.usesModel || a.usesEffort ? '' : 'none';
+      $('newModelRow').querySelector('label').textContent = a.usesModel ? 'Wireframe model' : 'Effort';
+      $('finModelRow').style.display = a.usesModel ? '' : 'none';
+      $('finEffortRow').style.display = a.usesEffort ? '' : 'none';
+    } catch (e) { toast('The app server is not answering'); }
+    await loadList();
+    const want = decodeURIComponent(location.hash.slice(1)) || store.get('rsb-last', '');
+    const pick = S.list.find(p => p.id === want) || S.list[0];
+    if (pick) await openProject(pick.id); else renderAll();
+    if (document.fonts) document.fonts.ready.then(() => { fitStage(); layoutBoard(); });
+    poll();
+  })();
+})();
+</script>
+</body>
+</html>

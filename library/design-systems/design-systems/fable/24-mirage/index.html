@@ -1,0 +1,715 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIRAGE — An Infrared Desert Expedition</title>
+<meta name="description" content="MIRAGE: eleven days across the Namib on the last rolls of aerochrome infrared film. An exhibition of surreal desert photography by Isolde Ferrer.">
+<meta property="og:title" content="MIRAGE — An Infrared Desert Expedition">
+<meta property="og:description" content="Eleven days, 640 km, twenty-six rolls of extinct aerochrome film. Fourteen plates survived.">
+<meta property="og:image" content="/assets/mirage-1.jpg">
+<meta name="theme-color" content="#f6f1ea">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f6f1ea'/%3E%3Ccircle cx='16' cy='13' r='7' fill='%23ff3d6e'/%3E%3Crect x='4' y='20' width='24' height='2' fill='%23111'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,ital,wght@6..96,0,400;6..96,0,600;6..96,1,400&family=Manrope:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#ff3d6e;
+  --pink-deep:#d61f4e;
+  --sky:#f6f1ea;
+  --ink:#111111;
+  --ink-soft:#3a3a3a;
+  --serif:"Bodoni Moda",serif;
+  --sans:"Manrope",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+a:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+body{
+  background:var(--sky);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--pink);color:#fff}
+/* film grain */
+body::after{
+  content:"";position:fixed;inset:0;z-index:200;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity:.045;mix-blend-mode:multiply;
+}
+/* mirage flip easter egg */
+body.mirage-flip{filter:invert(1) hue-rotate(160deg);transition:filter .5s ease}
+body{transition:filter .5s ease}
+/* hero title letter stagger */
+.title .lt{display:inline-block;opacity:0;transform:translateY(.55em) rotate(2deg);
+  animation:ltUp 1.1s cubic-bezier(.19,1,.22,1) forwards;animation-delay:var(--d,0s)}
+@keyframes ltUp{to{opacity:1;transform:none}}
+
+/* ---------- horizon nav ---------- */
+#horizon{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:56px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(246,241,234,.82) 0%,rgba(246,241,234,.55) 62%,rgba(246,241,234,0) 100%);
+}
+section{scroll-margin-top:64px}
+#horizon .line{
+  position:absolute;left:0;right:0;top:38px;height:1px;
+  background:rgba(17,17,17,.25);
+}
+#horizon .line-fill{
+  position:absolute;left:0;top:38px;height:1px;width:0;
+  background:var(--ink);
+  transition:none;
+}
+#horizon .sun{
+  position:absolute;top:38px;left:0;width:11px;height:11px;
+  border-radius:50%;background:var(--pink);
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 0 3px rgba(255,61,110,.18);
+}
+#horizon .wordmark{
+  position:absolute;left:24px;top:10px;
+  font-family:var(--serif);font-weight:600;font-size:15px;
+  letter-spacing:.34em;text-transform:uppercase;
+  color:var(--ink);pointer-events:auto;text-decoration:none;
+  mix-blend-mode:multiply;
+}
+#horizon .ticks{
+  position:absolute;right:24px;top:6px;display:flex;gap:18px;pointer-events:auto;
+}
+#horizon .ticks a{
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-soft);text-decoration:none;font-weight:500;
+  padding:6px 0;position:relative;mix-blend-mode:multiply;
+}
+#horizon .ticks a::after{
+  content:"";position:absolute;left:50%;bottom:-10px;width:1px;height:8px;
+  background:rgba(17,17,17,.35);
+}
+#horizon .ticks a.active{color:var(--pink-deep)}
+#horizon .ticks a.active::after{background:var(--pink);height:12px;bottom:-14px}
+#horizon .ticks a:hover{color:var(--pink-deep)}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;height:100svh;min-height:560px;
+  overflow:hidden;background:#1a0810;
+}
+.hero-media{
+  position:absolute;inset:-4%;
+  width:108%;height:108%;
+}
+.hero-media img,.hero-media video{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.shimmer-wrap{filter:url(#heat)}
+.hero-veil{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(246,241,234,.28) 0%,rgba(246,241,234,0) 32%,rgba(26,8,16,.14) 78%,rgba(26,8,16,.44) 100%);
+}
+.hero-inner{
+  position:relative;z-index:2;height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 clamp(20px,5vw,72px) clamp(36px,7vh,84px);
+}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:14px;
+  background:var(--ink);color:var(--sky);
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;
+  padding:10px 18px;width:max-content;max-width:100%;
+  margin-bottom:22px;
+}
+.hero-kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--pink);flex:none;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+h1.title{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(64px,15vw,220px);
+  line-height:.86;letter-spacing:.02em;
+  color:var(--sky);
+  text-shadow:0 2px 40px rgba(26,8,16,.35);
+}
+h1.title .accent{color:var(--pink);font-style:italic}
+.hero-sub{
+  display:flex;flex-wrap:wrap;gap:10px 40px;
+  margin-top:30px;padding-top:18px;color:var(--sky);
+  border-top:1px solid rgba(246,241,234,.35);
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;
+}
+.hero-sub span{opacity:.92}
+.hero-scroll{
+  position:absolute;right:clamp(20px,5vw,72px);bottom:clamp(36px,7vh,84px);z-index:2;
+  writing-mode:vertical-rl;font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--sky);opacity:.75;
+}
+.hero-scroll::after{
+  content:"";display:block;width:1px;height:54px;margin:14px auto 0;
+  background:linear-gradient(var(--sky),transparent);
+  animation:drip 2.2s ease-in-out infinite;
+}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}55%{transform:scaleY(1);transform-origin:top}56%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.temp-read{
+  position:fixed;z-index:99;pointer-events:none;
+  font-family:var(--sans);font-size:10px;letter-spacing:.18em;font-weight:700;
+  color:var(--pink);opacity:0;transform:translate(14px,-24px);
+  transition:opacity .3s ease;white-space:nowrap;mix-blend-mode:multiply;
+}
+
+/* ---------- shared section chrome ---------- */
+section{position:relative}
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,72px)}
+.sec-head{
+  display:flex;align-items:baseline;gap:22px;
+  padding-top:clamp(70px,12vh,130px);margin-bottom:clamp(36px,6vh,64px);
+}
+.sec-num{
+  font-family:var(--serif);font-style:italic;font-size:clamp(15px,1.6vw,20px);
+  color:var(--pink-deep);flex:none;
+}
+.sec-title{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(38px,6.4vw,88px);line-height:.95;letter-spacing:.01em;
+}
+.sec-rule{flex:1;height:1px;background:rgba(17,17,17,.25);align-self:center;min-width:40px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.19,1,.22,1),transform .9s cubic-bezier(.19,1,.22,1)}
+.rv.in{opacity:1;transform:none}
+/* staggered children inside revealed groups */
+.rv .exh-card,.rv .log-row,.rv .print-row{
+  opacity:0;transform:translateY(22px);
+  transition:opacity .8s cubic-bezier(.19,1,.22,1),transform .8s cubic-bezier(.19,1,.22,1),background .35s ease,padding-left .35s ease,color .4s ease;
+}
+.rv.in .exh-card,.rv.in .log-row,.rv.in .print-row{opacity:1;transform:none}
+/* stagger only opacity+transform so hover states stay instant */
+.rv.in>*:nth-child(1){transition-delay:.05s,.05s,0s,0s,0s}
+.rv.in>*:nth-child(2){transition-delay:.16s,.16s,0s,0s,0s}
+.rv.in>*:nth-child(3){transition-delay:.27s,.27s,0s,0s,0s}
+.rv.in>*:nth-child(4){transition-delay:.38s,.38s,0s,0s,0s}
+.rv.in>*:nth-child(5){transition-delay:.49s,.49s,0s,0s,0s}
+
+/* ---------- story ---------- */
+.story-grid{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,80px);
+  padding-bottom:clamp(70px,12vh,130px);
+}
+.lede{
+  font-family:var(--serif);font-size:clamp(22px,2.6vw,32px);
+  line-height:1.4;font-weight:400;
+}
+.lede em{color:var(--pink-deep)}
+.story-copy p{margin-bottom:1.35em;color:var(--ink-soft);font-size:15.5px;font-weight:300;max-width:56ch}
+.story-copy p strong{color:var(--ink);font-weight:700}
+.ink-block{
+  background:var(--ink);color:var(--sky);
+  padding:clamp(24px,3vw,40px);margin-top:34px;
+  position:relative;
+}
+.ink-block::before{
+  content:"";position:absolute;top:-1px;left:0;width:56px;height:3px;background:var(--pink);
+}
+.ink-block h3{
+  font-family:var(--serif);font-weight:400;font-size:clamp(19px,2vw,24px);
+  margin-bottom:14px;
+}
+.ink-block p{font-size:13.5px;font-weight:300;line-height:1.75;opacity:.85}
+.ink-block .spec{
+  display:flex;justify-content:space-between;gap:12px;
+  border-top:1px solid rgba(246,241,234,.18);
+  padding:10px 0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+}
+.ink-block .spec:first-of-type{margin-top:20px}
+.ink-block .spec b{font-weight:700;color:var(--pink);text-align:right}
+
+/* ---------- series / gallery ---------- */
+#series{background:linear-gradient(180deg,var(--sky) 0%,#fdece9 55%,var(--sky) 100%)}
+.plate{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,64px);
+  align-items:end;margin-bottom:clamp(80px,14vh,160px);
+}
+.plate:nth-child(even){direction:rtl}
+.plate:nth-child(even)>*{direction:ltr}
+.plate-img{
+  position:relative;overflow:hidden;background:#e9d8d4;
+  aspect-ratio:4/5;cursor:crosshair;
+}
+.plate:nth-child(2) .plate-img{aspect-ratio:16/11}
+.plate-img img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.12);
+  will-change:transform;
+}
+.kb .plate-img img{transition:transform .1s linear}
+.plate-img .scan{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(255,61,110,.14) 0 2px,transparent 2px 6px);
+  mix-blend-mode:screen;transition:opacity .5s ease;
+}
+.plate-img:hover .scan{opacity:1}
+.plate-img:hover{filter:url(#heat)}
+.plate:hover .cap-num{color:var(--pink);-webkit-text-stroke:1px var(--pink);transition:color .5s ease}
+.plate .cap-num{transition:color .5s ease}
+.plate-img .meta-tag{
+  position:absolute;left:0;bottom:0;
+  background:var(--sky);color:var(--ink);
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+  padding:9px 16px;
+}
+.plate-cap{padding-bottom:6px}
+.plate-cap .cap-num{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(60px,9vw,130px);line-height:.9;
+  color:transparent;-webkit-text-stroke:1px var(--pink-deep);
+  display:block;margin-bottom:10px;
+}
+.plate-cap h3{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(30px,4.4vw,58px);line-height:1.02;margin-bottom:18px;
+}
+.plate-cap .cap-data{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--pink-deep);
+  font-weight:700;margin-bottom:16px;
+}
+.plate-cap p{color:var(--ink-soft);font-weight:300;font-size:15px;max-width:44ch}
+
+/* ---------- field log ---------- */
+#log{background:var(--ink);color:var(--sky)}
+#log .sec-title{color:var(--sky)}
+#log .sec-rule{background:rgba(246,241,234,.25)}
+.log-rows{padding-bottom:clamp(70px,12vh,130px)}
+.log-row{
+  display:grid;grid-template-columns:110px 1fr 190px;gap:clamp(16px,3vw,48px);
+  padding:26px 0;border-top:1px solid rgba(246,241,234,.16);
+  align-items:baseline;transition:background .35s ease,padding-left .35s ease;
+}
+.log-row:last-child{border-bottom:1px solid rgba(246,241,234,.16)}
+.log-row:hover{background:rgba(255,61,110,.07);padding-left:14px}
+.log-day{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--pink)}
+.log-note{font-weight:300;font-size:14.5px;opacity:.88;max-width:62ch}
+.log-temp{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+  text-align:right;color:rgba(246,241,234,.6);
+}
+
+/* ---------- exhibition ---------- */
+.exh-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:rgba(17,17,17,.25);border:1px solid rgba(17,17,17,.25);
+  margin-bottom:clamp(70px,12vh,130px);
+}
+.exh-card{background:var(--sky);padding:clamp(24px,3vw,42px);transition:background .4s ease,color .4s ease}
+.exh-card:hover{background:var(--pink);color:#fff}
+.exh-card:hover .exh-city,.exh-card:hover .exh-venue{color:#fff}
+.exh-city{
+  font-family:var(--serif);font-weight:400;font-size:clamp(26px,3vw,40px);
+  line-height:1;margin-bottom:6px;
+}
+.exh-venue{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--pink-deep);margin-bottom:24px}
+.exh-card .dates{font-family:var(--serif);font-style:italic;font-size:17px;margin-bottom:12px;color:var(--pink-deep)}
+.exh-card:hover .dates{color:#fff}
+.exh-card p{font-size:13px;font-weight:300;opacity:.85}
+
+/* ---------- prints ---------- */
+#prints .print-list{padding-bottom:clamp(40px,7vh,70px)}
+.print-row{
+  display:grid;grid-template-columns:1fr auto auto;gap:clamp(14px,3vw,40px);
+  align-items:baseline;padding:22px 0;border-top:1px solid rgba(17,17,17,.22);
+  text-decoration:none;color:inherit;transition:padding-left .3s ease;
+}
+.print-row:last-of-type{border-bottom:1px solid rgba(17,17,17,.22)}
+.print-row:hover{padding-left:12px}
+.print-row:hover .print-name{color:var(--pink-deep);font-style:italic}
+.print-name{font-family:var(--serif);font-size:clamp(20px,2.6vw,32px);font-weight:400;transition:color .3s ease}
+.print-ed{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;white-space:nowrap}
+.print-price{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2vw,24px);color:var(--pink-deep);white-space:nowrap}
+.print-note{
+  font-size:12.5px;font-weight:300;color:var(--ink-soft);max-width:64ch;
+  padding-bottom:clamp(70px,12vh,120px);
+}
+.print-note b{font-weight:700;color:var(--ink)}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:var(--sky);overflow:hidden}
+.foot-horizon{position:relative;height:120px}
+.foot-horizon .f-line{position:absolute;left:0;right:0;top:70px;height:1px;background:rgba(246,241,234,.35)}
+.foot-horizon .f-sun{
+  position:absolute;left:50%;top:70px;width:52px;height:26px;
+  transform:translateX(-50%);
+  border-radius:52px 52px 0 0;background:var(--pink);
+  transform-origin:bottom center;
+}
+.foot-inner{
+  display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px 40px;
+  padding:0 clamp(20px,5vw,72px) 46px;align-items:baseline;
+}
+.foot-mark{font-family:var(--serif);font-size:22px;letter-spacing:.3em;text-transform:uppercase}
+.foot-links{display:flex;gap:26px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500}
+.foot-links a{color:var(--sky);text-decoration:none;opacity:.75}
+.foot-links a:hover{opacity:1;color:var(--pink)}
+.credit{
+  padding:0 clamp(20px,5vw,72px) 30px;
+  font-size:10.5px;letter-spacing:.06em;opacity:.5;font-weight:300;
+}
+.credit a{color:var(--sky)}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .story-grid{grid-template-columns:1fr}
+  .plate,.plate:nth-child(even){grid-template-columns:1fr;direction:ltr}
+  .exh-grid{grid-template-columns:1fr}
+  .log-row{grid-template-columns:82px 1fr;row-gap:6px}
+  .log-temp{grid-column:2;text-align:left}
+  #horizon .ticks{display:none}
+}
+@media(max-width:480px){
+  .print-row{grid-template-columns:1fr auto;row-gap:4px}
+  .print-ed{grid-column:1}
+  .hero-sub{gap:8px 20px;font-size:10.5px}
+}
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .shimmer-wrap{filter:none}
+  .rv{opacity:1;transform:none;transition:none}
+  .hero-kicker .dot,.hero-scroll::after{animation:none}
+  .plate-img img{transform:none;transition:none}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+
+<!-- heat shimmer filter -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="heat" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence id="heatTurb" type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<!-- horizon nav -->
+<nav id="horizon" aria-label="Progress">
+  <a class="wordmark" href="#top">Mirage</a>
+  <div class="line"></div>
+  <div class="line-fill"></div>
+  <div class="sun" id="sun"></div>
+  <div class="ticks">
+    <a href="#story">Expedition</a>
+    <a href="#series">Series</a>
+    <a href="#log">Field Log</a>
+    <a href="#exhibition">Exhibition</a>
+    <a href="#prints">Prints</a>
+  </div>
+</nav>
+
+<div class="temp-read" id="tempRead">41.7 °C</div>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-media shimmer-wrap" id="heroMedia">
+    <img src="/assets/mirage-1.jpg" alt="Rolling desert dunes, vegetation glowing hot pink under infrared film" id="heroImg">
+    <video id="heroVideo" autoplay muted loop playsinline poster="/assets/mirage-1.jpg"
+      style="position:absolute;inset:0;display:none">
+      <source src="/assets/mirage-hero.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <span class="hero-kicker rv in"><span class="dot"></span>Infrared Expedition · Namib Desert · 2025</span>
+    <h1 class="title">MIR<span class="accent">A</span>GE</h1>
+    <div class="hero-sub">
+      <span>Isolde Ferrer</span>
+      <span>Kodak Aerochrome III</span>
+      <span>11 Days · 640 km</span>
+      <span>24°45′S 15°16′E</span>
+    </div>
+  </div>
+  <div class="hero-scroll">Descend</div>
+</header>
+
+<!-- STORY -->
+<section id="story">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">01 /</span>
+      <h2 class="sec-title">The Expedition</h2>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="story-grid">
+      <div>
+        <p class="lede rv">The desert does not photograph what you see. Under infrared film it photographs what it <em>hides</em> — the water still moving inside every living thing.</p>
+        <div class="ink-block rv">
+          <h3>Why aerochrome?</h3>
+          <p>Kodak Aerochrome III was a Cold War reconnaissance film built to expose camouflage from the air: healthy vegetation reflects infrared violently and burns onto the emulsion as pink and red, while dead matter stays grey. Discontinued in 2009, fewer than a few hundred rolls survive in freezers around the world. We carried twenty-six of them.</p>
+          <div class="spec"><span>Film stock</span><b>Aerochrome III 1443</b></div>
+          <div class="spec"><span>Rolls carried</span><b>26 · Rolls survived · 21</b></div>
+          <div class="spec"><span>Camera</span><b>Mamiya 7 II · #21 orange filter</b></div>
+          <div class="spec"><span>Storage</span><b>-18 °C portable freezer</b></div>
+        </div>
+      </div>
+      <div class="story-copy rv">
+        <p>In September 2025, photographer <strong>Isolde Ferrer</strong> and a two-person crew drove 640 kilometres from Swakopmund into the dune sea of the central Namib — one of the driest places on the planet, and therefore the cruellest possible test for a film that only responds to life.</p>
+        <p>The gamble was simple. Where almost nothing lives, whatever <em>does</em> live should detonate on the frame. A single !nara melon vine crawling over a dune. A camel-thorn tree drinking from a fossil aquifer forty metres down. In ordinary photographs these things disappear into beige. On aerochrome they scream.</p>
+        <p>Every exposure was an act of faith: the film cannot be metered reliably, cannot be reviewed, and cooks above 24 °C. Daytime surface temperatures reached 51 °C. The freezer ran off the truck battery, and twice the truck battery ran off luck.</p>
+        <p>Twenty-one rolls came home. Two hundred and thirty-one frames survived development. <strong>Fourteen became MIRAGE.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERIES -->
+<section id="series">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">02 /</span>
+      <h2 class="sec-title">The Series</h2>
+      <span class="sec-rule"></span>
+    </div>
+
+    <figure class="plate rv">
+      <div class="plate-img" data-kb>
+        <img src="/assets/mirage-1.jpg" alt="Rolling dunes with sparse vegetation rendered hot pink by infrared film">
+        <div class="scan"></div>
+        <span class="meta-tag">Roll 07 · Frame 3</span>
+      </div>
+      <figcaption class="plate-cap">
+        <span class="cap-num">Pl. I</span>
+        <h3>The Slow Fire</h3>
+        <div class="cap-data">24°52′S 15°21′E · 06:41 · 19 °C</div>
+        <p>First light on the dune sea east of Sossusvlei. What reads as flame is dune grass — alive, holding water, reflecting infrared straight into the emulsion. Nothing here is burning. Everything here is drinking.</p>
+      </figcaption>
+    </figure>
+
+    <figure class="plate rv">
+      <div class="plate-img" data-kb>
+        <img loading="lazy" decoding="async" src="/assets/mirage-2.jpg" alt="A lone dead camel-thorn tree standing in a white salt flat, its remaining foliage magenta">
+        <div class="scan"></div>
+        <span class="meta-tag">Roll 12 · Frame 9</span>
+      </div>
+      <figcaption class="plate-cap">
+        <span class="cap-num">Pl. VI</span>
+        <h3>The Witness</h3>
+        <div class="cap-data">24°45′S 15°17′E · 12:02 · 49 °C</div>
+        <p>A camel-thorn on the Deadvlei pan, estimated 700 years old. The clay is too dry for the wood to decompose, so the tree simply stands. The magenta bloom at its crown is a strangler vine — the only living thing in a square kilometre, and the loudest object on the roll.</p>
+      </figcaption>
+    </figure>
+
+    <figure class="plate rv">
+      <div class="plate-img" data-kb>
+        <img loading="lazy" decoding="async" src="/assets/mirage-3.jpg" alt="A hiker silhouetted inside a slot canyon, the sandstone walls glowing red and pink">
+        <div class="scan"></div>
+        <span class="meta-tag">Roll 19 · Frame 1</span>
+      </div>
+      <figcaption class="plate-cap">
+        <span class="cap-num">Pl. XI</span>
+        <h3>The Throat</h3>
+        <div class="cap-data">24°31′S 15°49′E · 16:55 · 37 °C</div>
+        <p>Sesriem Canyon, one hour before we lost the light. The walls hold heat and moss in equal measure, and the film confuses the two. The figure is expedition guide Tomas Ekandjo, who walked ahead to check the flood line and became the scale of the whole series.</p>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- FIELD LOG -->
+<section id="log">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">03 /</span>
+      <h2 class="sec-title">Field Log</h2>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="log-rows rv">
+      <div class="log-row"><span class="log-day">Day 01</span><p class="log-note">Swakopmund → Solitaire. Freezer holding at −18 °C. Tomas insists the C14 road "has opinions". He is correct.</p><span class="log-temp">Max 34 °C</span></div>
+      <div class="log-row"><span class="log-day">Day 03</span><p class="log-note">First exposures at dawn on the dune sea. Wind under 5 knots for exactly forty minutes. Shot Roll 07 in thirty-eight of them.</p><span class="log-temp">Max 41 °C</span></div>
+      <div class="log-row"><span class="log-day">Day 05</span><p class="log-note">Truck battery flat at 05:20. Freezer silent for 3 hours. Rolls 14–16 written off as heat-fogged; developed anyway out of stubbornness. Two frames survived. One is Plate VI.</p><span class="log-temp">Max 51 °C</span></div>
+      <div class="log-row"><span class="log-day">Day 08</span><p class="log-note">A true mirage on the Tsauchab pan at noon — an inverted lake, trembling. The one thing the film cannot record is the thing we named the series for.</p><span class="log-temp">Max 47 °C</span></div>
+      <div class="log-row"><span class="log-day">Day 11</span><p class="log-note">Sesriem Canyon, final roll. Isolde exposed the last frame on the walk out and refused to say of what. It did not survive development. She says that's correct too.</p><span class="log-temp">Max 37 °C</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- EXHIBITION -->
+<section id="exhibition">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">04 /</span>
+      <h2 class="sec-title">Exhibition</h2>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="exh-grid rv">
+      <div class="exh-card">
+        <h3 class="exh-city">Berlin</h3>
+        <div class="exh-venue">Galerie Weiss-Feld</div>
+        <div class="dates">14 March — 26 April 2026</div>
+        <p>World premiere. All fourteen plates at 160 × 200 cm, printed on cotton rag. Opening night with Isolde Ferrer in conversation, 14 March, 19:00.</p>
+      </div>
+      <div class="exh-card">
+        <h3 class="exh-city">London</h3>
+        <div class="exh-venue">The Salt Room, Shoreditch</div>
+        <div class="dates">22 May — 30 June 2026</div>
+        <p>Full series plus the expedition vitrine: the Mamiya, the field log, and the last unexposed roll of Aerochrome, still frozen.</p>
+      </div>
+      <div class="exh-card">
+        <h3 class="exh-city">New York</h3>
+        <div class="exh-venue">Meridian Annex, Tribeca</div>
+        <div class="dates">18 Sept — 1 Nov 2026</div>
+        <p>US premiere, paired with a listening room of field recordings from the dune sea — wind, sand shear, and one very opinionated truck.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINTS -->
+<section id="prints">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-num">05 /</span>
+      <h2 class="sec-title">Prints</h2>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="print-list rv">
+      <a class="print-row" href="#prints"><span class="print-name">Pl. I — The Slow Fire</span><span class="print-ed">Edition of 12 · 100 × 125 cm</span><span class="print-price">€ 4,800</span></a>
+      <a class="print-row" href="#prints"><span class="print-name">Pl. VI — The Witness</span><span class="print-ed">Edition of 12 · 100 × 70 cm</span><span class="print-price">€ 4,200</span></a>
+      <a class="print-row" href="#prints"><span class="print-name">Pl. XI — The Throat</span><span class="print-ed">Edition of 12 · 100 × 125 cm</span><span class="print-price">€ 4,800</span></a>
+      <a class="print-row" href="#prints"><span class="print-name">Portfolio — all fourteen plates</span><span class="print-ed">Edition of 3 · Clamshell case</span><span class="print-price">€ 38,000</span></a>
+    </div>
+    <p class="print-note rv"><b>Every print is made from the original transparency</b> — no digital intermediary — as a pigment print on 308 gsm cotton rag, signed and numbered in pencil, with a stamped certificate noting roll, frame, coordinates, and air temperature at exposure. Enquiries: <b>editions@mirage-series.com</b>. Editions close when the Berlin show opens.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-horizon" aria-hidden="true">
+    <div class="f-line"></div>
+    <div class="f-sun" id="footSun"></div>
+  </div>
+  <div class="foot-inner">
+    <span class="foot-mark">Mirage</span>
+    <nav class="foot-links">
+      <a href="#story">Expedition</a>
+      <a href="#series">Series</a>
+      <a href="#exhibition">Exhibition</a>
+      <a href="#prints">Prints</a>
+    </nav>
+  </div>
+  <p class="credit">© 2026 Isolde Ferrer Studio. All fourteen plates are fictional works. · Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></p>
+</footer>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero video: show only if it actually loads */
+  var v = document.getElementById('heroVideo');
+  var img = document.getElementById('heroImg');
+  v.addEventListener('loadeddata', function(){
+    v.style.display='block'; img.style.visibility='hidden';
+  });
+  v.addEventListener('error', function(){ v.remove(); }, true);
+  v.querySelector('source').addEventListener('error', function(){ v.remove(); });
+
+  /* heat shimmer animation (skip if reduced motion) */
+  var turb = document.getElementById('heatTurb');
+  if(!reduce && turb){
+    var t=0, last=0;
+    function shimmer(ts){
+      if(ts-last>40){ // ~25fps is plenty for heat haze
+        t+=0.008;
+        var bx=0.010+Math.sin(t)*0.004;
+        var by=0.045+Math.cos(t*0.7)*0.012;
+        turb.setAttribute('baseFrequency', bx.toFixed(4)+' '+by.toFixed(4));
+        last=ts;
+      }
+      requestAnimationFrame(shimmer);
+    }
+    requestAnimationFrame(shimmer);
+  }
+
+  /* slow ken-burns pan tied to scroll */
+  var kbs=[].slice.call(document.querySelectorAll('[data-kb]'));
+  if(!reduce) document.body.classList.add('kb');
+  function tickKB(){
+    if(reduce) return;
+    kbs.forEach(function(box,i){
+      var r=box.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight) return;
+      var p=(innerHeight-r.top)/(innerHeight+r.height); // 0→1 through viewport
+      var im=box.querySelector('img');
+      var dir=i%2?1:-1;
+      im.style.transform='scale(1.12) translate('+(dir*p*4-dir*2)+'%, '+(p*-4+2)+'%)';
+    });
+  }
+
+  /* horizon progress line + sun */
+  var fill=document.querySelector('#horizon .line-fill');
+  var sun=document.getElementById('sun');
+  var footSun=document.getElementById('footSun');
+  var ticks=[].slice.call(document.querySelectorAll('#horizon .ticks a'));
+  var sections=ticks.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  function onScroll(){
+    var max=document.documentElement.scrollHeight-innerHeight;
+    var p=max>0?Math.min(1,scrollY/max):0;
+    fill.style.width=(p*100)+'%';
+    sun.style.left=(p*100)+'%';
+    /* sun "sets" into the footer horizon as you finish the page */
+    if(footSun){ footSun.style.height=(4+22*p)+'px'; }
+    var cur=-1;
+    sections.forEach(function(s,i){ if(s && s.getBoundingClientRect().top<innerHeight*0.4) cur=i; });
+    ticks.forEach(function(a,i){ a.classList.toggle('active',i===cur); });
+    tickKB();
+  }
+  addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',onScroll);
+  onScroll();
+
+  /* reveal on scroll */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:0.12});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  tickKB();
+
+  /* hero title letter stagger */
+  if(!reduce){
+    var title=document.querySelector('h1.title');
+    var frag=document.createDocumentFragment(), idx=0;
+    [].slice.call(title.childNodes).forEach(function(n){
+      var accent=(n.nodeType===1);
+      n.textContent.split('').forEach(function(ch){
+        var s=document.createElement('span');
+        s.className='lt'+(accent?' accent':'');
+        s.textContent=ch;
+        s.style.setProperty('--d',(0.15+idx*0.07)+'s');
+        frag.appendChild(s);idx++;
+      });
+    });
+    title.innerHTML='';title.appendChild(frag);
+  }
+
+  /* easter egg: the Day 08 mirage entry flips the world */
+  var rows=[].slice.call(document.querySelectorAll('.log-row'));
+  rows.forEach(function(r){
+    if(/true mirage/i.test(r.textContent)){
+      r.style.cursor='pointer';
+      r.setAttribute('title','Look again.');
+      r.addEventListener('click',function(){
+        document.body.classList.add('mirage-flip');
+        setTimeout(function(){document.body.classList.remove('mirage-flip');},1700);
+      });
+    }
+  });
+
+  /* temperature cursor readout over hero (discovery: heat follows you) */
+  var hero=document.querySelector('.hero');
+  var temp=document.getElementById('tempRead');
+  if(!reduce && matchMedia('(pointer:fine)').matches){
+    hero.addEventListener('mousemove',function(e){
+      temp.style.opacity=1;
+      temp.style.left=e.clientX+'px';
+      temp.style.top=e.clientY+'px';
+      var deg=(34+ (e.clientY/innerHeight)*17).toFixed(1);
+      temp.textContent=deg+' °C';
+    });
+    hero.addEventListener('mouseleave',function(){ temp.style.opacity=0; });
+  }
+})();
+</script>

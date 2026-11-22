@@ -1,0 +1,744 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier Nine - AI-Powered Design Studio</title>
+<meta name="description" content="Atelier Nine is a design studio that pairs human craft with AI production pipelines. Brand identity systems, motion, and web that ship at machine speed without losing the hand.">
+<meta property="og:title" content="Atelier Nine - AI-Powered Design Studio">
+<meta property="og:description" content="Craft stays human. Volume goes machine. Brand systems, AI production pipelines, motion and web.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23131210'/%3E%3Ctext x='16' y='22.5' text-anchor='middle' font-family='Georgia,serif' font-size='17' font-style='italic' fill='%23f4f1ea'%3E9%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bone:#f4f1ea;
+  --bone-2:#ece8de;
+  --ink:#131210;
+  --ink-60:rgba(19,18,16,.62);
+  --ink-30:rgba(19,18,16,.28);
+  --ink-12:rgba(19,18,16,.13);
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Inter",-apple-system,sans-serif;
+  --max:1240px;
+  --pad:clamp(20px,5vw,72px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bone);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--ink);color:var(--bone)}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.04;letter-spacing:-.015em}
+.eyebrow{
+  font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-60);display:flex;align-items:center;gap:12px;
+}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--ink-30)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+section{position:relative;scroll-margin-top:72px}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.6,.2,1),transform .8s cubic-bezier(.2,.6,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(244,241,234,.82);
+  border-bottom:1px solid var(--ink-12);
+}
+.nav-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--serif);font-size:21px;text-decoration:none;display:flex;align-items:baseline;gap:2px}
+.logo em{font-style:italic;font-weight:300}
+.logo .n9{font-weight:600}
+.nav-links{display:flex;gap:30px;align-items:center;list-style:none}
+.nav-links a{font-size:13.5px;font-weight:500;text-decoration:none;color:var(--ink-60);transition:color .25s}
+.nav-links a:hover{color:var(--ink)}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-size:13.5px;font-weight:600;text-decoration:none;
+  padding:12px 22px;border-radius:100px;border:1px solid var(--ink);
+  color:var(--ink);background:transparent;cursor:pointer;
+  transition:background .3s,color .3s;
+}
+.btn svg{transition:transform .3s}
+.btn:hover{background:var(--ink);color:var(--bone)}
+.btn:hover svg{transform:translateX(4px)}
+.btn.solid{background:var(--ink);color:var(--bone)}
+.btn.solid:hover{background:transparent;color:var(--ink)}
+.nav-cta{padding:9px 18px;font-size:12.5px}
+@media(max-width:820px){.nav-links li:not(.keep){display:none}}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:110px;padding-bottom:60px;overflow:hidden}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.hero h1{
+  font-size:clamp(46px,8.6vw,124px);
+  max-width:12ch;
+}
+.hero h1 em{font-style:italic;font-weight:300}
+.hero-sub{
+  margin-top:34px;display:flex;flex-wrap:wrap;gap:34px;align-items:flex-end;justify-content:space-between;
+}
+.hero-sub p{max-width:44ch;font-size:clamp(15px,1.4vw,18px);color:var(--ink-60)}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.hero-meta{
+  margin-top:64px;display:flex;gap:clamp(20px,4vw,56px);flex-wrap:wrap;
+  border-top:1px solid var(--ink-12);padding-top:22px;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60);font-weight:500;
+}
+/* iridescent blob */
+.blob-wrap{
+  position:absolute;z-index:1;pointer-events:none;
+  top:6%;right:min(-6vw,-40px);width:clamp(320px,44vw,680px);height:clamp(320px,44vw,680px);
+}
+.blob-wrap{transition:transform .6s cubic-bezier(.2,.6,.2,1)}
+.blob{
+  position:relative;width:100%;height:100%;
+  background:conic-gradient(from 0deg,
+    #ffd9a8, #ffb3c7, #cdb0ff, #9fd0ff, #a8f0d4, #f6f0a8, #ffd9a8);
+  filter:blur(2px) saturate(1.15);
+  animation:morph 22s ease-in-out infinite, drift 60s linear infinite;
+  border-radius:63% 37% 54% 46% / 45% 61% 39% 55%;
+  opacity:.9;
+  mix-blend-mode:multiply;
+}
+.blob::before{
+  content:"";position:absolute;inset:-4%;z-index:-1;
+  background:conic-gradient(from 180deg,#a8f0d4,#cdb0ff,#ffb3c7,#ffd9a8,#9fd0ff,#a8f0d4);
+  border-radius:42% 58% 37% 63% / 58% 40% 60% 42%;
+  animation:morph2 30s ease-in-out infinite, drift 90s linear infinite reverse;
+  filter:blur(10px);opacity:.7;
+}
+.blob::after{
+  content:"";position:absolute;inset:14%;
+  background:radial-gradient(circle at 38% 34%, rgba(255,255,255,.85), rgba(255,255,255,0) 62%);
+  border-radius:inherit;
+}
+@keyframes morph{
+  0%,100%{border-radius:63% 37% 54% 46% / 45% 61% 39% 55%;transform:scale(1)}
+  25%{border-radius:38% 62% 33% 67% / 65% 38% 62% 35%;transform:scale(1.08)}
+  50%{border-radius:55% 45% 68% 32% / 36% 55% 45% 64%;transform:scale(.93)}
+  75%{border-radius:32% 68% 52% 48% / 58% 36% 64% 42%;transform:scale(1.05)}
+}
+@keyframes morph2{
+  0%,100%{border-radius:42% 58% 37% 63% / 58% 40% 60% 42%}
+  33%{border-radius:60% 40% 62% 38% / 38% 62% 38% 62%}
+  66%{border-radius:35% 65% 45% 55% / 62% 35% 65% 38%}
+}
+@keyframes drift{from{rotate:0deg}to{rotate:360deg}}
+@media (prefers-reduced-motion:reduce){.blob,.blob::before{animation:none}.blob-wrap{transition:none}}
+@media(max-width:820px){
+  .blob-wrap{top:auto;bottom:-8%;right:-30vw;width:88vw;height:88vw;opacity:.75}
+}
+
+/* ---------- marquee credibility ---------- */
+.cred{border-top:1px solid var(--ink-12);border-bottom:1px solid var(--ink-12);padding:24px 0;overflow:hidden}
+.marquee{display:flex;gap:64px;width:max-content;animation:mq 36s linear infinite}
+@keyframes mq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.marquee{animation:none;flex-wrap:wrap;width:auto;padding:0 var(--pad)}}
+.marquee span{
+  font-family:var(--serif);font-size:19px;font-style:italic;color:var(--ink-60);white-space:nowrap;
+  display:flex;align-items:center;gap:64px;
+}
+.marquee span::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink-30)}
+
+/* ---------- section scaffolding ---------- */
+.sec{padding:clamp(88px,11vw,150px) 0}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:clamp(44px,5vw,72px);flex-wrap:wrap}
+.sec-head h2{font-size:clamp(34px,4.6vw,62px);max-width:16ch}
+.sec-head h2 em{font-style:italic;font-weight:300}
+.sec-head .eyebrow{margin-bottom:18px}
+.sec-head p{max-width:38ch;color:var(--ink-60);font-size:15.5px}
+
+/* ---------- services ---------- */
+.svc-list{border-top:1px solid var(--ink-12)}
+.svc{
+  display:grid;grid-template-columns:64px 1.1fr 1.4fr auto;gap:clamp(16px,3vw,44px);
+  padding:34px 0;border-bottom:1px solid var(--ink-12);align-items:baseline;
+  transition:padding-left .35s cubic-bezier(.2,.6,.2,1);
+}
+.svc:hover{padding-left:14px}
+.svc-num{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-30)}
+.svc h3{font-size:clamp(22px,2.6vw,32px)}
+.svc-body p{color:var(--ink-60);font-size:15px;max-width:52ch}
+.svc-win{margin-top:10px;font-size:13.5px;font-weight:600}
+.svc-win b{font-weight:600}
+.svc-tools{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-60);text-align:right;line-height:2;font-weight:500;white-space:nowrap}
+@media(max-width:900px){
+  .svc{grid-template-columns:44px 1fr;grid-template-rows:auto auto auto}
+  .svc h3{grid-column:2}
+  .svc-body{grid-column:2}
+  .svc-tools{grid-column:2;text-align:left;white-space:normal}
+}
+
+/* ---------- honest AI ---------- */
+.honest{background:var(--ink);color:var(--bone);}
+.honest .eyebrow{color:rgba(244,241,234,.6)}
+.honest .eyebrow::before{background:rgba(244,241,234,.3)}
+.honest h2{font-size:clamp(34px,4.8vw,66px);max-width:20ch}
+.honest h2 em{font-style:italic;font-weight:300;background:linear-gradient(100deg,#ffd9a8,#ffb3c7,#cdb0ff,#9fd0ff,#a8f0d4);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 9s ease-in-out infinite}
+@keyframes sheen{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+@media (prefers-reduced-motion:reduce){.honest h2 em{animation:none}}
+.honest-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(244,241,234,.16);border:1px solid rgba(244,241,234,.16);margin-top:clamp(44px,5vw,70px)}
+.honest-cell{background:var(--ink);padding:clamp(26px,3vw,44px)}
+.honest-cell h3{font-size:21px;margin-bottom:14px;font-style:italic;font-weight:300}
+.honest-cell ul{list-style:none}
+.honest-cell li{
+  padding:10px 0;border-bottom:1px solid rgba(244,241,234,.12);
+  font-size:14.5px;color:rgba(244,241,234,.72);display:flex;gap:12px;align-items:baseline;
+}
+.honest-cell li:last-child{border-bottom:none}
+.honest-cell li::before{content:"";flex:0 0 7px;height:7px;border-radius:50%;transform:translateY(-1px)}
+.honest-cell.human li::before{background:var(--bone)}
+.honest-cell.machine li::before{background:linear-gradient(120deg,#ffb3c7,#9fd0ff)}
+.honest-note{margin-top:34px;max-width:62ch;color:rgba(244,241,234,.72);font-size:15.5px}
+.honest-note strong{color:var(--bone);font-weight:600}
+@media(max-width:760px){.honest-grid{grid-template-columns:1fr}}
+
+/* ---------- work gallery ---------- */
+.work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.8vw,24px)}
+.tile{
+  position:relative;border:1px solid var(--ink-12);background:#fbf9f4;overflow:hidden;
+  aspect-ratio:4/4.6;display:flex;flex-direction:column;cursor:pointer;
+  transition:transform .45s cubic-bezier(.2,.6,.2,1),box-shadow .45s;
+}
+.tile:hover{transform:translateY(-6px);box-shadow:0 24px 48px -24px rgba(19,18,16,.28)}
+.tile-art{flex:1;position:relative;overflow:hidden}
+.tile-art svg{width:100%;height:100%;display:block}
+.tile-cap{
+  border-top:1px solid var(--ink-12);padding:14px 18px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:10px;background:var(--bone);
+}
+.tile-cap b{font-family:var(--serif);font-weight:500;font-size:16px}
+.tile-cap span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-60);font-weight:500;white-space:nowrap;transition:color .35s}
+.tile:hover .tile-cap span,.tile:focus-visible .tile-cap span{color:var(--ink)}
+.tile:nth-child(2){transition-delay:.05s}
+.tile:nth-child(3){transition-delay:.1s}
+@media(max-width:900px){.work-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.work-grid{grid-template-columns:1fr}.tile{aspect-ratio:4/4.2}}
+/* tile hover motion */
+.tile .spin{transform-origin:center;transition:transform 1.2s cubic-bezier(.2,.6,.2,1)}
+.tile:hover .spin{transform:rotate(120deg)}
+.tile .rise{transition:transform .9s cubic-bezier(.2,.6,.2,1)}
+.tile:hover .rise{transform:translateY(-14px)}
+.tile .widen{transition:transform .9s cubic-bezier(.2,.6,.2,1);transform-origin:left center}
+.tile:hover .widen{transform:scaleX(1.35)}
+
+/* ---------- process ---------- */
+.proc{counter-reset:step}
+.proc-row{
+  display:grid;grid-template-columns:120px 1fr 1.6fr;gap:clamp(18px,3vw,48px);
+  padding:30px 0;border-top:1px solid var(--ink-12);align-items:baseline;
+}
+.proc-row:last-child{border-bottom:1px solid var(--ink-12)}
+.proc-num{font-family:var(--serif);font-size:clamp(30px,3.4vw,44px);font-style:italic;font-weight:300;color:var(--ink-30)}
+.proc-row h3{font-size:clamp(20px,2.2vw,27px)}
+.proc-row p{color:var(--ink-60);font-size:15px;max-width:56ch}
+.proc-row aside{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-60);font-weight:500;margin-top:8px}
+@media(max-width:760px){.proc-row{grid-template-columns:64px 1fr}.proc-row p{grid-column:2}}
+
+/* ---------- studio / about ---------- */
+.studio-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,5vw,80px);align-items:center}
+.studio-img{position:relative;border:1px solid var(--ink-12);overflow:hidden}
+.studio-img img{width:100%;height:100%;object-fit:cover;aspect-ratio:16/11;filter:saturate(.92)}
+.studio-img figcaption{
+  position:absolute;left:14px;bottom:14px;background:rgba(244,241,234,.92);backdrop-filter:blur(6px);
+  padding:8px 14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+  border:1px solid var(--ink-12);
+}
+.studio-copy h2{font-size:clamp(30px,3.8vw,50px);margin-bottom:22px}
+.studio-copy h2 em{font-style:italic;font-weight:300}
+.studio-copy p{color:var(--ink-60);font-size:15.5px;margin-bottom:16px;max-width:52ch}
+.studio-stats{display:flex;gap:clamp(20px,3vw,44px);margin-top:30px;flex-wrap:wrap}
+.stat b{font-family:var(--serif);font-size:clamp(28px,3vw,40px);font-weight:500;display:block;line-height:1}
+.stat span{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-60);font-weight:500}
+@media(max-width:900px){.studio-grid{grid-template-columns:1fr}}
+
+/* ---------- cases ---------- */
+.case{
+  display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(24px,4vw,64px);
+  padding:clamp(36px,4vw,56px) 0;border-top:1px solid var(--ink-12);
+}
+.case:last-of-type{border-bottom:1px solid var(--ink-12)}
+.case-id{display:flex;flex-direction:column;gap:10px}
+.case-id .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-60);font-weight:600}
+.case-id h3{font-size:clamp(26px,3vw,40px)}
+.case-id h3 em{font-style:italic;font-weight:300}
+.case-body p{color:var(--ink-60);font-size:15px;max-width:58ch}
+.case-metrics{display:flex;gap:clamp(18px,3vw,44px);margin-top:26px;flex-wrap:wrap}
+.metric b{font-family:var(--serif);font-size:clamp(30px,3.4vw,46px);font-weight:500;display:block;line-height:1;letter-spacing:-.02em}
+.metric b i{font-style:italic;font-weight:300;font-size:.62em}
+.metric span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-60);font-weight:500;display:block;margin-top:6px;max-width:16ch}
+@media(max-width:820px){.case{grid-template-columns:1fr}}
+
+/* ---------- team ---------- */
+.team-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ink-12);border:1px solid var(--ink-12)}
+.member{background:var(--bone);padding:clamp(22px,2.5vw,34px);position:relative;overflow:hidden}
+.member::before{
+  content:"";position:absolute;top:-40%;right:-40%;width:80%;aspect-ratio:1;border-radius:50%;
+  background:conic-gradient(from 90deg,#ffd9a8,#ffb3c7,#cdb0ff,#9fd0ff,#a8f0d4,#ffd9a8);
+  filter:blur(26px);opacity:0;transition:opacity .5s;mix-blend-mode:multiply;
+}
+.member:hover::before{opacity:.55}
+.member b{font-family:var(--serif);font-weight:500;font-size:19px;display:block;position:relative}
+.member i{font-style:italic;font-family:var(--serif);font-size:14px;color:var(--ink-60);display:block;margin:4px 0 12px;position:relative}
+.member p{font-size:13.5px;color:var(--ink-60);position:relative}
+@media(max-width:900px){.team-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.team-strip{grid-template-columns:1fr}}
+
+/* ---------- CTA ---------- */
+.cta{overflow:hidden}
+.cta .wrap{position:relative;z-index:2}
+.cta-box{
+  border:1px solid var(--ink);padding:clamp(48px,7vw,110px) clamp(24px,5vw,90px);
+  text-align:center;position:relative;overflow:hidden;background:#fbf9f4;
+}
+.cta-box .blob-wrap{top:auto;bottom:-58%;left:50%;right:auto;transform:translateX(-50%);width:clamp(400px,60vw,900px);height:clamp(400px,60vw,900px);opacity:.5}
+.cta-box h2{font-size:clamp(36px,5.6vw,78px);position:relative;max-width:18ch;margin:0 auto}
+.cta-box h2 em{font-style:italic;font-weight:300}
+.cta-box p{position:relative;color:var(--ink-60);margin:22px auto 34px;max-width:46ch;font-size:16px}
+.cta-box .btn{position:relative}
+
+/* ---------- footer ---------- */
+/* ---------- focus + a11y ---------- */
+a:focus-visible,.btn:focus-visible,.tile:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+.btn:focus-visible{border-radius:100px}
+
+footer{border-top:1px solid var(--ink-12);padding:44px 0 36px;font-size:13px;color:var(--ink-60)}
+.foot{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:baseline}
+.foot a{text-decoration:none;border-bottom:1px solid var(--ink-30);transition:border-color .25s,color .25s}
+.foot a:hover{color:var(--ink);border-color:var(--ink)}
+.foot-links{display:flex;gap:22px;flex-wrap:wrap}
+</style>
+
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="#top"><em>Atelier</em>&nbsp;<span class="n9">Nine</span></a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#honest">Our AI stance</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#studio">Studio</a></li>
+      <li class="keep"><a class="btn nav-cta solid" href="#contact">Start a project</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="blob-wrap"><div class="blob"></div></div>
+  <div class="wrap">
+    <p class="eyebrow rv">Design studio, Melbourne + remote</p>
+    <h1 class="rv" style="margin-top:26px">Craft stays <em>human.</em><br>Volume goes <em>machine.</em></h1>
+    <div class="hero-sub rv">
+      <p>Atelier Nine is a design studio with an AI production line behind it. We shape brand systems, motion, and web by hand, then teach machines to ship every variant your channels demand.</p>
+      <div class="hero-ctas">
+        <a class="btn solid" href="#contact">Book a studio call
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn" href="#work">See the work</a>
+      </div>
+    </div>
+    <div class="hero-meta rv">
+      <span>Est. 2021</span><span>Nine disciplines, one studio</span><span>134 brand systems shipped</span><span>AIGA + ADC recognised</span>
+    </div>
+  </div>
+</header>
+
+<div class="cred" aria-label="Selected clients">
+  <div class="marquee">
+    <span>Fernway Hotels</span><span>Loop &amp; Ladle</span><span>Meridian Robotics</span><span>Casa Norte</span><span>Bluegum Financial</span><span>Ovelle Skincare</span><span>The Print Society</span><span>Halyard Yachts</span>
+    <span aria-hidden="true">Fernway Hotels</span><span aria-hidden="true">Loop &amp; Ladle</span><span aria-hidden="true">Meridian Robotics</span><span aria-hidden="true">Casa Norte</span><span aria-hidden="true">Bluegum Financial</span><span aria-hidden="true">Ovelle Skincare</span><span aria-hidden="true">The Print Society</span><span aria-hidden="true">Halyard Yachts</span>
+  </div>
+</div>
+
+<section class="sec" id="services">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <p class="eyebrow">What we do</p>
+        <h2>Three disciplines,<br><em>one production line</em></h2>
+      </div>
+      <p>Every engagement pairs a senior designer with a pipeline engineer. You get taste and throughput in the same invoice.</p>
+    </div>
+    <div class="svc-list">
+      <article class="svc rv">
+        <span class="svc-num">No. 1</span>
+        <h3>Brand identity systems</h3>
+        <div class="svc-body">
+          <p>Full identity programs built as living systems, not static PDFs. Logic, type, colour, and voice defined so precisely that both a junior designer and a fine-tuned model can apply them correctly.</p>
+          <p class="svc-win"><b>Client win:</b> a brand that stays consistent across 40 channels without a police force.</p>
+        </div>
+        <div class="svc-tools">Figma · Fontstand<br>Custom brand LLMs</div>
+      </article>
+      <article class="svc rv">
+        <span class="svc-num">No. 2</span>
+        <h3>AI production pipelines</h3>
+        <div class="svc-body">
+          <p>We encode your finished identity into generation pipelines that produce on-brand campaign variants, localisations, and formats in hours. Every output passes a human art-director gate before release.</p>
+          <p class="svc-win"><b>Client win:</b> campaign production cost drops 60 to 80 percent, review time stays yours.</p>
+        </div>
+        <div class="svc-tools">ComfyUI · Claude<br>Flux LoRA · n8n</div>
+      </article>
+      <article class="svc rv">
+        <span class="svc-num">No. 3</span>
+        <h3>Motion &amp; web</h3>
+        <div class="svc-body">
+          <p>Launch sites, product films, and motion identities. Designed frame by frame in the studio, then built with generative tooling that keeps engineering budgets sane and timelines short.</p>
+          <p class="svc-win"><b>Client win:</b> award-grade sites and films at roughly half the traditional studio timeline.</p>
+        </div>
+        <div class="svc-tools">WebGL · After Effects<br>Remotion · Runway</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec honest" id="honest">
+  <div class="wrap">
+    <p class="eyebrow rv">Our AI stance</p>
+    <h2 class="rv" style="margin-top:20px">How we use AI, <em>honestly</em></h2>
+    <div class="honest-grid rv">
+      <div class="honest-cell human">
+        <h3>Always human</h3>
+        <ul>
+          <li>Strategy, positioning, and the founding idea</li>
+          <li>Logo marks, wordmarks, and type selection</li>
+          <li>Art direction and every final approval</li>
+          <li>The conversation with you</li>
+        </ul>
+      </div>
+      <div class="honest-cell machine">
+        <h3>Gladly machine</h3>
+        <ul>
+          <li>Resizing one campaign into 200 placements</li>
+          <li>Localising copy and layouts across markets</li>
+          <li>First-pass moodboards and reference sweeps</li>
+          <li>QA passes on colour, contrast, and spec</li>
+        </ul>
+      </div>
+    </div>
+    <p class="honest-note rv"><strong>Our rule is simple: AI never makes a creative decision, and a human never does robot work.</strong> We publish which tools touched every deliverable, we never train models on one client's work for another, and anything a machine generates is reviewed by a named art director before you see it.</p>
+  </div>
+</section>
+
+<section class="sec" id="work">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <p class="eyebrow">Selected work</p>
+        <h2>The <em>gallery</em></h2>
+      </div>
+      <p>Six recent systems. Hover a tile: every composition is drawn in code, the way we prototype identities before a single artboard exists.</p>
+    </div>
+    <div class="work-grid">
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#e9e2f4">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="spin">
+              <circle cx="200" cy="210" r="120" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <circle cx="200" cy="210" r="86" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <circle cx="200" cy="124" r="12" fill="#131210"/>
+              <circle cx="286" cy="210" r="8" fill="none" stroke="#131210" stroke-width="1.5"/>
+            </g>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">orbit &amp; return</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>Meridian Robotics</b><span>Identity + motion</span></figcaption>
+      </figure>
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#f4e5d8">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="rise">
+              <rect x="90" y="150" width="220" height="34" fill="#131210"/>
+              <rect x="90" y="196" width="164" height="34" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <rect x="90" y="242" width="196" height="34" fill="#131210" opacity=".22"/>
+              <rect x="90" y="288" width="120" height="34" fill="#131210"/>
+            </g>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">stacked ledger</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>Bluegum Financial</b><span>Brand system</span></figcaption>
+      </figure>
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#dcebe3">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="widen">
+              <path d="M60 300 C 130 160, 270 160, 340 300" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <path d="M60 300 C 130 200, 270 200, 340 300" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <path d="M60 300 C 130 240, 270 240, 340 300" fill="none" stroke="#131210" stroke-width="1.5"/>
+            </g>
+            <circle cx="200" cy="176" r="10" fill="#131210"/>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">rising steam</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>Loop &amp; Ladle</b><span>Identity + packaging</span></figcaption>
+      </figure>
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#f3dfe6">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="spin">
+              <path d="M200 90 L310 300 L90 300 Z" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <path d="M200 140 L275 280 L125 280 Z" fill="#131210" opacity=".18"/>
+              <circle cx="200" cy="230" r="26" fill="#131210"/>
+            </g>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">north marker</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>Casa Norte</b><span>Hospitality brand</span></figcaption>
+      </figure>
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#dfe7f2">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="rise">
+              <path d="M80 320 Q 200 80 320 320" fill="none" stroke="#131210" stroke-width="1.5"/>
+              <line x1="80" y1="320" x2="320" y2="320" stroke="#131210" stroke-width="1.5"/>
+              <path d="M140 320 Q 200 190 260 320" fill="#131210" opacity=".16"/>
+              <circle cx="200" cy="150" r="8" fill="#131210"/>
+            </g>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">hull &amp; horizon</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>Halyard Yachts</b><span>Web + film</span></figcaption>
+      </figure>
+      <figure class="tile rv" tabindex="0">
+        <div class="tile-art" style="background:#efeadb">
+          <svg viewBox="0 0 400 460" aria-hidden="true">
+            <g class="widen">
+              <line x1="90" y1="160" x2="310" y2="160" stroke="#131210" stroke-width="1.5"/>
+              <line x1="90" y1="200" x2="270" y2="200" stroke="#131210" stroke-width="1.5"/>
+              <line x1="90" y1="240" x2="310" y2="240" stroke="#131210" stroke-width="1.5"/>
+              <line x1="90" y1="280" x2="230" y2="280" stroke="#131210" stroke-width="1.5"/>
+            </g>
+            <circle cx="310" cy="280" r="14" fill="#131210"/>
+            <text x="200" y="410" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-style="italic" font-size="30" fill="#131210">set in lines</text>
+          </svg>
+        </div>
+        <figcaption class="tile-cap"><b>The Print Society</b><span>Editorial system</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="process" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <p class="eyebrow">Process</p>
+        <h2>Four weeks to a system,<br><em>then it compounds</em></h2>
+      </div>
+      <p>A fixed cadence with two standing reviews a week. You always know what exists and what ships next.</p>
+    </div>
+    <div class="proc rv">
+      <div class="proc-row">
+        <span class="proc-num">01</span>
+        <div><h3>Listen</h3><aside>Week one</aside></div>
+        <p>Stakeholder interviews, audit of everything you have shipped, and a positioning workshop. We leave with the sentence your brand has to prove.</p>
+      </div>
+      <div class="proc-row">
+        <span class="proc-num">02</span>
+        <div><h3>Shape</h3><aside>Weeks two to three</aside></div>
+        <p>Senior designers explore by hand: marks, type pairings, motion behaviours. Machines run reference sweeps in the background; humans decide what survives.</p>
+      </div>
+      <div class="proc-row">
+        <span class="proc-num">03</span>
+        <div><h3>Encode</h3><aside>Week four</aside></div>
+        <p>The chosen system is written into tokens, templates, and a fine-tuned generation pipeline with your rules baked in. This is where most studios hand over a PDF; we hand over an engine.</p>
+      </div>
+      <div class="proc-row">
+        <span class="proc-num">04</span>
+        <div><h3>Produce</h3><aside>Ongoing</aside></div>
+        <p>Monthly production retainers. You brief, the pipeline drafts, our art directors gate, you publish. Volume scales without new headcount on either side.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="studio" style="padding-top:0">
+  <div class="wrap studio-grid">
+    <figure class="studio-img rv">
+      <img src="../../assets/atelier-1.jpg" alt="The Atelier Nine studio: a bright workspace with generative art on a monitor" loading="lazy">
+      <figcaption>The studio, Collingwood</figcaption>
+    </figure>
+    <div class="studio-copy rv">
+      <p class="eyebrow" style="margin-bottom:18px">The studio</p>
+      <h2>Nine people.<br><em>No production floor.</em></h2>
+      <p>Atelier Nine started in 2021 when two art directors and a machine-learning engineer noticed the same thing: 70 percent of studio hours were spent resizing, not designing. We rebuilt the studio so those hours go to machines and the rest goes to craft.</p>
+      <p>Today we are nine people across design, motion, engineering, and writing. Small on purpose: the pipeline does the work of the thirty hires we never made.</p>
+      <div class="studio-stats">
+        <div class="stat"><b>134</b><span>Systems shipped</span></div>
+        <div class="stat"><b>9</b><span>People, by design</span></div>
+        <div class="stat"><b>11</b><span>Industry awards</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="results" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <p class="eyebrow">Results</p>
+        <h2>Proof, <em>with numbers</em></h2>
+      </div>
+      <p>Three engagements from the last year. Names real to us, numbers signed off by the client.</p>
+    </div>
+    <article class="case rv">
+      <div class="case-id">
+        <span class="tag">Skincare · DTC</span>
+        <h3>Ovelle: one campaign, <em>every shelf</em></h3>
+      </div>
+      <div class="case-body">
+        <p>Rebrand plus a production pipeline trained on the new identity. Ovelle's two-person marketing team now ships retail, social, and email variants for four markets from a single monthly brief.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>-72<i>%</i></b><span>Production time per campaign</span></div>
+          <div class="metric"><b>640</b><span>On-brand variants shipped in Q1</span></div>
+          <div class="metric"><b>2</b><span>People running it all</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="case rv">
+      <div class="case-id">
+        <span class="tag">Hospitality · Group</span>
+        <h3>Fernway Hotels: <em>five properties, one voice</em></h3>
+      </div>
+      <div class="case-body">
+        <p>A master identity with property-level dialects, encoded so each hotel generates its own collateral inside guardrails. Head office reviews exceptions, not everything.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>-58<i>%</i></b><span>Agency spend across the group</span></div>
+          <div class="metric"><b>5<i>x</i></b><span>Faster property launch kits</span></div>
+          <div class="metric"><b>96<i>%</i></b><span>First-pass brand compliance</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="case rv">
+      <div class="case-id">
+        <span class="tag">Robotics · B2B</span>
+        <h3>Meridian: a launch film <em>in three weeks</em></h3>
+      </div>
+      <div class="case-body">
+        <p>Motion identity and product film for a Series B robotics launch. Boards and key frames by hand, in-betweens and localised cuts generated, every frame gated by our motion lead.</p>
+        <div class="case-metrics">
+          <div class="metric"><b>3<i>wks</i></b><span>Concept to premiere</span></div>
+          <div class="metric"><b>12</b><span>Localised edits delivered</span></div>
+          <div class="metric"><b>$210<i>k</i></b><span>Saved vs traditional quote</span></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="sec" id="team" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <p class="eyebrow">The people</p>
+        <h2>The <em>nine</em>, abridged</h2>
+      </div>
+      <p>Four of the nine. The rest are heads-down in the studio, which is how they like it.</p>
+    </div>
+    <div class="team-strip rv">
+      <div class="member"><b>Mara Ellison</b><i>Founder, creative director</i><p>Ex Pentagram associate. Owns the founding idea on every engagement and the final no.</p></div>
+      <div class="member"><b>Theo Nakamura</b><i>Founder, pipeline lead</i><p>ML engineer who thinks in brand guidelines. Builds the engines that do the boring 70 percent.</p></div>
+      <div class="member"><b>June Okafor</b><i>Motion director</i><p>Frames by hand, renders by machine. Gates every generated frame before a client sees it.</p></div>
+      <div class="member"><b>Sam Reyes</b><i>Head of words</i><p>Voice systems, naming, and the copy that models are allowed to vary but never invent.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec cta" id="contact" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-box rv">
+      <div class="blob-wrap"><div class="blob"></div></div>
+      <h2>Bring us the brand.<br><em>We will bring the engine.</em></h2>
+      <p>A 30-minute studio call: we look at what you ship, show you what a pipeline would change, and give you an honest read on whether you need us at all.</p>
+      <a class="btn solid" href="mailto:studio@atelier-nine.co">Book a studio call
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>Atelier Nine Pty Ltd · Collingwood, Melbourne · studio@atelier-nine.co</span>
+    <div class="foot-links">
+      <a href="#services">Services</a>
+      <a href="#work">Work</a>
+      <a href="#honest">AI stance</a>
+      <a href="../../index.html">Part of the RoboNuggets Design Systems</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var els=document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return}
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+  els.forEach(function(e){io.observe(e)});
+
+  /* metric count-up on reveal */
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    var mio=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting)return;
+        mio.unobserve(en.target);
+        var node=en.target.firstChild; /* leading text node with the number */
+        if(!node||node.nodeType!==3)return;
+        var raw=node.textContent.trim(), m=raw.match(/^(-?\$?)(\d+)$/);
+        if(!m)return;
+        var target=parseInt(m[2],10), pre=m[1], t0=null;
+        function step(ts){
+          if(!t0)t0=ts;
+          var p=Math.min((ts-t0)/900,1), e=1-Math.pow(1-p,3);
+          node.textContent=pre+Math.round(target*e);
+          if(p<1)requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    },{threshold:.6});
+    document.querySelectorAll('.metric b, .stat b').forEach(function(b){mio.observe(b)});
+
+    /* gentle blob parallax in the hero */
+    var hero=document.querySelector('.hero'), bw=hero&&hero.querySelector('.blob-wrap');
+    if(bw&&matchMedia('(pointer:fine)').matches){
+      hero.addEventListener('mousemove',function(ev){
+        var r=hero.getBoundingClientRect();
+        var x=(ev.clientX-r.left)/r.width-.5, y=(ev.clientY-r.top)/r.height-.5;
+        bw.style.transform='translate('+(x*-22)+'px,'+(y*-16)+'px)';
+      });
+      hero.addEventListener('mouseleave',function(){bw.style.transform=''});
+    }
+  }
+  /* safety: anything scrolled past without triggering gets revealed */
+  var tick=null;
+  window.addEventListener('scroll',function(){
+    if(tick)return;
+    tick=setTimeout(function(){
+      tick=null;
+      els.forEach(function(e){
+        if(!e.classList.contains('in')&&e.getBoundingClientRect().bottom<window.innerHeight*.5){e.classList.add('in');io.unobserve(e)}
+      });
+    },200);
+  },{passive:true});
+})();
+</script>

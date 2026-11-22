@@ -1,0 +1,121 @@
+{
+ "title": "Tidy desk carousel",
+ "lede": "7 cards: a drawn cover, five tips and a save card. A sample to try the review app on.",
+ "caption": "Comment \"TIDY\" and I'll send you the one-page desk checklist 👇\n\n- One tray for loose paper\n- Clip every cable\n- A home for each pen\n- Clear it at 5pm\n- Only today on top\n\n#desksetup #productivity #workspace",
+ "keyword": "TIDY",
+ "coverKey": "drawn",
+ "coverIndex": 0,
+ "covers": [
+  {
+   "key": "drawn",
+   "label": "Drawn desk",
+   "thumb": "export/cover-drawn.jpg"
+  },
+  {
+   "key": "sun",
+   "label": "Orange sunrise",
+   "thumb": "export/cover-sun.jpg"
+  }
+ ],
+ "cards": [
+  {
+   "i": 0,
+   "num": null,
+   "name": "Cover",
+   "title": "5 ways to keep your desk tidy",
+   "cover": true,
+   "dark": false,
+   "kind": "photo",
+   "style": "32bit",
+   "clip": null,
+   "media": null,
+   "file": "export/card-01.png",
+   "thumb": "export/thumb-01.jpg"
+  },
+  {
+   "i": 1,
+   "num": "01",
+   "name": "One tray",
+   "title": "One tray for loose paper",
+   "cover": false,
+   "dark": false,
+   "kind": "photo",
+   "style": "dot",
+   "clip": null,
+   "media": null,
+   "file": "export/card-02.png",
+   "thumb": "export/thumb-02.jpg"
+  },
+  {
+   "i": 2,
+   "num": "02",
+   "name": "Cable clips",
+   "title": "Clip every cable",
+   "cover": false,
+   "dark": true,
+   "kind": "photo",
+   "style": "32bit",
+   "clip": null,
+   "media": null,
+   "file": "export/card-03.png",
+   "thumb": "export/thumb-03.jpg"
+  },
+  {
+   "i": 3,
+   "num": "03",
+   "name": "Pen cup",
+   "title": "A home for each pen",
+   "cover": false,
+   "dark": false,
+   "kind": "photo",
+   "style": "dot",
+   "clip": null,
+   "media": null,
+   "file": "export/card-04.png",
+   "thumb": "export/thumb-04.jpg"
+  },
+  {
+   "i": 4,
+   "num": "04",
+   "name": "Clear at 5pm",
+   "title": "Clear it at 5pm",
+   "cover": false,
+   "dark": false,
+   "kind": "photo",
+   "style": "32bit",
+   "clip": null,
+   "media": null,
+   "file": "export/card-05.png",
+   "thumb": "export/thumb-05.jpg"
+  },
+  {
+   "i": 5,
+   "num": "05",
+   "name": "Today on top",
+   "title": "Only today on top",
+   "cover": false,
+   "dark": true,
+   "kind": "photo",
+   "style": "dot",
+   "clip": null,
+   "media": null,
+   "file": "export/card-06.png",
+   "thumb": "export/thumb-06.jpg"
+  },
+  {
+   "i": 6,
+   "num": null,
+   "name": "Save card",
+   "title": "Save this for your next clean-up",
+   "cover": false,
+   "dark": false,
+   "kind": "photo",
+   "style": "32bit",
+   "clip": null,
+   "media": null,
+   "file": "export/card-07.png",
+   "thumb": "export/thumb-07.jpg"
+  }
+ ],
+ "exportedAt": "2026-10-20T06:20:39.005Z"
+}

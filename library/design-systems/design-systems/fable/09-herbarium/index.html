@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Aldersgate Herbarium - A Victorian Botanical Archive, Est. 1847</title>
+<meta name="description" content="The Aldersgate Herbarium: 214,000 pressed specimens, hand-tinted engravings, and a reading room unchanged since 1852. A Victorian botanical archive, founded 1847.">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="%23f2ead4"/><path d="M32 52 C32 36 24 30 18 26 C26 26 30 30 32 36 C34 28 40 22 48 20 C42 28 38 34 34 44 L34 52 Z" fill="%235c6b52"/><circle cx="32" cy="14" r="5" fill="%23b08d3e"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f2ead4;
+  --cream-deep:#e9dfc2;
+  --cream-card:#f6efdd;
+  --ink:#2b2417;
+  --ink-soft:#4a4231;
+  --ink-faint:#6f6650;
+  --sage:#5c6b52;
+  --sage-soft:#7a8b6f;
+  --gold:#96751f;
+  --gold-soft:#c2a35d;
+  --rule:rgba(43,36,23,.28);
+  --shadow:rgba(43,36,23,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'EB Garamond',Georgia,serif;
+  background:var(--cream);
+  color:var(--ink);
+  font-size:19px;
+  line-height:1.65;
+  overflow-x:hidden;
+  transition:background 1.2s ease,color 1.2s ease;
+}
+/* ---- paper texture + vignette ---- */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:2;
+  background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="240" height="240" filter="url(%23n)" opacity="0.05"/></svg>');
+  mix-blend-mode:multiply;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(64,52,28,.14) 100%);
+}
+::selection{background:var(--gold-soft);color:var(--ink)}
+img{max-width:100%;display:block}
+a{color:var(--sage);text-decoration:none}
+
+/* ---------- typography helpers ---------- */
+.smallcaps{font-variant:small-caps;letter-spacing:.14em}
+.overline-label{
+  font-family:'EB Garamond',serif;font-variant:small-caps;
+  letter-spacing:.34em;font-size:.82rem;color:var(--gold);
+  text-transform:lowercase;
+}
+h1,h2,h3{font-family:'Playfair Display',serif;color:var(--ink)}
+
+/* ---------- ornamental rules ---------- */
+.flourish{display:flex;align-items:center;justify-content:center;gap:1rem;margin:1.4rem auto}
+.flourish svg{color:var(--gold);flex:0 0 auto}
+.flourish::before,.flourish::after{
+  content:"";height:1px;flex:1;max-width:160px;
+  background:linear-gradient(90deg,transparent,var(--rule));
+}
+.flourish::after{background:linear-gradient(90deg,var(--rule),transparent)}
+
+/* ---------- frame ---------- */
+.page-frame{
+  position:fixed;inset:14px;border:1px solid var(--rule);
+  pointer-events:none;z-index:3;
+}
+.page-frame::before{
+  content:"";position:absolute;inset:5px;border:1px solid rgba(43,36,23,.14);
+}
+.frame-corner{position:absolute;width:26px;height:26px;color:var(--gold)}
+.frame-corner svg{width:100%;height:100%}
+.fc-tl{top:-4px;left:-4px}
+.fc-tr{top:-4px;right:-4px;transform:rotate(90deg)}
+.fc-br{bottom:-4px;right:-4px;transform:rotate(180deg)}
+.fc-bl{bottom:-4px;left:-4px;transform:rotate(270deg)}
+
+/* ---------- header / masthead ---------- */
+header.masthead{
+  min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:6rem 1.5rem 4rem;position:relative;isolation:isolate;
+}
+.hero-plate{
+  position:absolute;inset:0;z-index:-1;overflow:hidden;
+}
+.hero-plate img{
+  width:100%;height:100%;object-fit:cover;object-position:center 30%;
+  opacity:.16;filter:sepia(.25) contrast(.95);
+  animation:heroKen 38s ease-in-out infinite alternate;
+  transform-origin:center 35%;
+}
+@keyframes heroKen{from{transform:scale(1)}to{transform:scale(1.12) translateY(-1.5%)}}
+.hero-plate::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(242,234,212,0) 30%,var(--cream) 92%);
+}
+.est-line{
+  font-family:'EB Garamond',serif;font-variant:small-caps;
+  letter-spacing:.5em;font-size:.95rem;color:var(--ink-faint);
+  margin-bottom:1.4rem;padding-left:.5em;
+  opacity:0;animation:riseIn 1.2s ease .2s forwards;
+}
+.masthead h1{
+  font-size:clamp(3.2rem,10vw,7.4rem);
+  font-weight:700;letter-spacing:.11em;line-height:1.04;
+  text-transform:uppercase;padding-left:.11em;
+  opacity:0;animation:riseIn 1.4s cubic-bezier(.22,.8,.3,1) .45s forwards;
+}
+.masthead .sub{
+  margin-top:1.6rem;max-width:34em;
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--ink-soft);
+  opacity:0;animation:riseIn 1.4s ease .85s forwards;
+}
+.masthead .flourish{width:min(560px,80vw);opacity:0;animation:riseIn 1.2s ease .7s forwards}
+.flourish-draw path{
+  stroke-dasharray:600;stroke-dashoffset:600;
+  animation:draw 2.6s ease .9s forwards;
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes riseIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.hero-meta{
+  margin-top:3rem;display:flex;gap:2.6rem;flex-wrap:wrap;justify-content:center;
+  font-variant:small-caps;letter-spacing:.2em;font-size:.9rem;color:var(--ink-faint);
+  opacity:0;animation:riseIn 1.4s ease 1.1s forwards;
+}
+.hero-meta span b{color:var(--gold);font-weight:600}
+.scroll-hint{
+  position:absolute;bottom:2.4rem;left:50%;transform:translateX(-50%);
+  font-variant:small-caps;letter-spacing:.32em;font-size:.78rem;color:var(--ink-faint);
+  opacity:0;animation:riseIn 1.4s ease 1.5s forwards;
+}
+.scroll-hint::after{
+  content:"";display:block;width:1px;height:38px;margin:.7rem auto 0;
+  background:linear-gradient(var(--gold),transparent);
+  animation:hintPulse 2.4s ease-in-out infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* ---------- generic section ---------- */
+section{padding:6.5rem 1.5rem;position:relative}
+.container{max-width:1080px;margin:0 auto}
+.narrow{max-width:720px;margin:0 auto}
+.section-head{text-align:center;margin-bottom:3.6rem}
+.section-head h2{
+  font-size:clamp(2rem,5vw,3.1rem);font-weight:600;
+  letter-spacing:.02em;margin-top:.9rem;
+}
+.section-head .roman{
+  font-family:'Playfair Display',serif;font-size:.95rem;
+  letter-spacing:.4em;color:var(--gold);
+}
+
+/* pressed-sprig watermarks */
+#history,#reading-room{overflow:hidden}
+.sprig{
+  position:absolute;pointer-events:none;color:var(--sage);opacity:.07;z-index:0;
+}
+.sprig svg{width:100%;height:100%}
+.sprig-hist{top:6rem;right:-70px;width:300px;height:420px;transform:rotate(14deg)}
+.sprig-room{bottom:3rem;left:-80px;width:280px;height:400px;transform:rotate(-158deg)}
+@media(max-width:960px){.sprig{display:none}}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity 1s cubic-bezier(.22,.8,.3,1),transform 1s cubic-bezier(.22,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.12s}.reveal.d2{transition-delay:.24s}.reveal.d3{transition-delay:.36s}
+
+/* ---------- history ---------- */
+.history p{margin-bottom:1.4em;font-size:1.06em;text-align:justify;hyphens:auto}
+.dropcap::first-letter{
+  font-family:'Playfair Display',serif;font-weight:700;
+  float:left;font-size:4.6em;line-height:.82;
+  padding:.06em .12em .02em 0;color:var(--sage);
+  text-shadow:2px 2px 0 rgba(169,133,47,.28);
+}
+.history em{color:var(--ink-soft)}
+.marginal{
+  border-left:2px solid var(--gold-soft);padding:.4rem 0 .4rem 1.3rem;
+  margin:2.2rem 0;font-family:'Playfair Display',serif;font-style:italic;
+  font-size:1.18em;color:var(--ink-soft);
+}
+.marginal cite{display:block;margin-top:.5rem;font-family:'EB Garamond',serif;font-style:normal;font-variant:small-caps;letter-spacing:.18em;font-size:.72em;color:var(--gold)}
+
+/* chronicle timeline */
+.chronicle{margin-top:3.4rem;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.chron-item{padding:1.6rem 1.4rem;border-right:1px solid var(--rule);transition:background .5s ease}
+.chron-item:last-child{border-right:none}
+.chron-item:hover{background:rgba(92,107,82,.07)}
+.chron-item .yr{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--sage)}
+.chron-item p{font-size:.92rem;margin:0;color:var(--ink-soft);line-height:1.5;text-align:left}
+
+/* ---------- specimen cards ---------- */
+.plates{display:grid;grid-template-columns:repeat(3,1fr);gap:2.4rem}
+.plate-card{
+  background:var(--cream-card);
+  border:1px solid var(--rule);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 14px 34px -18px var(--shadow);
+  padding:1.1rem 1.1rem 1.4rem;position:relative;
+  transition:transform .7s cubic-bezier(.22,.8,.3,1),box-shadow .7s ease;
+}
+.plate-card:hover{transform:translateY(-7px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 26px 48px -20px var(--shadow)}
+.plate-card::before{
+  content:attr(data-plate);
+  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  background:var(--cream);border:1px solid var(--gold-soft);color:var(--gold);
+  padding:.15rem 1rem;font-variant:small-caps;letter-spacing:.24em;font-size:.72rem;
+  white-space:nowrap;z-index:2;
+}
+.plate-img{
+  overflow:hidden;border:1px solid var(--rule);position:relative;
+  aspect-ratio:3/4;background:var(--cream-deep);
+  cursor:zoom-in;
+}
+.plate-img img{
+  width:100%;height:100%;object-fit:cover;
+  transform:scale(1.02);transform-origin:var(--kx,50%) var(--ky,35%);
+  transition:transform 7s cubic-bezier(.16,.6,.24,1),filter 1.2s ease;
+  filter:sepia(.08);
+}
+.plate-card:hover .plate-img img{transform:scale(1.22);filter:sepia(0)}
+.plate-img::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 46px rgba(64,52,28,.22);
+}
+/* album photo-corner mounts */
+.mounts{
+  position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:
+    linear-gradient(135deg,var(--cream-card) 12px,transparent 12.5px) top left/30px 30px no-repeat,
+    linear-gradient(225deg,var(--cream-card) 12px,transparent 12.5px) top right/30px 30px no-repeat,
+    linear-gradient(45deg,var(--cream-card) 12px,transparent 12.5px) bottom left/30px 30px no-repeat,
+    linear-gradient(315deg,var(--cream-card) 12px,transparent 12.5px) bottom right/30px 30px no-repeat,
+    linear-gradient(135deg,var(--gold-soft) 15px,transparent 15.5px) top left/30px 30px no-repeat,
+    linear-gradient(225deg,var(--gold-soft) 15px,transparent 15.5px) top right/30px 30px no-repeat,
+    linear-gradient(45deg,var(--gold-soft) 15px,transparent 15.5px) bottom left/30px 30px no-repeat,
+    linear-gradient(315deg,var(--gold-soft) 15px,transparent 15.5px) bottom right/30px 30px no-repeat;
+  filter:drop-shadow(1px 1px 1px rgba(43,36,23,.18));
+  transition:opacity .8s ease;
+}
+.plate-card:hover .mounts{opacity:.35}
+.plate-name{
+  font-family:'Playfair Display',serif;font-style:italic;font-weight:600;
+  font-size:1.34rem;margin:1.2rem 0 .1rem;text-align:center;
+}
+.plate-common{text-align:center;font-variant:small-caps;letter-spacing:.22em;font-size:.82rem;color:var(--ink-faint);margin-bottom:1rem}
+.meta-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.meta-table td{padding:.42rem .2rem;border-top:1px dotted var(--rule);vertical-align:top}
+.meta-table td:first-child{font-variant:small-caps;letter-spacing:.14em;color:var(--gold);width:38%;font-size:.8rem;padding-top:.5rem}
+.meta-table td:last-child{color:var(--ink-soft)}
+.plate-note{
+  margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--rule);
+  font-style:italic;font-size:.92rem;color:var(--ink-faint);line-height:1.55;
+}
+
+/* ---------- examination table (loupe) ---------- */
+.exam{background:linear-gradient(180deg,rgba(92,107,82,.06),rgba(92,107,82,0) 70%);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.exam-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:3.6rem;align-items:center}
+.exam-figure{position:relative;border:1px solid var(--rule);background:var(--cream-card);padding:.9rem;box-shadow:0 22px 44px -22px var(--shadow)}
+.exam-stage{position:relative;overflow:hidden;cursor:none;border:1px solid var(--rule)}
+.exam-stage img{width:100%;filter:sepia(.06)}
+.loupe{
+  position:absolute;width:170px;height:170px;border-radius:50%;
+  border:3px solid var(--gold);box-shadow:0 10px 26px rgba(43,36,23,.35),inset 0 0 22px rgba(43,36,23,.25);
+  pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.7);
+  transition:opacity .35s ease,transform .35s ease;
+  background-repeat:no-repeat;z-index:4;
+}
+.loupe::after{
+  content:"";position:absolute;inset:-3px;border-radius:50%;
+  border:1px solid rgba(242,234,212,.65);
+}
+.exam-stage:hover .loupe,.exam-stage.touched .loupe{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.exam-caption{margin-top:.8rem;text-align:center;font-variant:small-caps;letter-spacing:.2em;font-size:.78rem;color:var(--ink-faint)}
+.exam-copy h2{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:600;margin:.8rem 0 1.3rem}
+.exam-copy p{margin-bottom:1.2em;color:var(--ink-soft)}
+.exam-copy .hint{
+  display:inline-block;margin-top:.4rem;padding:.5rem 1.1rem;border:1px solid var(--gold-soft);
+  font-variant:small-caps;letter-spacing:.22em;font-size:.78rem;color:var(--gold);
+}
+
+/* ---------- digitization ---------- */
+.digit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin:3rem 0 2.6rem}
+.stat{background:var(--cream-card);padding:2.1rem 1.4rem;text-align:center}
+.stat{transition:background .5s ease}
+.stat:hover{background:var(--cream)}
+.stat .num{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:700;color:var(--sage);font-variant-numeric:tabular-nums;transition:color .5s ease}
+.stat:hover .num{color:var(--gold)}
+.stat .lbl{font-variant:small-caps;letter-spacing:.2em;font-size:.78rem;color:var(--ink-faint);margin-top:.4rem}
+.progress-wrap{max-width:720px;margin:0 auto;text-align:center}
+.progress-track{
+  height:12px;border:1px solid var(--rule);background:var(--cream-card);
+  position:relative;margin:1rem 0 .6rem;
+}
+.progress-fill{
+  position:absolute;inset:2px auto 2px 2px;width:0;
+  background:repeating-linear-gradient(45deg,var(--sage),var(--sage) 6px,var(--sage-soft) 6px,var(--sage-soft) 12px);
+  transition:width 2.6s cubic-bezier(.22,.8,.3,1);
+}
+.progress-lbls{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.2rem 1.4rem;font-variant:small-caps;letter-spacing:.16em;font-size:.78rem;color:var(--ink-faint)}
+@media(max-width:640px){.progress-lbls{justify-content:center;text-align:center}}
+.digit-copy{max-width:680px;margin:2.4rem auto 0;text-align:center;font-style:italic;color:var(--ink-soft)}
+
+/* ---------- reading room ---------- */
+.room-grid{display:grid;grid-template-columns:1fr 1fr;gap:3.4rem;align-items:start}
+.hours-card{border:1px solid var(--rule);background:var(--cream-card);padding:2.2rem;box-shadow:0 18px 40px -24px var(--shadow)}
+.hours-card h3{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:1.4rem}
+.hours-table{width:100%;border-collapse:collapse;font-size:1rem}
+.hours-table td{padding:.6rem .2rem;border-bottom:1px dotted var(--rule)}
+.hours-table tr:last-child td{border-bottom:none}
+.hours-table td:first-child{font-variant:small-caps;letter-spacing:.16em;color:var(--ink-soft)}
+.hours-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.hours-table tr{transition:background .4s ease}
+.hours-table tr:hover{background:rgba(92,107,82,.07)}
+.hours-table .closed td:last-child{color:var(--gold);font-variant:small-caps;letter-spacing:.14em}
+.hours-note{margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--rule);font-size:.9rem;font-style:italic;color:var(--ink-faint);text-align:center}
+.rules-list{list-style:none;counter-reset:rule}
+.rules-list li{
+  counter-increment:rule;position:relative;padding:0 0 1.15rem 3.2rem;color:var(--ink-soft);
+}
+.rules-list li::before{
+  content:counter(rule,upper-roman) ".";
+  position:absolute;left:0;top:.05rem;
+  font-family:'Playfair Display',serif;font-weight:700;color:var(--gold);
+  font-size:1.05rem;letter-spacing:.05em;
+  transition:color .4s ease,transform .4s ease;
+}
+.rules-list li:hover::before{color:var(--sage);transform:scale(1.18)}
+.room-copy>p{margin-bottom:1.6rem;color:var(--ink-soft)}
+
+/* ---------- footer ---------- */
+footer{
+  border-top:1px solid var(--rule);padding:4.5rem 1.5rem 3.5rem;text-align:center;
+}
+.colophon{font-variant:small-caps;letter-spacing:.3em;font-size:.84rem;color:var(--ink-faint);line-height:2.2}
+.seal-btn{
+  display:inline-grid;place-items:center;width:64px;height:64px;margin:1.6rem auto;
+  border:none;background:none;cursor:pointer;color:var(--gold);
+  transition:transform .6s cubic-bezier(.34,1.56,.5,1);
+}
+.seal-btn:hover{transform:rotate(12deg) scale(1.08)}
+.seal-btn svg{width:100%;height:100%}
+.credit{margin-top:1.8rem;font-size:.86rem;color:var(--ink-faint)}
+.credit a{color:var(--gold);border-bottom:1px dotted var(--gold-soft)}
+.lamp-note{
+  font-style:italic;font-size:.82rem;color:var(--ink-faint);opacity:.7;margin-top:.4rem;
+}
+
+/* ---------- candlelight (easter egg) ---------- */
+body.candlelight{
+  --cream:#221c11;--cream-deep:#1b1509;--cream-card:#2a2314;
+  --ink:#e8dcbb;--ink-soft:#cfc19a;--ink-faint:#9c8f6b;
+  --sage:#93a583;--sage-soft:#7a8b6f;
+  --gold:#d4af5e;--gold-soft:#b08d3e;
+  --rule:rgba(232,220,187,.26);--shadow:rgba(0,0,0,.5);
+}
+body.candlelight::after{
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.55) 100%);
+}
+body.candlelight .hero-plate img{opacity:.12;filter:sepia(.4) brightness(.85)}
+body.candlelight .hero-plate::after{background:radial-gradient(ellipse at center,rgba(34,28,17,0) 30%,var(--cream) 92%)}
+body.candlelight .plate-img img,body.candlelight .exam-stage img{filter:sepia(.28) brightness(.9)}
+body.candlelight .plate-card::before{background:var(--cream)}
+.candle-toast{
+  position:fixed;bottom:2rem;left:50%;transform:translate(-50%,20px);
+  background:var(--cream-card);border:1px solid var(--gold-soft);color:var(--gold);
+  padding:.7rem 1.6rem;font-variant:small-caps;letter-spacing:.22em;font-size:.8rem;
+  opacity:0;pointer-events:none;transition:opacity .6s ease,transform .6s ease;z-index:9;
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+}
+.candle-toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- responsive ---------- */
+@media(max-width:960px){
+  .plates{grid-template-columns:1fr 1fr;gap:2.2rem}
+  .plates .plate-card:last-child{grid-column:1/-1;max-width:440px;margin:0 auto;width:100%}
+  .exam-grid{grid-template-columns:1fr;gap:2.6rem}
+  .digit-grid{grid-template-columns:1fr 1fr}
+  .chronicle{grid-template-columns:1fr 1fr}
+  .chron-item:nth-child(2n){border-right:none}
+  .chron-item:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+  .room-grid{grid-template-columns:1fr;gap:2.6rem}
+}
+@media(max-width:640px){
+  body{font-size:17.5px}
+  section{padding:4.5rem 1.15rem}
+  .plates{grid-template-columns:1fr;gap:2.4rem}
+  .plates .plate-card:last-child{max-width:none}
+  .chronicle{grid-template-columns:1fr}
+  .chron-item{border-right:none;border-bottom:1px solid var(--rule)}
+  .chron-item:last-child{border-bottom:none}
+  .digit-grid{grid-template-columns:1fr 1fr}
+  .hero-meta{gap:1.1rem 1.8rem}
+  .page-frame{inset:8px}
+  .loupe{width:130px;height:130px}
+}
+
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  .hero-plate img{animation:none}
+  .reveal{opacity:1;transform:none}
+  .est-line,.masthead h1,.masthead .sub,.masthead .flourish,.hero-meta,.scroll-hint{opacity:1;animation:none}
+  .flourish-draw path{stroke-dashoffset:0;animation:none}
+  .plate-card:hover .plate-img img{transform:scale(1.06)}
+}
+</style>
+</head>
+<body>
+
+<div class="page-frame" aria-hidden="true">
+  <span class="frame-corner fc-tl"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 25 V8 Q1 1 8 1 H25"/><path d="M5 25 V10 Q5 5 10 5 H25" opacity=".5"/></svg></span>
+  <span class="frame-corner fc-tr"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 25 V8 Q1 1 8 1 H25"/><path d="M5 25 V10 Q5 5 10 5 H25" opacity=".5"/></svg></span>
+  <span class="frame-corner fc-br"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 25 V8 Q1 1 8 1 H25"/><path d="M5 25 V10 Q5 5 10 5 H25" opacity=".5"/></svg></span>
+  <span class="frame-corner fc-bl"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 25 V8 Q1 1 8 1 H25"/><path d="M5 25 V10 Q5 5 10 5 H25" opacity=".5"/></svg></span>
+</div>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="masthead">
+  <div class="hero-plate" aria-hidden="true">
+    <img src="/assets/herbarium-1.jpg" alt="">
+  </div>
+  <p class="est-line">The Aldersgate &middot; Founded MDCCCXLVII</p>
+  <h1>Herbarium</h1>
+  <div class="flourish">
+    <svg class="flourish-draw" width="120" height="26" viewBox="0 0 120 26" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+      <path d="M4 13 C 22 13 26 4 40 4 C 52 4 52 22 60 22 C 68 22 68 4 80 4 C 94 4 98 13 116 13 M54 13 h12"/>
+    </svg>
+  </div>
+  <p class="sub">Two hundred and fourteen thousand pressed specimens, kept in ink, linen and gum arabic - a working botanical archive unchanged in spirit since 1847.</p>
+  <div class="hero-meta">
+    <span><b>214,382</b> specimens</span>
+    <span><b>1,908</b> engraved plates</span>
+    <span><b>63</b> collectors</span>
+    <span><b>179</b> years of accession</span>
+  </div>
+  <p class="scroll-hint">descend into the folios</p>
+</header>
+
+<!-- ============ HISTORY ============ -->
+<section id="history">
+  <div class="sprig sprig-hist" aria-hidden="true">
+    <svg viewBox="0 0 100 140" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+      <path d="M50 135 C50 100 48 60 50 8"/>
+      <path d="M50 110 C38 104 28 106 18 116 M50 110 C62 104 72 106 82 116"/>
+      <path d="M50 88 C36 80 27 81 16 90 M50 88 C64 80 73 81 84 90"/>
+      <path d="M50 66 C38 58 30 58 20 64 M50 66 C62 58 70 58 80 64"/>
+      <path d="M50 46 C40 38 34 37 26 41 M50 46 C60 38 66 37 74 41"/>
+      <path d="M50 28 C43 21 39 20 33 23 M50 28 C57 21 61 20 67 23"/>
+      <circle cx="50" cy="8" r="3.5" fill="currentColor" stroke="none"/>
+    </svg>
+  </div>
+  <div class="narrow history">
+    <div class="section-head reveal">
+      <p class="roman">&sect; I</p>
+      <h2>A Short History of the Archive</h2>
+    </div>
+    <p class="dropcap reveal">On the fourth of March, 1847, the surgeon and amateur botanist <em>Dr. Edmund Wray Alderton</em> deposited his private collection of 3,120 pressed plants with the Parish Scientific Society of Aldersgate, on the sole condition that "any person of honest curiosity, of whatever station, may consult them freely." That single cabinet of Norfolk sedges and Alpine gentians became the seed of the present archive. Within a decade the Society had acquired the adjoining bookbindery on Fetter Court, hired its first Keeper of Plates, and begun the practice - continued without interruption to this day - of recording every accession in iron-gall ink, in a ledger bound in green morocco.</p>
+    <p class="reveal">The great expansion came between 1862 and 1889, when the Herbarium's corresponding collectors - ships' surgeons, missionaries, governesses, and one persistent lighthouse keeper - posted specimens from four continents. The celebrated engraver <em>Josiah Sturm</em> was retained in 1866 to cut copper plates of the most significant accessions; his hand-tinted folios, printed on laid paper from the Marchmont mill, remain the visual signature of the collection.</p>
+    <div class="marginal reveal">
+      &ldquo;A flower pressed is a sentence spoken twice: once by the earth, and once, more quietly, by the person who knelt to save it.&rdquo;
+      <cite>- Dr. E. W. Alderton, Preface to the First Catalogue, 1851</cite>
+    </div>
+    <p class="reveal">The archive survived the fire of 1903 (the ledgers were carried out under the Keeper's coat), two wars, and a 1968 proposal to "modernise" the reading room, which the Trustees rejected in a single sentence. Today the Aldersgate Herbarium holds 214,382 specimens, 1,908 engraved plates, and the complete field notebooks of 63 collectors. It remains, as its founder intended, open to any person of honest curiosity.</p>
+    <div class="chronicle">
+      <div class="chron-item reveal"><span class="yr">1847</span><p>Dr. Alderton deposits 3,120 specimens with the Parish Scientific Society.</p></div>
+      <div class="chron-item reveal d1"><span class="yr">1866</span><p>Josiah Sturm engaged as engraver; the copper-plate folios begin.</p></div>
+      <div class="chron-item reveal d2"><span class="yr">1903</span><p>Fire in the bindery. Every ledger saved; forty plates lost, later re-cut.</p></div>
+      <div class="chron-item reveal d3"><span class="yr">2024</span><p>The Lucerna Project begins digitising the folios at 1,200 dots per inch.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPECIMENS ============ -->
+<section id="specimens">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="roman">&sect; II</p>
+      <h2>Featured Plates of the Quarter</h2>
+      <div class="flourish"><svg width="60" height="14" viewBox="0 0 60 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M2 7 h20 M38 7 h20 M30 1 l4 6 -4 6 -4 -6 z"/></svg></div>
+      <p style="max-width:36em;margin:0 auto;font-style:italic;color:var(--ink-soft)">Selected by the Keeper of Plates from the Sturm folios. Rest upon a plate and the glass will drift closer, as if held to a window.</p>
+    </div>
+    <div class="plates">
+
+      <article class="plate-card reveal" data-plate="Plate 47 · Folio IX">
+        <div class="plate-img" style="--kx:50%;--ky:28%"><img src="/assets/herbarium-1.jpg" alt="Hand-tinted copper engraving of Digitalis purpurea, the common foxglove, with dissections of the corolla and seed capsule" loading="lazy"><span class="mounts"></span></div>
+        <h3 class="plate-name">Digitalis purpurea L.</h3>
+        <p class="plate-common">Common Foxglove</p>
+        <table class="meta-table">
+          <tr><td>Collector</td><td>Miss Harriet Fenwick</td></tr>
+          <tr><td>Locality</td><td>Hedgebank, Lynmouth, N. Devon</td></tr>
+          <tr><td>Date</td><td>19 June 1871</td></tr>
+          <tr><td>Engraver</td><td>J. Sturm, del. &middot; W. Fitch, sc.</td></tr>
+          <tr><td>Accession</td><td>ALD-1871-0447</td></tr>
+        </table>
+        <p class="plate-note">Fenwick's field label warns, in a fine copperplate hand: "handsome, and not to be trusted." The dissections at figures a&ndash;h were drawn from a second gathering, the first having been eaten by her donkey.</p>
+      </article>
+
+      <article class="plate-card reveal d1" data-plate="Tab. XLVII · Folio III">
+        <div class="plate-img" style="--kx:46%;--ky:55%"><img src="/assets/herbarium-2.jpg" alt="Copper engraving of Asplenium trichomanes, the maidenhair spleenwort fern, with root-stock and enlarged sori" loading="lazy"><span class="mounts"></span></div>
+        <h3 class="plate-name">Asplenium trichomanes L.</h3>
+        <p class="plate-common">Maidenhair Spleenwort</p>
+        <table class="meta-table">
+          <tr><td>Collector</td><td>Rev. Thos. Marchbank</td></tr>
+          <tr><td>Locality</td><td>Limestone wall, Kirkby Lonsdale</td></tr>
+          <tr><td>Date</td><td>2 May 1836</td></tr>
+          <tr><td>Engraver</td><td>J. Sowerby, del. et sc.</td></tr>
+          <tr><td>Accession</td><td>ALD-1849-0112</td></tr>
+        </table>
+        <p class="plate-note">One of the founding Alderton deposits, acquired from the Sowerby workshop with its German captions intact. The enlarged sori at figure B were engraved under a simple microscope of the Reverend's own grinding.</p>
+      </article>
+
+      <article class="plate-card reveal d2" data-plate="Pl. 267 · Folio XXI">
+        <div class="plate-img" style="--kx:52%;--ky:24%"><img src="/assets/herbarium-3.jpg" alt="Hand-tinted engraving of Papaver somniferum, the opium poppy, with capsule sections, petal and seed studies" loading="lazy"><span class="mounts"></span></div>
+        <h3 class="plate-name">Papaver somniferum L.</h3>
+        <p class="plate-common">Opium Poppy</p>
+        <table class="meta-table">
+          <tr><td>Collector</td><td>Capt. A. G. Villiers, R.N.</td></tr>
+          <tr><td>Locality</td><td>Physic garden, Smyrna</td></tr>
+          <tr><td>Date</td><td>14 Aug. 1858</td></tr>
+          <tr><td>Engraver</td><td>Turpin pinx. &middot; Dubois sculp.</td></tr>
+          <tr><td>Accession</td><td>ALD-1858-0903</td></tr>
+        </table>
+        <p class="plate-note">Kept until 1921 in the locked "Physic Press" with the hellebores and the nightshades. The capsule sections at figures 2&ndash;4 were tinted by Sturm's daughter Clara, whose initials hide in the seed cluster.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXAMINATION TABLE ============ -->
+<section class="exam" id="examination">
+  <div class="container exam-grid">
+    <div class="exam-figure reveal">
+      <div class="exam-stage" id="stage">
+        <img src="/assets/herbarium-2.jpg" alt="Engraved plate of Asplenium trichomanes laid on the examination table for close study" id="stageImg">
+        <div class="loupe" id="loupe" aria-hidden="true"></div>
+      </div>
+      <p class="exam-caption">Tab. XLVII under the reading-glass &middot; brass loupe, c. 1874</p>
+    </div>
+    <div class="exam-copy reveal d1">
+      <p class="overline-label">&sect; III &middot; the examination table</p>
+      <h2>Take Up the Reading-Glass</h2>
+      <p>Every visitor to the north window is issued a brass loupe, a pair of cotton gloves, and the Keeper's standing advice: <em>look longer than feels reasonable.</em> Under the glass, Sturm's engraving resolves into thousands of individual burin strokes - the sori of the spleenwort become stippled constellations, and the root-stock a tangle of single confident lines.</p>
+      <p>The loupe on this page behaves as the brass one does. Pass your hand across the plate and the glass will follow, rendering the folio at four times its printed size.</p>
+      <span class="hint">move across the plate to magnify</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIGITIZATION ============ -->
+<section id="lucerna">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="roman">&sect; IV</p>
+      <h2>The Lucerna Project</h2>
+      <div class="flourish"><svg width="60" height="14" viewBox="0 0 60 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M2 7 h20 M38 7 h20 M30 1 l4 6 -4 6 -4 -6 z"/></svg></div>
+      <p style="max-width:38em;margin:0 auto;font-style:italic;color:var(--ink-soft)">Begun in January 2024, the Lucerna Project is photographing every plate and ledger at archival resolution, so that the collection may be consulted by candlelight anywhere on earth.</p>
+    </div>
+    <div class="digit-grid reveal">
+      <div class="stat"><div class="num" data-count="118640">0</div><div class="lbl">specimens imaged</div></div>
+      <div class="stat"><div class="num" data-count="1102">0</div><div class="lbl">plates at 1,200 dpi</div></div>
+      <div class="stat"><div class="num" data-count="47">0</div><div class="lbl">ledgers transcribed</div></div>
+      <div class="stat"><div class="num" data-count="9">0</div><div class="lbl">volunteer scholars</div></div>
+    </div>
+    <div class="progress-wrap reveal d1">
+      <p class="overline-label">progress of the survey</p>
+      <div class="progress-track" role="img" aria-label="Digitisation progress: 55 percent complete"><div class="progress-fill" data-target="55.3"></div></div>
+      <div class="progress-lbls"><span>begun jan. 2024</span><span id="pct">55.3% complete</span><span>completion est. 1851&hellip; revised to 2028</span></div>
+    </div>
+    <p class="digit-copy reveal d2">Each folio is raised from its press with linen tape, photographed under raking light to preserve the bite of the plate mark, and returned within the hour. Nothing leaves the building; the light comes to the paper, never the reverse. Transcription of the iron-gall ledgers proceeds at the pace of handwriting itself - roughly one collector's lifetime per volunteer per year.</p>
+  </div>
+</section>
+
+<!-- ============ READING ROOM ============ -->
+<section id="reading-room">
+  <div class="sprig sprig-room" aria-hidden="true">
+    <svg viewBox="0 0 100 140" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+      <path d="M50 135 C50 100 48 60 50 8"/>
+      <path d="M50 110 C38 104 28 106 18 116 M50 110 C62 104 72 106 82 116"/>
+      <path d="M50 88 C36 80 27 81 16 90 M50 88 C64 80 73 81 84 90"/>
+      <path d="M50 66 C38 58 30 58 20 64 M50 66 C62 58 70 58 80 64"/>
+      <path d="M50 46 C40 38 34 37 26 41 M50 46 C60 38 66 37 74 41"/>
+      <path d="M50 28 C43 21 39 20 33 23 M50 28 C57 21 61 20 67 23"/>
+      <circle cx="50" cy="8" r="3.5" fill="currentColor" stroke="none"/>
+    </svg>
+  </div>
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="roman">&sect; V</p>
+      <h2>The Reading Room</h2>
+    </div>
+    <div class="room-grid">
+      <div class="hours-card reveal">
+        <h3>Hours of Admission</h3>
+        <table class="hours-table">
+          <tr><td>Monday</td><td>10 o'clock &ndash; 4 o'clock</td></tr>
+          <tr><td>Tuesday</td><td>10 o'clock &ndash; 4 o'clock</td></tr>
+          <tr><td>Wednesday</td><td>10 o'clock &ndash; 7 o'clock</td></tr>
+          <tr><td>Thursday</td><td>10 o'clock &ndash; 4 o'clock</td></tr>
+          <tr><td>Friday</td><td>10 o'clock &ndash; 4 o'clock</td></tr>
+          <tr><td>Saturday</td><td>10 o'clock &ndash; 1 o'clock</td></tr>
+          <tr class="closed"><td>Sunday</td><td>closed for pressing</td></tr>
+        </table>
+        <p class="hours-note">No. 4 Fetter Court, Aldersgate &middot; Admission free, as the founder required &middot; The Wednesday evening opening is lit, still, by the 1874 gasoliers (now discreetly electrified).</p>
+      </div>
+      <div class="room-copy reveal d1">
+        <p>The reading room seats fourteen, at the same oak tables installed in 1852. Requests are made by paper slip; folios arrive on felt-lined trolleys within the quarter hour. First-time readers are given a short induction by the Keeper, which consists chiefly of being shown how to turn a page from the corner.</p>
+        <p class="overline-label" style="margin-bottom:.9rem">rules of the room, unamended since 1852</p>
+        <ol class="rules-list">
+          <li>Cotton gloves shall be worn at all times when handling folios; the Herbarium provides them in three sizes and one colour.</li>
+          <li>Pencil only. The last person to bring ink into the reading room was the Bishop of Ely, in 1888, and he was not readmitted.</li>
+          <li>Specimens shall not be smelled, however great the temptation. The lavender presses are the single recorded exception.</li>
+          <li>Conversation shall be kept to the volume of turning paper.</li>
+          <li>Any reader who discovers an error in the Catalogue earns a cup of the Keeper's tea and a line in the Corrections Ledger.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <p class="colophon">The Aldersgate Herbarium<br>No. 4 Fetter Court &middot; est. 1847 &middot; open to any person of honest curiosity</p>
+  <button class="seal-btn" id="sealBtn" title="Light the reading lamp" aria-label="Toggle candlelight reading mode" aria-pressed="false">
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <circle cx="32" cy="32" r="29" stroke-width="1.2"/>
+      <circle cx="32" cy="32" r="25" stroke-width=".8" opacity=".5"/>
+      <path d="M32 48 C32 38 27 34 22 31 C28 31 30 34 32 38 C34 32 38 27 44 25 C39 31 36 36 33 43 L33 48 Z" fill="currentColor" stroke="none"/>
+      <path d="M32 22 c0 -4 3 -5 3 -8 c2 3 1 5 -1 8 z" fill="currentColor" stroke="none" opacity=".85"/>
+    </svg>
+  </button>
+  <p class="lamp-note">the lamp on the Keeper's desk may be lit, if the evening calls for it</p>
+  <p class="credit">Designed &amp; built by Claude Fable &middot; Part of the <a href="/">Fable 25 showcase</a></p>
+</footer>
+
+<div class="candle-toast" id="toast">the gasoliers are lit &middot; good evening, reader</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- scroll reveals ---- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    },{threshold:.12,rootMargin:"0px 0px -40px 0px"});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* ---- ken-burns focal point follows the cursor on plate cards ---- */
+  document.querySelectorAll(".plate-img").forEach(function(fig){
+    fig.addEventListener("mousemove",function(ev){
+      var r = fig.getBoundingClientRect();
+      fig.style.setProperty("--kx",(((ev.clientX-r.left)/r.width)*100).toFixed(1)+"%");
+      fig.style.setProperty("--ky",(((ev.clientY-r.top)/r.height)*100).toFixed(1)+"%");
+    });
+  });
+
+  /* ---- loupe magnifier ---- */
+  var stage = document.getElementById("stage"),
+      img   = document.getElementById("stageImg"),
+      loupe = document.getElementById("loupe"),
+      ZOOM  = 4;
+  function setLoupeBg(){
+    loupe.style.backgroundImage = "url('"+img.currentSrc+"')";
+  }
+  if(img.complete) setLoupeBg(); else img.addEventListener("load",setLoupeBg);
+  function moveLoupe(x,y){
+    var r = stage.getBoundingClientRect(),
+        px = Math.max(0,Math.min(x-r.left,r.width)),
+        py = Math.max(0,Math.min(y-r.top,r.height));
+    loupe.style.left = px+"px";
+    loupe.style.top  = py+"px";
+    loupe.style.backgroundSize = (r.width*ZOOM)+"px "+(r.height*ZOOM)+"px";
+    loupe.style.backgroundPosition =
+      (-(px*ZOOM - loupe.offsetWidth/2))+"px "+(-(py*ZOOM - loupe.offsetHeight/2))+"px";
+  }
+  stage.addEventListener("mousemove",function(e){ moveLoupe(e.clientX,e.clientY); });
+  stage.addEventListener("touchstart",function(e){
+    stage.classList.add("touched");
+    moveLoupe(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  stage.addEventListener("touchmove",function(e){
+    moveLoupe(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  stage.addEventListener("touchend",function(){ stage.classList.remove("touched"); });
+
+  /* ---- count-up stats + progress bar ---- */
+  function animateCount(el){
+    var target = parseInt(el.getAttribute("data-count"),10);
+    if(reduced){ el.textContent = target.toLocaleString("en-GB"); return; }
+    var t0 = null, DUR = 2200;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var p = Math.min((ts-t0)/DUR,1),
+          eased = 1-Math.pow(1-p,3);
+      el.textContent = Math.round(target*eased).toLocaleString("en-GB");
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var statIo = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      statIo.unobserve(e.target);
+      if(e.target.classList.contains("num")) animateCount(e.target);
+      else e.target.style.width = e.target.getAttribute("data-target")+"%";
+    });
+  },{threshold:.4});
+  document.querySelectorAll(".num[data-count]").forEach(function(el){ statIo.observe(el); });
+  var fill = document.querySelector(".progress-fill");
+  if(fill) statIo.observe(fill);
+
+  /* ---- hero parallax drift ---- */
+  if(!reduced){
+    var heroPlate = document.querySelector(".hero-plate"),
+        ticking = false;
+    window.addEventListener("scroll",function(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var y = window.scrollY;
+        if(y < window.innerHeight*1.2){
+          heroPlate.style.transform = "translateY("+(y*0.22).toFixed(1)+"px)";
+        }
+        ticking = false;
+      });
+    },{passive:true});
+  }
+
+  /* ---- candlelight easter egg ---- */
+  var seal = document.getElementById("sealBtn"),
+      toast = document.getElementById("toast"),
+      toastT;
+  seal.addEventListener("click",function(){
+    var lit = document.body.classList.toggle("candlelight");
+    seal.setAttribute("aria-pressed", lit ? "true" : "false");
+    toast.textContent = lit
+      ? "the gasoliers are lit · good evening, reader"
+      : "the lamp is out · mind the step on your way down";
+    toast.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ toast.classList.remove("show"); },3200);
+  });
+})();
+</script>
+</body>
+</html>

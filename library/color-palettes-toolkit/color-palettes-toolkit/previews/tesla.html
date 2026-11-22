@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tesla - Brand Design Systems Toolkit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%233e6ae1'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#ffffff;color:#171a20;font-family:system-ui, sans-serif;line-height:1.55}
+.disp{font-family:system-ui, sans-serif}
+.shell{max-width:1120px;margin:0 auto;padding:0 26px 70px}
+/* mock navbar */
+.mocknav{display:flex;align-items:center;gap:26px;padding:18px 0;border-bottom:1px solid rgba(0,0,0,.12);margin-bottom:54px}
+.mocknav .mark{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16.5px}
+.mocknav .mark i{width:13px;height:13px;border-radius:50%;background:#3e6ae1;display:inline-block}
+.mocknav .links{display:flex;gap:22px;font-size:13.5px;color:rgba(0,0,0,.56);margin-left:auto}
+.mocknav .cta{background:#3e6ae1;color:#ffffff;border:none;border-radius:4px;padding:9px 18px;font:600 13px system-ui, sans-serif;cursor:pointer}
+/* hero */
+.hero{margin-bottom:44px;max-width:70ch}
+.kick{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#3e6ae1;font-weight:700;margin-bottom:16px}
+h1{font-size:clamp(36px,5.4vw,58px);line-height:1.04;letter-spacing:-.02em;margin-bottom:16px}
+.lead{font-size:16.5px;color:rgba(0,0,0,.56);margin-bottom:26px}
+.btnrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:4px;font:600 14.5px system-ui, sans-serif;border:none;cursor:pointer}
+.btn.pri{background:#3e6ae1;color:#ffffff}
+.btn.sec{background:transparent;color:#171a20;border:1.5px solid rgba(0,0,0,.12)}
+.facts{display:flex;gap:10px;flex-wrap:wrap}
+.fact{font-size:12px;color:rgba(0,0,0,.56);border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:5px 13px}
+.fact b{color:#171a20}
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.cell{background:rgba(0,0,0,.045);border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:26px;grid-column:span 12}
+@media(min-width:860px){.c7{grid-column:span 7}.c5{grid-column:span 5}}
+.cell .lab{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.56);margin-bottom:18px;display:flex;justify-content:space-between}
+.cell .lab em{font-style:normal;color:#3e6ae1;font-weight:700}
+.scale div{line-height:1.22;letter-spacing:-.015em}
+.s1{font-size:40px}.s2{font-size:26px}.s3{font-size:18px;color:rgba(0,0,0,.56)}
+.scale p{font-size:14px;color:rgba(0,0,0,.56);margin-top:14px;max-width:56ch}
+.pal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sw{display:flex;gap:10px;align-items:center;font-size:11px;color:rgba(0,0,0,.56)}
+.sw i{width:40px;height:40px;border-radius:4px;border:1px solid rgba(0,0,0,.12);flex:0 0 auto}
+.sw b{display:block;font-size:11.5px;color:#171a20}
+.sw code{font-size:10px}
+.controls{display:flex;flex-direction:column;gap:14px}
+.controls .line{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.inp{background:#ffffff;border:1.5px solid rgba(0,0,0,.12);border-radius:4px;padding:11px 14px;color:#171a20;font:inherit;font-size:14px;flex:1;min-width:150px}
+.inp:focus{outline:2px solid #3e6ae1;outline-offset:1px}
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tg{font-size:11.5px;font-weight:600;border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:4px 12px;color:rgba(0,0,0,.56)}
+.tg.hot{border-color:#3e6ae1;color:#3e6ae1}
+.toggle{width:44px;height:24px;border-radius:999px;background:#3e6ae1;position:relative;flex:0 0 auto}
+.toggle::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#ffffff}
+.mini{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.mini .txt{flex:1;min-width:200px}
+.mini h3{font-size:19px;margin-bottom:6px;letter-spacing:-.01em}
+.mini p{font-size:13.5px;color:rgba(0,0,0,.56);margin-bottom:14px}
+.metric{display:inline-flex;align-items:baseline;gap:8px;border:1px solid rgba(0,0,0,.12);border-radius:4px;padding:8px 14px}
+.metric b{font-size:22px}
+.metric span{font-size:11px;color:rgba(0,0,0,.56)}
+.bars{display:flex;gap:7px;align-items:flex-end;height:96px;flex:1;min-width:180px}
+.bars i{flex:1;border-radius:5px 5px 0 0;background:#3e6ae1}
+.bars i:nth-child(2n){background:#393c41;opacity:.85}
+/* mock footer */
+.mockfoot{margin-top:16px;border-top:1px solid rgba(0,0,0,.12);padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:12px;color:rgba(0,0,0,.56)}
+.mockfoot b{color:#171a20}
+</style></head><body><div class="shell">
+<div class="mocknav"><span class="mark"><i></i>Tesla</span><span class="links"><span>Overview</span><span>Tokens</span><span>Components</span><span>Usage</span></span><button class="cta">Get started</button></div>
+<div class="hero">
+  <p class="kick">Auto & Aero</p>
+  <h1 class="disp">Your idea, wearing Tesla.</h1>
+  <p class="lead">Design System Inspired by Tesla</p>
+  <div class="btnrow"><button class="btn pri">Primary action</button><button class="btn sec">Secondary</button></div>
+  <div class="facts"><span class="fact">Display <b>system-ui</b></span><span class="fact">Radius <b>4px</b></span><span class="fact"><b>8</b> core tokens</span><span class="fact"><b>Light</b> canvas</span></div>
+</div>
+<div class="bento">
+  <div class="cell c7"><div class="lab"><span>Type voice</span><em>01</em></div>
+    <div class="scale disp"><div class="s1">Headlines set the tone.</div><div class="s2">Subheads keep the promise.</div><div class="s3">Interface labels stay quiet.</div></div>
+    <p>Body copy runs in the product face at a comfortable reading size. It holds its own against the canvas without competing with display type.</p></div>
+  <div class="cell c5"><div class="lab"><span>Color tokens</span><em>02</em></div><div class="pal"><div class="sw"><i style="background:#3e6ae1"></i><div><b>tone-1</b><code>#3e6ae1</code></div></div><div class="sw"><i style="background:#ffffff"></i><div><b>tone-2</b><code>#ffffff</code></div></div><div class="sw"><i style="background:#f4f4f4"></i><div><b>tone-3</b><code>#f4f4f4</code></div></div><div class="sw"><i style="background:#171a20"></i><div><b>tone-4</b><code>#171a20</code></div></div><div class="sw"><i style="background:#393c41"></i><div><b>tone-5</b><code>#393c41</code></div></div><div class="sw"><i style="background:#5c5e62"></i><div><b>tone-6</b><code>#5c5e62</code></div></div><div class="sw"><i style="background:#8e8e8e"></i><div><b>tone-7</b><code>#8e8e8e</code></div></div><div class="sw"><i style="background:#eeeeee"></i><div><b>tone-8</b><code>#eeeeee</code></div></div></div></div>
+  <div class="cell c5"><div class="lab"><span>Controls</span><em>03</em></div>
+    <div class="controls">
+      <div class="line"><input class="inp" placeholder="you@company.com"><span class="toggle"></span></div>
+      <div class="line"><button class="btn pri" style="padding:11px 20px;font-size:13.5px">Confirm</button><button class="btn sec" style="padding:11px 20px;font-size:13.5px">Cancel</button></div>
+      <div class="tags"><span class="tg hot">Active</span><span class="tg">Default</span><span class="tg">Archived</span><span class="tg">Draft</span></div>
+    </div></div>
+  <div class="cell c7"><div class="lab"><span>In practice</span><em>04</em></div>
+    <div class="mini"><div class="txt"><h3 class="disp">A card doing real work</h3><p>Surface, border, radius, and data visuals pulled straight from the token file. This is how a dashboard module would land.</p><span class="metric"><b>+38%</b><span>this quarter</span></span></div>
+    <div class="bars"><i style="height:30%"></i><i style="height:52%"></i><i style="height:44%"></i><i style="height:78%"></i><i style="height:60%"></i><i style="height:92%"></i><i style="height:70%"></i></div></div></div>
+  <div class="cell"><div class="mockfoot"><span><b>Tesla</b> · built from systems/tesla/DESIGN.md</span><span>Brand Design Systems Toolkit</span></div></div>
+</div>
+</div></body></html>

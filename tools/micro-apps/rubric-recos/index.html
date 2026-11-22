@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUBRIC Recos</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+<style>
+/* RUBRIC Recos: dark by default with a light toggle, hard-shadow cards. Layout: a sticky header on top, the ARMS
+   column on the left (each pillar in its own colour), the recos on the right as cards or a list. */
+/* Outfit (SIL Open Font License, assets/fonts/OFL-outfit.txt), served from this folder: one variable file covers weights 100 to 900 */
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:100 900; font-display:swap; src:url(/assets/fonts/outfit-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:100 900; font-display:swap; src:url(/assets/fonts/outfit-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+html { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+:root, html[data-theme="dark"] {
+  --bg:#131311; --card:#24221c; --text:#e8e2d2; --muted:#8d8775; --accent:#ff6b1a; --line:#3a372f; --shadow:#000; --well:#1a1915; --frame:transparent;
+}
+html[data-theme="light"] {
+  --bg:#f2efe8; --card:#faf8f2; --text:#1c1a16; --muted:#6f6a5c; --line:#d8d2c4; --shadow:rgba(28,26,22,.9); --well:#ebe6da; --frame:#1c1a16;
+}
+/* ARMS colours: Apps blue, Routines amber, Memory purple, Skills orange. Change them here (CUSTOMIZE.md). */
+:root, html[data-theme="dark"] { --green:#5fbf6e; }
+html[data-theme="light"] { --green:#3f9a5b; }
+:root { --cA:#3f8fd4; --cR:#d99a1f; --cM:#9a66e0; --cS:#ff6b1a; --rail-w:236px; --hdr-h:68px;
+  --cur-hex: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 2 L19 6.5 L19 15.5 L11 20 L3 15.5 L3 6.5 Z' fill='none' stroke='%23ff6b1a' stroke-width='2'/%3E%3C/svg%3E") 11 11;
+  --cur-hex-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 2 L19 6.5 L19 15.5 L11 20 L3 15.5 L3 6.5 Z' fill='%23ff6b1a' stroke='%23ff6b1a' stroke-width='2'/%3E%3C/svg%3E") 11 11;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:400 15px/1.5 Outfit, system-ui, sans-serif; cursor:var(--cur-hex), auto; transition:background .25s, color .25s; }
+a, button, .chip, .ritem, .rkids li { cursor:var(--cur-hex-fill), pointer; }
+input { cursor:text; }
+::selection { background:#ff6b1a; color:#fff; }
+
+/* header: the ARMS button owns the first slot, so nothing ever sits on top of the title */
+header.top { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--bg); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.hd-left { display:flex; align-items:center; gap:10px; }
+#homeSlot:empty { display:none; }
+/* wordmark: one line. The RUBRIC cube hexagon, RUBRIC heavy, the app name thin and muted, both caps and spaced 4px. */
+.brand { display:flex; align-items:center; gap:14px; white-space:nowrap; margin:0; line-height:1; }
+.brand svg { width:44px; height:44px; flex:none; }
+.brand .b-rubric { font-weight:900; font-size:30px; letter-spacing:4px; }
+.brand .b-product { font-weight:200; font-size:30px; letter-spacing:4px; color:var(--muted); }
+
+/* your agent, top right: a pixel sprite that hops on the spot, in orange */
+.agents { display:flex; align-items:flex-end; gap:16px; justify-self:end; }
+.agents svg { width:40px; height:45px; overflow:visible; display:block; }
+.agents .ink { fill:var(--text); }
+.agents .lead { fill:#ff6b1a; }
+.agents .agsh { fill:var(--text); }
+@keyframes agHop { 0%,100% { transform:translateY(0); } 15% { transform:translateY(-0.6px); } 30% { transform:translateY(0); } }
+@keyframes agSh { 0%,100% { opacity:.12; transform:scaleX(1); } 15% { opacity:.06; transform:scaleX(.7); } 30% { opacity:.12; transform:scaleX(1); } }
+.aghop { animation:agHop 1.2s ease-in-out infinite; }
+.agsh { animation:agSh 1.2s ease-in-out infinite; transform-origin:4px 8.5px; }
+.top-actions { margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+#q { width:230px; font:400 14px Outfit, sans-serif; color:var(--text); background:var(--card); border:2px solid var(--frame); border-radius:8px; padding:8px 12px; outline:none;
+  box-shadow:4px 4px 0 rgba(255,107,26,0); transition:box-shadow .3s; }
+#q:focus { box-shadow:4px 4px 0 rgba(255,107,26,1); }
+html[data-theme="light"] #q:focus { border-color:var(--accent); }
+.btn { font:600 14px Outfit, sans-serif; padding:8px 12px; border-radius:8px; border:2px solid var(--frame); background:var(--card); color:var(--text);
+  transition:transform .15s, box-shadow .15s; box-shadow:0 0 0 transparent; }
+.btn:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--shadow); }
+.btn:active { transform:translate(1px,1px); box-shadow:0 0 0 transparent; transition-duration:.06s; }
+#themeToggle { width:40px; padding:8px 0; font-size:16px; }
+#railBtn { width:40px; height:38px; padding:0; display:grid; place-items:center; }
+#railBtn svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+html.rail-on #railBtn { color:var(--accent); }
+.seg { display:inline-flex; background:var(--card); border:2px solid var(--frame); border-radius:8px; padding:3px; gap:2px; }
+.seg button { font:600 13px Outfit, sans-serif; border:0; background:transparent; color:var(--muted); border-radius:6px; padding:5px 10px; display:inline-flex; align-items:center; gap:6px; }
+.seg button svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+.seg button.on { background:var(--text); color:var(--bg); }
+
+/* the ARMS column */
+.layout { display:grid; grid-template-columns:auto minmax(0,1fr); }
+.rail { grid-column:1; display:none; width:var(--rail-w); position:sticky; top:var(--hdr-h); align-self:start; height:calc(100vh - var(--hdr-h)); overflow-y:auto;
+  border-right:1px solid var(--line); padding:20px 12px 40px; scrollbar-width:thin; scrollbar-color:var(--line) transparent; background:var(--bg); }
+html.rail-on .rail { display:block; }
+.layout > main { grid-column:2; }
+.rlab { font:600 11px Outfit, sans-serif; letter-spacing:2.5px; color:var(--muted); margin:18px 8px 8px; }
+.ritem { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px; padding:8px 8px; border-radius:8px; border:1.5px solid transparent;
+  color:var(--text); text-decoration:none; position:relative; transition:background .15s; }
+.ritem:hover { background:var(--well); }
+.ritem.on { background:var(--well); border-color:var(--c); }
+.ric { width:34px; height:34px; border-radius:8px; display:grid; place-items:center; color:var(--c); background:color-mix(in srgb, var(--c) 16%, transparent); }
+.ric .picon { width:20px; height:20px; }
+.rname { font-weight:500; font-size:16px; letter-spacing:-.2px; }
+.rcount { min-width:24px; height:22px; padding:0 7px; border-radius:11px; background:var(--c); color:#fff; font:600 12px/22px Outfit, sans-serif; text-align:center; }
+.ritem.prio .rcount { color:var(--bg); }
+.rkids { list-style:none; margin:4px 0 10px 25px; padding:0 0 0 14px; border-left:2px solid var(--c); }
+.rkids li { padding:5px 8px; border-radius:6px; color:var(--muted); font-size:13px; line-height:1.3; }
+.rkids li:hover { color:var(--text); background:var(--well); }
+.rkids li.skipme { display:none; }
+
+main { max-width:1240px; width:100%; margin:0 auto; padding:28px 28px 80px; }
+section { margin:0 0 56px; scroll-margin-top:calc(var(--hdr-h) + 16px); }
+h1 { font-weight:500; font-size:44px; letter-spacing:-1.6px; line-height:1.05; margin:0 0 10px; }
+h2 { font-weight:500; font-size:30px; letter-spacing:-1px; margin:0 0 20px; display:flex; align-items:center; gap:12px; }
+h2 .gic { color:var(--c); display:flex; }
+h2 .gic .picon { width:26px; height:26px; }
+h2 .gcount { font:600 13px/24px Outfit, sans-serif; min-width:28px; height:24px; padding:0 8px; border-radius:12px; background:var(--c); color:#fff; text-align:center; letter-spacing:0; }
+.sub { color:var(--muted); margin:0 0 22px; max-width:720px; }
+
+/* hero */
+.hero { display:grid; grid-template-columns:1fr 280px; gap:28px; align-items:center; margin-bottom:18px; }
+#priority .gcount { color:var(--bg); }
+.stats { display:flex; flex-wrap:wrap; gap:16px; color:var(--muted); font-size:14px; margin:0 0 20px; }
+.stats b { color:var(--text); font-weight:600; }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:1px; }
+.filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 30px; }
+.filters .lab { color:var(--muted); font-size:13px; margin:0 4px 0 12px; }
+.filters .lab:first-child { margin-left:0; }
+.chip { font:500 13px Outfit, sans-serif; padding:6px 11px; border-radius:8px; background:var(--card); color:var(--text); border:2px solid var(--frame); transition:transform .15s, box-shadow .15s; }
+.chip:hover { transform:translate(-1px,-2px); box-shadow:3px 3px 0 var(--shadow); }
+.chip.on { background:var(--text); color:var(--bg); border-color:var(--text); }
+
+.picon { display:inline-block; width:22px; height:22px; flex:none; }
+.picon svg { width:100%; height:100%; display:block; }
+
+/* reco cards: a dotted cover with a line drawing of THIS reco, a colour edge for its ARMS pillar, then plain words */
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap:28px 24px; }
+.card { position:relative; background:var(--card); border:2px solid var(--frame); border-radius:8px; box-shadow:6px 6px 0 var(--shadow); overflow:hidden;
+  display:flex; flex-direction:column; transition:transform .18s ease, box-shadow .18s ease, opacity .2s; }
+.card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--c); z-index:2; }
+.card:hover { transform:translate(-2px,-4px); box-shadow:9px 9px 0 var(--shadow); }
+.card:hover h3 { color:var(--c); }
+.card.going { opacity:0; transform:scale(.96); }
+.cover { position:relative; aspect-ratio:16/7.6; background-color:var(--well); display:grid; place-items:center; color:var(--text); overflow:hidden;
+  background-image:radial-gradient(var(--line) 1.1px, transparent 1.3px); background-size:14px 14px; background-position:7px 7px; }
+.cover svg { width:88px; height:88px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;
+  filter:drop-shadow(3px 3px 0 var(--shadow)); transition:transform .25s ease; }
+.cover svg .a { stroke:var(--c); }   /* the highlight strokes take the card's ARMS colour, the same as the left column */
+.card:hover .cover svg { transform:rotate(-4deg) scale(1.06); }
+.cover .tl { position:absolute; left:14px; top:10px; display:flex; align-items:center; gap:6px; }
+.cover .tag { font:600 11px/1 Outfit, sans-serif; letter-spacing:1.5px; text-transform:uppercase; color:var(--text);
+  background:var(--card); padding:5px 8px; border-radius:6px; display:flex; align-items:center; gap:6px; }
+.cover .tag i { width:8px; height:8px; border-radius:50%; background:var(--c); }
+.cover .rank { position:absolute; right:10px; top:10px; font:600 13px/1 Outfit, sans-serif; color:var(--bg); background:var(--text); padding:5px 8px; border-radius:6px; }
+.bd { padding:13px 16px 14px 20px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.card h3 { margin:0; font-weight:500; font-size:18px; letter-spacing:-.4px; line-height:1.25; transition:color .15s; }
+.card p { margin:0; font-size:14px; line-height:1.45; color:var(--muted); }
+.card p b { font-weight:600; color:var(--text); }
+.tags { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; }
+.tags .brk { flex-basis:100%; height:0; }
+/* Effort, Priority and Token Savings share one row, so the pills stay tight */
+.lvl { display:inline-flex; align-items:center; gap:4px; font:500 11.5px/1 Outfit, sans-serif; color:var(--muted); background:var(--well); border-radius:6px; padding:5px 6px; white-space:nowrap; }
+.tags { column-gap:5px; }
+.lvl b { color:var(--text); font-weight:600; }
+.bars { display:inline-flex; align-items:flex-end; gap:2px; height:11px; }
+.bars s { display:block; width:3px; border-radius:1px; background:var(--line); }
+.bars s:nth-child(1) { height:5px; } .bars s:nth-child(2) { height:8px; } .bars s:nth-child(3) { height:11px; }
+.bars s.on { background:var(--text); }
+/* Token Savings: green, and green has one meaning on this page (tokens saved once the reco is done). Hover for how. */
+.lvl.sv { background:color-mix(in srgb, var(--green) 14%, var(--well)); color:var(--green); }
+.lvl.sv b { color:var(--green); }
+.lvl.sv .bars s { background:color-mix(in srgb, var(--green) 30%, transparent); }
+.lvl.sv .bars s.on { background:var(--green); }
+/* High priority is an inverted pill, not a colour: the four colours belong to ARMS only (orange = Skills) */
+.lvl.hi { background:var(--text); color:var(--bg); }
+.lvl.hi b { color:var(--bg); }
+.lvl.hi .bars s { background:color-mix(in srgb, var(--bg) 35%, transparent); }
+.lvl.hi .bars s.on { background:var(--bg); }
+.bub { font:500 11.5px/1 ui-monospace, Consolas, monospace; color:var(--text); border:1.5px solid var(--line); border-radius:999px; padding:4px 9px; white-space:nowrap; }
+.card .ft { display:flex; gap:8px; margin-top:auto; padding-top:8px; flex-wrap:wrap; }
+.card .ft .btn { font-size:13px; padding:6px 11px; background:var(--well); }
+.card .ft .btn.in-cart { background:var(--accent); color:#fff; border-color:var(--accent); }
+.card .ft .btn.skip { margin-left:auto; color:var(--muted); }
+.card .ft .btn.skip:hover { color:var(--text); }
+.card.done { opacity:.42; }
+.card.done h3 { text-decoration:line-through; }
+.card.hide { display:none; }
+.empty { color:var(--muted); padding:8px 0; display:none; }
+.flash { animation:flash 1.1s ease; }
+@keyframes flash { 30% { box-shadow:0 0 0 4px var(--accent); } }
+
+/* list view: one row per reco, same buttons, small cover */
+html.view-list .grid { grid-template-columns:1fr; gap:12px; }
+html.view-list .card { flex-direction:row; box-shadow:4px 4px 0 var(--shadow); }
+html.view-list .card:hover { transform:translate(-1px,-2px); box-shadow:6px 6px 0 var(--shadow); }
+html.view-list .cover { aspect-ratio:auto; width:96px; flex:none; background-size:10px 10px; }
+html.view-list .cover svg { width:46px; height:46px; filter:none; }
+html.view-list .cover .tag { display:none; }
+html.view-list .cover .rank { right:auto; left:12px; top:8px; font-size:11px; padding:3px 6px; }
+html.view-list .bd { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:22px; row-gap:3px; padding:12px 16px 12px 18px; }
+html.view-list .bd > * { grid-column:1; }
+html.view-list .card h3 { font-size:16.5px; }
+html.view-list .card p { font-size:13.5px; }
+html.view-list .tags .brk { display:none; }
+html.view-list .card .ft { grid-column:2; grid-row:1 / span 5; align-self:center; margin:0; padding:0; flex-wrap:nowrap; }
+html.view-list .card .ft .btn.skip { margin-left:0; }
+
+footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); padding-top:16px; }
+
+/* no recos yet: one card that says what to do */
+.nodata { display:none; max-width:620px; margin:10px 0 48px; padding:26px 28px; background:var(--card); border:2px solid var(--frame); border-radius:8px; box-shadow:6px 6px 0 var(--shadow); }
+.nodata h2 { font-size:26px; margin:0 0 8px; }
+.nodata p { margin:0 0 8px; color:var(--muted); }
+.nodata code { font:600 14px ui-monospace, Consolas, monospace; color:var(--accent); }
+html.no-recos .nodata { display:block; }
+html.no-recos #priority, html.no-recos .filters, html.no-recos #empty, html.no-recos .stats { display:none !important; }
+
+/* toast with an Undo */
+#toast { position:fixed; left:50%; bottom:26px; transform:translate(-50%, 20px); z-index:9500; display:flex; align-items:center; gap:14px; background:var(--card); color:var(--text);
+  border:2px solid var(--accent); border-radius:10px; padding:10px 12px 10px 16px; font:500 14px Outfit, sans-serif; box-shadow:5px 5px 0 var(--shadow);
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; max-width:calc(100vw - 32px); }
+#toast.show { opacity:1; transform:translate(-50%, 0); pointer-events:auto; }
+#toast button { font:600 13px Outfit, sans-serif; background:var(--accent); color:#fff; border:0; border-radius:6px; padding:6px 11px; }
+#toast button[hidden] { display:none; }
+
+@media (max-width:1100px) { .hero { grid-template-columns:1fr; } .agents { justify-self:start; } }
+/* narrow: the ARMS column slides over the page under the header, never over it */
+@media (max-width:900px) {
+  .layout { display:block; }
+  /* align-self back to normal: Chrome aligns fixed boxes too, and "start" shrank the panel to its rows */
+  .rail { position:fixed; left:0; top:var(--hdr-h); bottom:0; height:auto; align-self:normal; z-index:45; width:min(280px, 86vw); box-shadow:8px 0 0 var(--shadow); }
+}
+@media (max-width:700px) {
+  html.view-list .bd { grid-template-columns:1fr; }
+  html.view-list .card .ft { grid-column:1; grid-row:auto; margin-top:6px; flex-wrap:wrap; }
+  html.view-list .cover { width:64px; }
+  html.view-list .cover .rank { left:8px; top:6px; }
+  html.view-list .cover svg { width:34px; height:34px; }
+}
+@media (max-width:620px) {
+  h1 { font-size:32px; } h2 { font-size:26px; } #q { width:140px; } main { padding:20px 16px 70px; } header.top { padding:10px 16px; gap:10px; }
+  .grid { grid-template-columns:1fr; } .seg button span { display:none; } .brand svg { width:36px; height:36px; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="hd-left">
+    <button class="btn" id="railBtn" title="Show or hide the ARMS column (b)" aria-label="Show or hide the ARMS column" aria-pressed="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="M5.5 8h1.5M5.5 11h1.5M5.5 14h1.5"/></svg>
+    </button>
+    <span id="homeSlot"></span>
+  </div>
+  <div class="top-actions">
+    <input id="q" type="search" placeholder="Search  ( / )" aria-label="Search recos">
+    <div class="seg" role="group" aria-label="View as">
+      <button data-view="cards" title="Cards (v)"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span>Cards</span></button>
+      <button data-view="list" title="List (v)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg><span>List</span></button>
+    </div>
+    <button class="btn" id="themeToggle" aria-label="Toggle dark or light mode">◐</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="rail" id="rail" aria-label="ARMS"><nav id="railList"></nav></aside>
+  <main>
+    <div class="hero">
+      <h1 class="brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#ff6b1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6l18 10v16L24 42 6 32V16Z"/><path d="M24 6v16l18 10" opacity="0.5"/><path d="M24 22L6 32" opacity="0.5"/></svg>
+        <span class="b-rubric">RUBRIC</span><span class="b-product">RECOS</span>
+      </h1>
+      <div class="agents" id="agents" aria-hidden="true"></div>
+    </div>
+    <div class="nodata" id="nodata" role="status">
+      <h2>No recos yet.</h2>
+      <p>Ask your agent to run <code>/recos</code>.</p>
+      <p>It looks at your apps, routines, memory and skills, then writes the changes that would help you most. Reload this page when it is done.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+    <section id="priority" data-sec="priority" style="--c:var(--text)">
+      <h2 id="prioHead"></h2>
+      <div class="grid" id="prio"></div>
+      <p class="empty" id="prioEmpty">No priority recos left.</p>
+    </section>
+
+    <div class="filters" id="filters"></div>
+    <div id="groups"></div>
+    <p class="empty" id="empty">Nothing matches that search.</p>
+
+    <footer id="foot"></footer>
+  </main>
+</div>
+<div id="toast" role="status"><span id="toastMsg"></span><button id="toastBtn" hidden>Undo</button></div>
+
+<!--RECOS_CONFIG-->
+<script src="/recos.js"></script>
+<script src="/features/agent-cart.js"></script>
+<script src="/features/highlight-comment.js"></script>
+<script src="/features/home-link.js"></script>
+<script src="/features/apply-comments.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CFG = window.RECOS_CONFIG || { agenticOs: '', recosFile: 'data/recos.js' };
+  var D = window.RECOS || {};
+  if (!Array.isArray(D.items)) D.items = [];
+  var LET = Object.assign({ A: { name: 'Apps' }, R: { name: 'Routines' }, M: { name: 'Memory' }, S: { name: 'Skills' } }, D.letters || {});
+  var ORDER = ['A', 'R', 'M', 'S'];
+  var LEVEL = { low: 'Low', mid: 'Mid', high: 'High' };
+  var LEVELS = ['low', 'mid', 'high'];
+  var PICONS = {
+    A: ["............",".####..####.",".#..#..#..#.",".#..#..#..#.",".####..####.","............",".####..####.",".#..#..#..#.",".#..#..#..#.",".####..####.","............","............"],
+    R: ["...######...","..#......#..",".#........#.",".#....#...#.","#.....#....#","#.....###..#","#..........#",".#........#.",".#........#.","..#......#..","...######...","............"],
+    M: [".##########.",".#........#.",".#..####..#.",".##########.",".#........#.",".#..####..#.",".##########.",".#........#.",".#..####..#.",".#........#.",".##########.","............"],
+    S: ["##.#######..","##.#.....#..","##.#.###.#..","##.#.....#..","##.#.###.#..","##.#.....#..","##.#.###.#..","##.#.....#..","##.#.....#..","##.#######..","............","............"]
+  };
+  function picon(k) {
+    var r = '';
+    PICONS[k].forEach(function (row, y) { for (var x = 0; x < row.length; x++) if (row[x] === '#') r += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; });
+    return '<span class="picon"><svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges">' + r + '</svg></span>';
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function cvar(k) { return 'var(--c' + k + ')'; }
+  var SVG_TAGS = { path: 1, circle: 1, rect: 1, line: 1, polyline: 1, polygon: 1, ellipse: 1, g: 1 };
+  var SVG_ATTRS = { d: 1, cx: 1, cy: 1, r: 1, rx: 1, ry: 1, x: 1, y: 1, x1: 1, y1: 1, x2: 1, y2: 1, width: 1, height: 1, points: 1, 'class': 1, transform: 1, opacity: 1, 'stroke-width': 1, 'stroke-dasharray': 1 };
+  function cleanSvg(src) {
+    try {
+      var doc = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">' + String(src || '') + '</svg>', 'image/svg+xml');
+      if (doc.getElementsByTagName('parsererror').length) return '';
+      var out = '';
+      (function walk(node) {
+        for (var c = node.firstElementChild; c; c = c.nextElementSibling) {
+          if (!SVG_TAGS[c.localName]) continue;
+          var a = '';
+          for (var i = 0; i < c.attributes.length; i++) { var at = c.attributes[i]; if (SVG_ATTRS[at.name]) a += ' ' + at.name + '="' + esc(at.value) + '"'; }
+          out += '<' + c.localName + a + '>'; walk(c); out += '</' + c.localName + '>';
+        }
+      })(doc.documentElement);
+      return out;
+    } catch (e) { return ''; }
+  }
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var root = document.documentElement;
+
+  // your choices live on the server (data/state.json), so a skip survives a reload and a rewrite of recos.js
+  var state = { skipped: {}, done: {}, comments: [] };
+  // optional token (RUBRIC_TOKEN, README Security model): open the page once as /#token=YOURTOKEN and this browser keeps it
+  (function () {
+    var m = /[#&]token=([^&]+)/.exec(location.hash);
+    if (m) { store.set('rubric-recos-token', decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname + location.search); }
+  })();
+  function api(url, method, data) {
+    var h = { 'Content-Type': 'application/json' }, tok = store.get('rubric-recos-token');
+    if (tok) h['x-rubric-token'] = tok;
+    return fetch(url, { method: method || 'GET', headers: h, body: data ? JSON.stringify(data) : undefined })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  // one id on or off, the same as the server's mark(): field is 'skipped' or 'done'
+  function mark(field, id, on) {
+    return field === 'skipped' ? api('/api/skip', 'POST', { id: id, undo: !on }) : api('/api/done', 'POST', { id: id, on: on });
+  }
+  function live() { return D.items.filter(function (it) { return !state.skipped[it.id]; }); }
+  function prioList(items) { return items.filter(function (it) { return it.pri === 'high'; }).sort(function (a, b) { return (a.rank || 99) - (b.rank || 99); }); }
+
+  // ---------- cards ----------
+  // Priority's icon: the RUBRIC cube hexagon in the text colour (white on dark), drawn like the brand mark
+  var HEX = '<span class="picon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M24 6l18 10v16L24 42 6 32V16Z"/><path d="M24 6v16l18 10" opacity="0.5"/><path d="M24 22L6 32" opacity="0.5"/></svg></span>';
+  function lvl(name, v, cls, tip) {
+    var n = LEVELS.indexOf(v) + 1;
+    return '<span class="lvl' + (cls ? ' ' + cls : '') + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '>' + name + ' <i class="bars" aria-hidden="true"><s' + (n >= 1 ? ' class="on"' : '') + '></s><s' + (n >= 2 ? ' class="on"' : '') + '></s><s' + (n >= 3 ? ' class="on"' : '') + '></s></i><b>' + (LEVEL[v] || '-') + '</b></span>';
+  }
+  function cardHtml(it, opts) {
+    opts = opts || {};
+    var L = LET[it.letter] || { name: it.letter }, touches = (it.touches || []).slice(0, 3);
+    var saves = LEVEL[it.saves] ? it.saves : '';
+    var cart = { id: it.id, title: it.title, lines: { Area: L.name, "What's the benefit": it.benefit, 'What I can do': it.action, Effort: LEVEL[it.effort], Priority: LEVEL[it.pri] } };
+    if (saves) cart.lines['Token savings'] = LEVEL[saves] + '. ' + (it.savesNote || '');
+    if (touches.length) cart.lines.Touches = touches.join(', ');
+    if (it.source) cart.lines.Detail = it.source;
+    var h = '<article class="card' + (state.done[it.id] ? ' done' : '') + '" style="--c:' + cvar(it.letter) + '" data-id="' + esc(it.id) + '" data-letter="' + esc(it.letter) + '"' +
+      ' data-effort="' + esc(it.effort) + '" data-pri="' + esc(it.pri) + '" data-saves="' + saves + '" data-hl-id="' + esc((opts.prio ? 'pri-' : '') + it.id) + '" data-hl-label="' + esc(it.title) + '">';
+    h += '<div class="cover"><span class="tl"><span class="tag"><i></i>' + esc(L.name) + '</span></span>' + (opts.rank ? '<span class="rank">#' + opts.rank + '</span>' : '') +
+      '<svg viewBox="0 0 48 48" aria-hidden="true">' + cleanSvg(it.svg) + '</svg></div>';
+    h += '<div class="bd"><h3>' + esc(it.title) + '</h3>';
+    h += "<p><b>What's the benefit:</b> " + esc(it.benefit) + '</p>';
+    h += '<p><b>What I can do:</b> ' + esc(it.action) + '</p>';
+    h += '<div class="tags">' + lvl('Effort', it.effort) + lvl('Priority', it.pri, it.pri === 'high' ? 'hi' : '') +
+      (saves ? lvl('Token Savings', saves, 'sv', it.savesNote) : '') + (touches.length ? '<span class="brk"></span>' : '') +
+      touches.map(function (t) { return '<span class="bub" title="This reco changes ' + esc(t) + '">' + esc(t) + '</span>'; }).join('') + '</div>';
+    h += '<div class="ft"><button class="btn" data-cart-add data-cart-item=\'' + esc(JSON.stringify(cart)) + '\' data-cart-label-off="Add to cart" data-cart-label-on="In cart">Add to cart</button>' +
+      '<button class="btn" data-done="' + esc(it.id) + '">' + (state.done[it.id] ? 'Undo done' : 'Done') + '</button>' +
+      '<button class="btn skip" data-skip="' + esc(it.id) + '" title="Hide this reco for good">Skip</button></div></div>';
+    return h + '</article>';
+  }
+
+  // ---------- the ARMS column ----------
+  var activeSec = 'priority', lockUntil = 0;
+  function renderRail() {
+    var items = live(), p = prioList(items).length;
+    var h = '<a class="ritem prio' + (activeSec === 'priority' ? ' on' : '') + '" href="#priority" data-go="priority" style="--c:var(--text)"><span class="ric">' + HEX + '</span>' +
+      '<span class="rname">Priority</span><span class="rcount">' + p + '</span></a><div class="rlab">ARMS</div>';
+    ORDER.forEach(function (k) {
+      var list = items.filter(function (it) { return it.letter === k; });
+      h += '<a class="ritem' + (activeSec === k ? ' on' : '') + '" href="#g-' + k + '" data-go="' + k + '" style="--c:' + cvar(k) + '"><span class="ric">' + picon(k) + '</span>' +
+        '<span class="rname">' + esc(LET[k].name) + '</span><span class="rcount">' + list.length + '</span></a>';
+      if (activeSec === k && list.length) h += '<ul class="rkids" style="--c:' + cvar(k) + '">' + list.map(function (it) {
+        var c = document.querySelector('#groups .card[data-id="' + it.id + '"]');
+        return '<li data-kid="' + esc(it.id) + '"' + (c && c.classList.contains('hide') ? ' class="skipme"' : '') + '>' + esc(it.title) + '</li>';
+      }).join('') + '</ul>';
+    });
+    document.getElementById('railList').innerHTML = h;
+  }
+  function hdrH() { return document.getElementById('top').offsetHeight; }
+  function scrollToEl(el, center) {
+    var y = center ? el.getBoundingClientRect().top + window.scrollY - (window.innerHeight - el.offsetHeight) / 2
+                   : el.getBoundingClientRect().top + window.scrollY - hdrH() - 16;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  }
+  function narrow() { return window.matchMedia('(max-width:900px)').matches; }
+  function setRail(on, quiet) {
+    root.classList.toggle('rail-on', !!on);
+    document.getElementById('railBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (!quiet && !narrow()) store.set('rubric-recos-rail', on ? '1' : '0');
+  }
+  document.getElementById('railBtn').addEventListener('click', function () { setRail(!root.classList.contains('rail-on')); this.blur(); });
+  document.getElementById('railList').addEventListener('click', function (e) {
+    var kid = e.target.closest('[data-kid]');
+    if (kid) {
+      var c = document.querySelector('#groups .card[data-id="' + kid.dataset.kid + '"]');
+      if (c) { scrollToEl(c, true); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
+      if (narrow()) setRail(false, true);
+      return;
+    }
+    var a = e.target.closest('[data-go]'); if (!a) return;
+    e.preventDefault();
+    var k = a.dataset.go, el = document.getElementById(k === 'priority' ? 'priority' : 'g-' + k);
+    if (el && el.style.display === 'none') { resetFilters(); }
+    activeSec = k; lockUntil = Date.now() + 900; renderRail();
+    if (el) scrollToEl(el);
+    if (narrow()) setRail(false, true);
+  });
+  function track() {
+    if (Date.now() < lockUntil) return;
+    var line = hdrH() + 80, cur = 'priority', secs = document.querySelectorAll('[data-sec]');
+    secs.forEach(function (s) { if (s.style.display !== 'none' && s.getBoundingClientRect().top <= line) cur = s.dataset.sec; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+      var shown = Array.prototype.filter.call(secs, function (s) { return s.style.display !== 'none'; });
+      if (shown.length) cur = shown[shown.length - 1].dataset.sec;
+    }
+    if (cur !== activeSec) { activeSec = cur; renderRail(); }
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; track(); }); } }, { passive: true });
+
+  // ---------- filters (Area, Effort, Priority, search): they narrow the ARMS groups below ----------
+  var fLetter = 'all', fEffort = 'all', fPri = 'all', fSav = 'all', query = '';
+  var fh = '<span class="lab">Area</span><button class="chip on" data-fl="all">All</button>';
+  ORDER.forEach(function (k) { fh += '<button class="chip" data-fl="' + k + '"><i class="dot" style="background:' + cvar(k) + '"></i>' + esc(LET[k].name) + '</button>'; });
+  fh += '<span class="lab">Effort</span><button class="chip on" data-fe="all">Any</button>';
+  LEVELS.forEach(function (v) { fh += '<button class="chip" data-fe="' + v + '">' + LEVEL[v] + '</button>'; });
+  fh += '<span class="lab">Priority</span><button class="chip on" data-fp="all">Any</button>';
+  LEVELS.slice().reverse().forEach(function (v) { fh += '<button class="chip" data-fp="' + v + '">' + LEVEL[v] + '</button>'; });
+  fh += '<span class="lab">Token Savings</span><button class="chip on" data-fs="all">Any</button>';
+  LEVELS.slice().reverse().forEach(function (v) { fh += '<button class="chip" data-fs="' + v + '"><i class="dot" style="background:var(--green)"></i>' + LEVEL[v] + '</button>'; });
+  document.getElementById('filters').innerHTML = fh;
+  function chipsOn(attr, val) { document.querySelectorAll('[' + attr + ']').forEach(function (x) { x.classList.toggle('on', x.getAttribute(attr) === val); }); }
+  function resetFilters() {
+    fLetter = fEffort = fPri = fSav = 'all'; query = ''; document.getElementById('q').value = '';
+    chipsOn('data-fl', 'all'); chipsOn('data-fe', 'all'); chipsOn('data-fp', 'all'); chipsOn('data-fs', 'all'); apply();
+  }
+  function apply() {
+    var shown = 0;
+    document.querySelectorAll('#groups .card').forEach(function (c) {
+      var ok = (fLetter === 'all' || c.dataset.letter === fLetter) && (fEffort === 'all' || c.dataset.effort === fEffort) &&
+        (fPri === 'all' || c.dataset.pri === fPri) && (fSav === 'all' || c.dataset.saves === fSav) && (!query || c.textContent.toLowerCase().indexOf(query) !== -1);
+      c.classList.toggle('hide', !ok); if (ok) shown++;
+    });
+    document.querySelectorAll('#groups .grp').forEach(function (g) { g.style.display = g.querySelector('.card:not(.hide)') ? '' : 'none'; });
+    document.getElementById('empty').style.display = shown ? 'none' : 'block';
+    renderRail();
+  }
+  document.getElementById('filters').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (!b) return;
+    if (b.dataset.fl) { fLetter = b.dataset.fl; chipsOn('data-fl', fLetter); }
+    if (b.dataset.fe) { fEffort = b.dataset.fe; chipsOn('data-fe', fEffort); }
+    if (b.dataset.fp) { fPri = b.dataset.fp; chipsOn('data-fp', fPri); }
+    if (b.dataset.fs) { fSav = b.dataset.fs; chipsOn('data-fs', fSav); }
+    b.blur(); apply();
+  });
+  var q = document.getElementById('q');
+  q.addEventListener('input', function () { query = q.value.trim().toLowerCase(); apply(); });
+
+  // ---------- render everything from the data and your choices ----------
+  function render() {
+    var items = live(), counts = {};
+    ORDER.forEach(function (k) { counts[k] = items.filter(function (it) { return it.letter === k; }).length; });
+    var pr = prioList(items);
+    var st = '<span><b>' + items.length + '</b> recos</span>';
+    ORDER.forEach(function (k) { st += '<span><i class="dot" style="background:' + cvar(k) + '"></i>' + esc(LET[k].name) + ' <b>' + counts[k] + '</b></span>'; });
+    st += '<span><i class="dot" style="background:var(--green)"></i><b>' + items.filter(function (it) { return LEVEL[it.saves]; }).length + '</b> save tokens</span>';
+    if (D.built) st += '<span>Built <b>' + esc(D.built) + '</b></span>';
+    root.classList.toggle('no-recos', !D.items.length);
+    document.getElementById('prioHead').innerHTML = '<span class="gic">' + HEX + '</span>Priority<span class="gcount">' + pr.length + '</span>';
+    document.getElementById('stats').innerHTML = st;
+    document.getElementById('prio').innerHTML = pr.map(function (it, i) { return cardHtml(it, { prio: true, rank: i + 1 }); }).join('');
+    document.getElementById('prioEmpty').style.display = pr.length ? 'none' : 'block';
+    document.getElementById('groups').innerHTML = ORDER.map(function (k) {
+      var list = items.filter(function (it) { return it.letter === k; });
+      if (!list.length) return '';
+      return '<section id="g-' + k + '" class="grp" data-sec="' + k + '" data-letter="' + k + '" style="--c:' + cvar(k) + '">' +
+        '<h2><span class="gic">' + picon(k) + '</span>' + esc(LET[k].name) + '<span class="gcount">' + list.length + '</span></h2>' +
+        '<div class="grid">' + list.map(function (it) { return cardHtml(it); }).join('') + '</div></section>';
+    }).join('');
+    apply();
+    if (window.RoboCart) RoboCart.refresh();
+    if (window.RoboHighlight && hlReady) RoboHighlight.refresh();
+  }
+
+  // ---------- Skip and Done ----------
+  var toastT = null, toastAct = null;
+  function toast(msg, act, fn) {
+    var t = document.getElementById('toast'), b = document.getElementById('toastBtn');
+    document.getElementById('toastMsg').textContent = msg;
+    b.hidden = !act; b.textContent = act || ''; toastAct = fn || null;
+    t.classList.add('show'); clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove('show'); toastAct = null; }, act ? 7000 : 3500);
+  }
+  document.getElementById('toastBtn').addEventListener('click', function () {
+    var fn = toastAct; toastAct = null; document.getElementById('toast').classList.remove('show'); if (fn) fn();
+  });
+  function titleOf(id) { var it = D.items.find(function (x) { return x.id === id; }); return it ? it.title : id; }
+  function skip(id) {
+    var cards = document.querySelectorAll('.card[data-id="' + id + '"]');
+    cards.forEach(function (c) { c.classList.add('going'); });
+    mark('skipped', id, true).then(function (s) {
+      state = s;
+      if (window.RoboCart && RoboCart.has(id)) RoboCart.remove(id);
+      setTimeout(render, 200);
+      toast('Skipped: ' + titleOf(id), 'Undo', function () {
+        mark('skipped', id, false).then(function (s2) { state = s2; render(); toast('Back: ' + titleOf(id)); })
+          .catch(function () { toast('Could not undo. Is the app running?'); });
+      });
+    }).catch(function () {
+      cards.forEach(function (c) { c.classList.remove('going'); });
+      toast('Could not save the skip. Is the app running?');
+    });
+  }
+  function done(id) {
+    var on = !state.done[id];
+    mark('done', id, on).then(function (s) {
+      state = s;
+      document.querySelectorAll('.card[data-id="' + id + '"]').forEach(function (c) {
+        c.classList.toggle('done', on); var m = c.querySelector('[data-done]'); if (m) m.textContent = on ? 'Undo done' : 'Done';
+      });
+    }).catch(function () { toast('Could not save. Is the app running?'); });
+  }
+  document.addEventListener('click', function (e) {
+    var s = e.target.closest('[data-skip]'); if (s) { s.blur(); skip(s.dataset.skip); return; }
+    var d = e.target.closest('[data-done]'); if (d) { d.blur(); done(d.dataset.done); }
+  });
+
+  // ---------- views: cards or list (remembered in this browser) ----------
+  function setView(v) {
+    root.classList.toggle('view-list', v === 'list');
+    document.querySelectorAll('.seg [data-view]').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v); b.setAttribute('aria-pressed', b.dataset.view === v ? 'true' : 'false'); });
+    store.set('rubric-recos-view', v);
+  }
+  document.querySelector('.seg').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b) { setView(b.dataset.view); b.blur(); } });
+
+  document.addEventListener('keydown', function (e) {
+    var t = e.target, typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    if (e.key === 'Escape' && t === q) { q.value = ''; query = ''; apply(); q.blur(); return; }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); q.focus(); }
+    else if (e.key === 'b') setRail(!root.classList.contains('rail-on'));
+    else if (e.key === 'v') setView(root.classList.contains('view-list') ? 'cards' : 'list');
+  });
+
+  // ---------- your agent, top right: a sprite 4 columns wide, mirrored to 8. The sprite hops, the shadow squashes ----------
+  var AGENT = [[0,0,1,0],[1,1,1,1],[1,1,1,1],[1,0,1,1],[1,1,1,1],[1,1,1,1],[1,0,0,1],[0,0,0,0]];
+  (function () {
+    var rects = '';
+    for (var y = 0; y < AGENT.length; y++) for (var x = 0; x < 4; x++) if (AGENT[y][x]) rects += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/><rect x="' + (7 - x) + '" y="' + y + '" width="1" height="1"/>';
+    document.getElementById('agents').innerHTML = '<svg viewBox="0 0 8 9" shape-rendering="crispEdges"><title>Your agent</title>' +
+      '<ellipse class="agsh" cx="4" cy="8.5" rx="2.5" ry="0.25"/><g class="aghop lead">' + rects + '</g></svg>';
+  })();
+
+  // ---------- theme ----------
+  function setTheme(t) { root.setAttribute('data-theme', t); root.style.colorScheme = t; }
+  setTheme(store.get('robo-theme') || 'dark');
+  document.getElementById('themeToggle').addEventListener('click', function () {
+    var n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; store.set('robo-theme', n); setTheme(n); this.blur();
+  });
+
+  // ---------- start ----------
+  // the header's height sets where the ARMS column starts, so the column never covers the header on any width
+  function syncHdr() { root.style.setProperty('--hdr-h', hdrH() + 'px'); }
+  syncHdr(); if ('ResizeObserver' in window) new ResizeObserver(syncHdr).observe(document.getElementById('top')); else window.addEventListener('resize', syncHdr);
+  setView(store.get('rubric-recos-view') === 'list' ? 'list' : 'cards');
+  setRail(narrow() ? false : store.get('rubric-recos-rail') !== '0', true);
+  document.getElementById('foot').textContent = D.footer || '';
+  if (CFG.agenticOs) RoboHome.init({ mount: '#homeSlot', href: CFG.agenticOs + '/', title: 'the Agentic OS' });
+  RoboCart.init({ key: 'rubric-recos-cart', name: 'Cart', header: 'RUBRIC Recos picks', from: 'RUBRIC Recos', mount: '.top-actions',
+    intro: 'For the agent: make these setup changes in this order. Each pick has the evidence and the fix. Ask before anything destructive.' });
+  var hlReady = false;
+  api('/api/state').then(function (s) { state = Object.assign(state, s); }).catch(function () { toast('Could not load your skips. Is the app running?'); })
+    .then(function () {
+      render();
+      // comments save to data/state.json through the app
+      return RoboHighlight.init({ key: 'rubric-recos-hl', title: 'RUBRIC Recos', mount: '.top-actions',
+        store: { load: function () { return state.comments || []; }, save: function (list) { return api('/api/comments', 'PUT', { comments: list }); } } });
+    })
+    .then(function () {
+      hlReady = true; track();
+      // Apply all comments runs on the Agentic OS (its address is in server.mjs CONFIG). With no OS address, the comments panel's Copy does the job.
+      // The comments sit on recos, so the run rewrites those recos in recos.js, never the app.
+      if (!CFG.agenticOs) return;
+      RoboApply.init({ key: 'rubric-recos-apply', title: 'RUBRIC Recos', api: CFG.agenticOs, file: CFG.recosFile,
+        notes: 'RUBRIC Recos reads recos.js on every page load, so no build. Each comment is on one reco (its label is the reco title; a pri- prefix is the same reco in the Priority group). Edit that reco in recos.js and keep every id, so a skip stays a skip. The shape is described at the top of recos.js and the writing rules are in the /recos skill. Never edit the app (index.html, server.mjs) or state.json: the page marks the comments applied there itself.' });
+    });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHdr);
+})();
+</script>
+</body>
+</html>

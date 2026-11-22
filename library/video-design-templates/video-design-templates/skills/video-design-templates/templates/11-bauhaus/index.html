@@ -1,0 +1,727 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sonnet 5.5 - Bauhaus Konstruktion</title>
+<style>
+  @font-face { font-family: 'Jost'; src: url('fonts/jost-latin.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: block; }
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f5efe1; }
+  canvas#c { display: block; width: 1920px; height: 1080px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(() => {
+  'use strict';
+  // =====================================================================
+  //  SONNET 5.5 - a Bauhaus kinetic poster that builds itself in 10 beats.
+  //  120 px grid, 120 BPM (1 beat = 0.5 s). Every pixel is a function of t.
+  // =====================================================================
+  const W = 1920, H = 1080, G = 120, TOP = 60, BOT = 1020, PX = 960, PY = 540;
+  const BEAT = 0.5, FPS = 30, SHUTTER = 0.42 / FPS, HALF_PI = Math.PI / 2;
+  const COLS = 16, ROWS = 8;
+
+  // ---------- palette (targets on cream paper) and ink transmissions ----------
+  const PAPER = [245, 239, 225];
+  const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const inkCss = h => { const c = hex2rgb(h); return `rgb(${c.map((v, i) => Math.min(255, Math.round(v / PAPER[i] * 255))).join(',')})`; };
+  const K = {
+    red: inkCss('#dc2f35'), yellow: inkCss('#f6c60c'), blue: inkCss('#2552a3'), black: inkCss('#121111'),
+    white: '#ffffff', dark: 'rgb(19,18,19)', knock: 'rgb(253,253,253)'
+  };
+
+  // ---------- helpers ----------
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const eSnap = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.pow(1 - k, 5);
+  const eQuart = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.pow(1 - k, 4);
+  const eExpo = k => k <= 0 ? 0 : k >= 1 ? 1 : (1 - Math.pow(2, -10 * k)) / (1 - Math.pow(2, -10));
+  const eBack = s => k => k <= 0 ? 0 : k >= 1 ? 1 : 1 + (s + 1) * Math.pow(k - 1, 3) + s * Math.pow(k - 1, 2);
+  const eIn = k => k <= 0 ? 0 : k >= 1 ? 1 : k * k * k;
+  const eLin = k => clamp(k);
+  const ePop = eBack(2.2), ePop2 = eBack(1.6), ePopT = eBack(0.8), eRot = eBack(0.75), eFlip = eBack(1.5);
+
+  // fastest on-screen speed (px/s) of anything animated at the sampled time, so the blur uses enough samples
+  let SPD = 0;
+  function trk(t, s, d, ease, dist) {
+    const k = clamp((t - s) / d);
+    if (k > 0 && k < 1) {
+      const a = Math.max(0, k - 1e-3), b = Math.min(1, k + 1e-3);
+      const dv = (ease(b) - ease(a)) / (b - a);
+      SPD = Math.max(SPD, Math.abs(dv) * dist / d);
+    }
+    return ease(k);
+  }
+
+  // ---------- canvases ----------
+  const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  const paperC = mk(W, H), gridC = mk(W, H), inkC = mk(W, H), sceneC = mk(W, H), grpC = mk(W, H), microC = mk(W, H);
+  const inkX = inkC.getContext('2d'), sceneX = sceneC.getContext('2d'), grpX = grpC.getContext('2d'), microX = microC.getContext('2d');
+
+  // ---------- paper + grid (static) ----------
+  function buildPaper() {
+    const p = paperC.getContext('2d');
+    p.fillStyle = `rgb(${PAPER.join(',')})`; p.fillRect(0, 0, W, H);
+    const rnd = mulberry32(1919);
+    for (let i = 0; i < 52; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 160 + rnd() * 460;
+      const g = p.createRadialGradient(x, y, 0, x, y, r);
+      const warm = rnd() < 0.5;
+      g.addColorStop(0, warm ? 'rgba(222,204,168,0.07)' : 'rgba(255,254,248,0.10)');
+      g.addColorStop(1, warm ? 'rgba(222,204,168,0)' : 'rgba(255,254,248,0)');
+      p.fillStyle = g; p.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    for (let i = 0; i < 520; i++) {
+      const x = rnd() * W, y = rnd() * H, len = 30 + rnd() * 190;
+      p.strokeStyle = rnd() < 0.5 ? 'rgba(170,150,115,0.04)' : 'rgba(255,255,250,0.11)';
+      p.lineWidth = 0.6 + rnd() * 1.8;
+      p.beginPath(); p.moveTo(x, y); p.lineTo(x + (rnd() - 0.5) * 7, y + len); p.stroke();
+    }
+    const id = p.getImageData(0, 0, W, H), d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const n = (rnd() - 0.5) * 11;
+      d[i] += n; d[i + 1] += n; d[i + 2] += n * 0.9;
+    }
+    p.putImageData(id, 0, 0);
+    // warm vignette
+    const vg = p.createRadialGradient(W / 2, H / 2, 520, W / 2, H / 2, 1250);
+    vg.addColorStop(0, 'rgba(110,80,40,0)'); vg.addColorStop(1, 'rgba(110,80,40,0.11)');
+    p.fillStyle = vg; p.fillRect(0, 0, W, H);
+
+    // grid transmission map (white = no line)
+    const g = gridC.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    const line = (x0, y0, x1, y1, a, w) => { g.strokeStyle = `rgba(60,40,10,${a})`; g.lineWidth = w; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
+    for (let q = 0; q < 32; q++) { const x = q * 60; if (q % 2) line(x, TOP, x, BOT, 0.035, 1); }
+    for (let r = 0; r < 16; r++) { const y = TOP + r * 60; if (r % 2) line(0, y, W, y, 0.035, 1); }
+    for (let q = 1; q < 16; q++) line(q * G, TOP, q * G, BOT, 0.105, 2);
+    for (let r = 1; r < 8; r++) line(0, TOP + r * G, W, TOP + r * G, 0.105, 2);
+    line(0, TOP, W, TOP, 0.28, 2); line(0, BOT, W, BOT, 0.28, 2);
+  }
+
+  // ---------- noise texture for the printing finish ----------
+  let noiseData;
+  function buildNoise() {
+    const S = 512, rnd = mulberry32(4242);
+    const lattice = cell => {
+      const n = S / cell, grid = new Float32Array(n * n);
+      for (let i = 0; i < grid.length; i++) grid[i] = rnd();
+      const out = new Float32Array(S * S);
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const gx = x / cell, gy = y / cell, ix = Math.floor(gx), iy = Math.floor(gy);
+        let fx = gx - ix, fy = gy - iy; fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+        const a = grid[(iy % n) * n + (ix % n)], b = grid[(iy % n) * n + ((ix + 1) % n)];
+        const c = grid[((iy + 1) % n) * n + (ix % n)], d = grid[((iy + 1) % n) * n + ((ix + 1) % n)];
+        out[y * S + x] = lerp(lerp(a, b, fx), lerp(c, d, fx), fy);
+      }
+      return out;
+    };
+    const low = lattice(64), mid = lattice(16), hi = lattice(4);
+    noiseData = new Uint8Array(S * S * 4);
+    for (let i = 0; i < S * S; i++) {
+      noiseData[i * 4] = Math.round(low[i] * 255);
+      noiseData[i * 4 + 1] = Math.round(mid[i] * 255);
+      noiseData[i * 4 + 2] = Math.round(hi[i] * 255);
+      noiseData[i * 4 + 3] = Math.round(rnd() * 255);
+    }
+  }
+
+  // ---------- timeline constants ----------
+  const T_ROT = 1.5;          // beat 4: the whole composition swings 90 degrees about the dot
+  const T_BURST = 1.98;       // beat 5: tile mosaic floods out from the dot
+  const T_PANEL = 2.36;       // black plate slams down
+  const T_CLEAR = 3.0;        // beat 7: plate clears out to in
+  const T_STAMP = 3.5;        // beat 8: 5.5 stamps into the circle
+
+  const cellCx = c => (c + 0.5) * G, cellCy = r => TOP + (r + 0.5) * G;
+  const cellJit = (c, r) => { const x = Math.sin(c * 91.7 + r * 47.3) * 43758.5453; return x - Math.floor(x); };
+  const cellD = (c, r) => Math.hypot(cellCx(c) - PX, cellCy(r) - PY) / 1180;
+  // instant cuts land half way between two frames, so no motion-blur sample ever straddles a cut (no ghost cells)
+  const qh = x => (Math.round(x * FPS - 0.5) + 0.5) / FPS;
+  const tIn = (c, r) => qh(T_BURST + cellD(c, r) * 0.12 + cellJit(c, r) * 0.02);
+  const tOut = (c, r) => qh(T_CLEAR + (1 - cellD(c, r)) * 0.16 + cellJit(c, r) * 0.02);
+
+  // ---------- tile mosaic layout ----------
+  const tiles = [];
+  function buildTiles() {
+    const rnd = mulberry32(5511);
+    const seeds = [
+      { x: 420, y: 300, c: 'red' }, { x: 300, y: 840, c: 'black' }, { x: 840, y: 900, c: 'yellow' },
+      { x: 1560, y: 840, c: 'blue' }, { x: 1560, y: 240, c: 'red' }, { x: 1080, y: 420, c: 'black' },
+      { x: 1800, y: 420, c: 'yellow' }, { x: 840, y: 180, c: 'blue' }, { x: 120, y: 540, c: 'yellow' }
+    ];
+    const order = ['red', 'yellow', 'blue', 'black'];
+    const motifs = [
+      ['disc', 3], ['flower', 2], ['diamond', 2], ['pinwheel', 2], ['checker', 1], ['dots', 1], ['solid', 1]
+    ];
+    const pick = () => { let tot = motifs.reduce((a, m) => a + m[1], 0), r = rnd() * tot; for (const m of motifs) { if ((r -= m[1]) < 0) return m[0]; } return 'disc'; };
+    for (let br = 0; br < 4; br++) for (let bc = 0; bc < 8; bc++) {
+      const mx = (bc * 2 + 1) * G, my = TOP + (br * 2 + 1) * G;
+      let best = null, bd = 1e9;
+      for (const s of seeds) { const dd = Math.hypot(s.x - mx, s.y - my) + rnd() * 200; if (dd < bd) { bd = dd; best = s; } }
+      const main = best.c;
+      let alt = order[(order.indexOf(main) + 1 + Math.floor(rnd() * 3)) % 4];
+      if (alt === main) alt = 'black';
+      const two = rnd() < 0.35;
+      const m = pick();
+      // tile order inside the block: TL, TR, BL, BR
+      let spec;
+      if (m === 'disc') spec = [['Q', 3], ['Q', 0], ['Q', 2], ['Q', 1]];
+      else if (m === 'flower') spec = [['Q', 1], ['Q', 2], ['Q', 0], ['Q', 3]];
+      else if (m === 'diamond') spec = [['T', 3], ['T', 0], ['T', 2], ['T', 1]];
+      else if (m === 'pinwheel') spec = [['T', 0], ['T', 1], ['T', 3], ['T', 2]];
+      else if (m === 'checker') spec = [['S', 0], ['C', 0], ['C', 0], ['S', 0]];
+      else if (m === 'dots') spec = [['C', 0], ['C', 0], ['C', 0], ['C', 0]];
+      else spec = [['S', 0], ['S', 0], ['S', 0], ['S', 0]];
+      for (let i = 0; i < 4; i++) {
+        const dc = i % 2, dr = i >> 1;
+        if (rnd() < 0.04) continue;
+        const useAlt = two && (i === 1 || i === 2);
+        tiles.push({ c: bc * 2 + dc, r: br * 2 + dr, kind: spec[i][0], rot: spec[i][1], col: useAlt ? alt : main, sgn: rnd() < 0.5 ? -1 : 1 });
+      }
+    }
+  }
+  function tilePath(g, kind) {
+    const h = G / 2;
+    g.beginPath();
+    if (kind === 'Q') { g.moveTo(-h, h); g.lineTo(-h, -h); g.arc(-h, h, G, -HALF_PI, 0); g.closePath(); }
+    else if (kind === 'T') { g.moveTo(-h, h); g.lineTo(h, h); g.lineTo(-h, -h); g.closePath(); }
+    else if (kind === 'S') { g.rect(-h, -h, G, G); }
+    else { g.arc(0, 0, h, 0, Math.PI * 2); }
+  }
+
+  // ---------- wordmark layout (vertical, reads bottom to top in column x 120..240) ----------
+  const WORD = 'SONNET';
+  let wordLay = null;
+  function layoutWord(g) {
+    const CAP = 120;
+    g.font = '900 100px Jost';
+    const capRatio = g.measureText('H').actualBoundingBoxAscent / 100;
+    const size = CAP / capRatio;
+    g.font = `900 ${size}px Jost`;
+    const ms = [...WORD].map(ch => g.measureText(ch));
+    const inkW = ms.map(m => m.actualBoundingBoxLeft + m.actualBoundingBoxRight);
+    const sum = inkW.reduce((a, b) => a + b, 0);
+    const gap = (960 - sum) / (WORD.length - 1);
+    let pos = 0; const items = [];
+    ms.forEach((m, i) => { items.push({ ch: WORD[i], org: pos + m.actualBoundingBoxLeft, w: inkW[i], pos }); pos += inkW[i] + gap; });
+    wordLay = { size, items, capRatio };
+  }
+
+  // ---------- poster drawing ----------
+  function rotAbout(g, th) { g.translate(PX, PY); g.rotate(th); g.translate(-PX, -PY); }
+  function thFor(t, delay, r) { return HALF_PI * trk(t, T_ROT + delay, 0.4, eRot, HALF_PI * r); }
+
+  // the hairlines are drawn at the exact frame time (no sub-frame blur), so they stay crisp instead of ghosting into doubles
+  let TF = 0;
+  function drawLattice(g, tSample) {
+    const t = TF;
+    const kIn = trk(t, -0.06, 0.3, eSnap, 0), kOut = trk(t, 0.5, 0.3, eExpo, 0);
+    const k = kIn * (1 - kOut);
+    if (k <= 0.003) return;
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = K.black;
+    const cx = 600, cy = 300;
+    // the guide lines start spread wide and snap onto the circle's tangents on the off-beat (t = 0.22)
+    const lock = trk(t, 0.25, 0.24, eSnap, 0);
+    const sp = 1 + 1.1 * (1 - lock);
+    const hs = [[cy, 1.0, 0], [540, 0.62, 1], [180, 0.4, -1]];
+    const vs = [[cx, 1.0, 0], [360, 0.62, 1], [840, 0.8, 1], [1080, 0.45, 1]];
+    for (const [y0, f] of hs) { const y = cy + (y0 - cy) * sp; const x0 = cx - 700 * k * f, x1 = cx + 1400 * k * f; g.fillRect(x0, y - 1, x1 - x0, 2); }
+    for (const [x0, f] of vs) { const x = cx + (x0 - cx) * sp; const y0 = cy - 400 * k * f, y1 = cy + 800 * k * f; g.fillRect(x - 1, y0, 2, y1 - y0); }
+    g.strokeStyle = K.black; g.lineWidth = 2;
+    for (const [x, y] of [[360, 300], [840, 300], [600, 60], [600, 540]]) { g.beginPath(); g.arc(x, y, 9 * k * lock, 0, Math.PI * 2); g.stroke(); }
+  }
+
+  function drawPoster(g, t) {
+    g.globalCompositeOperation = 'multiply';
+    drawLattice(g, t);
+    g.globalCompositeOperation = 'multiply';
+
+    // horizontal rule through the dot (shoots out of the dot)
+    const rk = trk(t, 1.875, 0.22, eSnap, 900);
+    if (rk > 0) { g.fillStyle = K.black; const L = PX - (PX - 360) * rk, R = PX + (1800 - PX) * rk; g.fillRect(L, PY - 3, R - L, 6); }
+
+    // --- red circle (beat 1 pop at top-left, drops on beat 2, ticks one cell right on the off-beat) ---
+    {
+      const pop = trk(t, -0.085, 0.32, ePop, 240);
+      const y1 = trk(t, 0.5, 0.32, eSnap, 360), x2 = trk(t, 1.25, 0.2, eSnap, 120);
+      const cx = 600 + 120 * x2, cy = 300 + 360 * y1;
+      const r = Math.hypot(cx - PX, cy - PY);
+      const th = thFor(t, 0.06, r);
+      const bump = Math.sin(Math.PI * clamp((t - 0.25) / 0.22)) * 0.035;
+      if (pop > 0.001) {
+        g.save(); rotAbout(g, th);
+        g.fillStyle = K.red; g.beginPath(); g.arc(cx, cy, 240 * Math.max(0, pop) * (1 + bump), 0, Math.PI * 2); g.fill();
+        g.restore();
+      }
+    }
+    // --- blue square: unrolls from under the bar (beat 3) ---
+    {
+      const k = trk(t, 1.0, 0.22, eSnap, 240);
+      if (k > 0.001) {
+        const th = thFor(t, 0.03, 560);
+        g.save(); rotAbout(g, th);
+        g.fillStyle = K.blue; g.fillRect(480, 180, 240, 240 * k);
+        g.restore();
+      }
+    }
+    // --- yellow triangle: slides in pointing right, then hinges over its base on beat 3 ---
+    {
+      const sl = trk(t, 0.75, 0.25, eSnap, 520);
+      if (sl > 0.001) {
+        const fl = trk(t, 1.0, 0.3, eFlip, 480);
+        const sx = 1 - 2 * fl;
+        const th = thFor(t, 0.09, 520);
+        g.save(); rotAbout(g, th);
+        g.fillStyle = K.yellow; g.beginPath();
+        const off = 520 * (1 - sl);
+        g.moveTo(1440 + off, 420); g.lineTo(1440 + off, 900); g.lineTo(1440 + off + 480 * sx, 660); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+    // --- black bar: slams down from above on beat 2 ---
+    {
+      const k = trk(t, 0.5, 0.2, eSnap, 520);
+      if (k > 0.001) {
+        const th = thFor(t, 0.0, 640);
+        g.save(); rotAbout(g, th);
+        g.fillStyle = K.black; g.fillRect(480, 60 - 520 * (1 - k), 960, 120);
+        g.restore();
+      }
+    }
+    // --- the pivot dot and its ring ---
+    {
+      const dk = trk(t, 1.25, 0.2, ePop, 60);
+      if (dk > 0.001) {
+        g.fillStyle = K.black; g.beginPath(); g.arc(PX, PY, 21 * Math.max(0, dk), 0, Math.PI * 2); g.fill();
+        const rv = 1 - trk(t, 1.85, 0.18, eExpo, 40);
+        if (rv > 0.01) {
+          g.strokeStyle = K.black; g.lineWidth = 3; g.beginPath(); g.arc(PX, PY, (36 + 8 * (1 - dk)) * rv, 0, Math.PI * 2); g.stroke();
+        }
+      }
+    }
+    // --- blue half disc fans open (beat 4 off-beat) ---
+    {
+      const k = trk(t, 1.75, 0.26, eSnap, 700);
+      if (k > 0.001) {
+        g.fillStyle = K.blue; g.beginPath(); g.moveTo(1440, 780);
+        g.arc(1440, 780, 240, -HALF_PI, -HALF_PI + Math.PI * k); g.closePath(); g.fill();
+      }
+    }
+    // --- red quarter disc grows out of its corner ---
+    {
+      const k = trk(t, 1.875, 0.22, ePop2, 240);
+      if (k > 0.001) {
+        g.save(); g.translate(1440, 540); g.scale(k, k);
+        g.fillStyle = K.red; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -240); g.arc(0, 0, 240, -HALF_PI, 0); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+
+    // ----- pieces that land after the mosaic clears -----
+    // big black quarter, bottom left
+    {
+      const k = trk(t, 3.08, 0.22, ePop2, 240);
+      if (k > 0.001) {
+        g.save(); g.translate(600, 1020); g.scale(k, k);
+        g.fillStyle = K.black; g.beginPath(); g.moveTo(0, 0); g.lineTo(-240, 0); g.arc(0, 0, 240, Math.PI, Math.PI * 1.5); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+    // small black quarter, top left. Turns a quarter turn on each late beat.
+    {
+      const k = trk(t, 3.16, 0.22, ePop2, 120);
+      if (k > 0.001) {
+        let ang = 0;
+        ang += HALF_PI * trk(t, 4.0, 0.24, eSnap, 190);
+        ang += HALF_PI * trk(t, 4.5, 0.24, eSnap, 190);
+        g.save(); g.translate(420, 120); g.rotate(ang); g.scale(k, k);
+        g.fillStyle = K.black; g.beginPath(); g.moveTo(-60, -60); g.lineTo(60, -60); g.arc(-60, -60, 120, 0, HALF_PI); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+    // small yellow half disc, top right (colour balance for the right edge)
+    {
+      const k = trk(t, 3.24, 0.22, ePop2, 120);
+      if (k > 0.001) {
+        g.save(); g.translate(1680, 60); g.scale(k, k);
+        g.fillStyle = K.yellow; g.beginPath(); g.moveTo(-120, 0); g.arc(0, 0, 120, Math.PI, 0, true); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+    drawWordmark(g, t);
+    // "5.5" knocked out of the red circle: stamped on beat 8
+    {
+      const k = trk(t, T_STAMP, 0.22, ePop2, 70);
+      if (k > 0.001) {
+        g.globalCompositeOperation = 'source-over';
+        g.save(); g.translate(840, 303); g.scale(0.78 + 0.22 * k, 0.78 + 0.22 * k);
+        g.globalAlpha = clamp(k * 3);
+        g.fillStyle = K.knock; g.font = '900 200px Jost'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+        g.letterSpacing = '-4px';
+        const m = g.measureText('5.5');
+        g.fillText('5.5', 0, (m.actualBoundingBoxAscent) / 2);
+        g.restore();
+        g.globalAlpha = 1; g.letterSpacing = '0px';
+      }
+    }
+    // pulse rings on the late beats
+    g.globalCompositeOperation = 'multiply';
+    for (const bt of [3.5, 4.0, 4.5]) {
+      const pk = clamp((t - bt) / 0.5);
+      if (pk > 0 && pk < 1) {
+        const e = 1 - Math.pow(1 - pk, 3);
+        g.save(); g.globalAlpha = (1 - pk) * 0.9; g.strokeStyle = K.black; g.lineWidth = 3;
+        g.beginPath(); g.arc(PX, PY, 24 + 74 * e, 0, Math.PI * 2); g.stroke(); g.restore();
+      }
+    }
+    // the dot itself stays on the rule once the ring has gone (drawn above, always)
+    if (t > 1.45) { /* dot already drawn above */ }
+  }
+
+  function drawWordmark(g, t) {
+    if (t < 3.0 || !wordLay) return;
+    g.save();
+    g.globalCompositeOperation = 'multiply';
+    g.font = `900 ${wordLay.size}px Jost`; g.textBaseline = 'alphabetic'; g.letterSpacing = '0px';
+    const baseX = 240;
+    wordLay.items.forEach((it, i) => {
+      const k = trk(t, 3.06 + i * 0.036, 0.2, eSnap, 160);
+      if (k <= 0.001) return;
+      g.save();
+      g.beginPath(); g.rect(0, 0, baseX + 30, H); g.clip();
+      g.translate(baseX, BOT - it.org); g.rotate(-HALF_PI);
+      g.fillStyle = K.black;
+      g.fillText(it.ch, 0, 170 * (1 - k));
+      g.restore();
+    });
+    g.restore();
+    // three small icons stacked beside the top of the wordmark
+    const icons = [
+      (c) => { c.fillStyle = K.yellow; c.beginPath(); c.moveTo(0, -13); c.lineTo(13, 11); c.lineTo(-13, 11); c.closePath(); c.fill(); },
+      (c) => { c.fillStyle = K.red; c.fillRect(-12, -12, 24, 24); },
+      (c) => { c.fillStyle = K.blue; c.beginPath(); c.arc(0, 0, 12.5, 0, Math.PI * 2); c.fill(); }
+    ];
+    icons.forEach((fn, i) => {
+      const k = trk(t, 3.3 + i * 0.05, 0.2, ePop, 30);
+      if (k <= 0.001) return;
+      // on beats 9 and 10 the three icons hop in turn
+      let hop = 0;
+      for (const bt of [4.0, 4.5]) hop += Math.sin(Math.PI * clamp((t - bt - i * 0.06) / 0.22));
+      g.save(); g.globalCompositeOperation = 'multiply'; g.translate(290, 96 + i * 38 - hop * 9); g.scale(k, k); fn(g); g.restore();
+    });
+  }
+
+  // ---------- tile mosaic ----------
+  function drawTiles(g, t) {
+    g.globalCompositeOperation = 'multiply';
+    for (const tl of tiles) {
+      const s0 = tIn(tl.c, tl.r);
+      if (t < s0) continue;
+      const k = trk(t, s0, 0.16, ePopT, 150);
+      if (k <= 0.001) continue;
+      g.save();
+      g.translate(cellCx(tl.c), cellCy(tl.r));
+      g.rotate(tl.rot * HALF_PI + (1 - k) * tl.sgn * -HALF_PI);
+      g.scale(k, k);
+      g.fillStyle = K[tl.col]; tilePath(g, tl.kind); g.fill();
+      g.restore();
+    }
+  }
+
+  // ---------- black plate with the three forms ----------
+  const FORM_Y = 490;
+  function drawPanel(g, t) {
+    g.globalCompositeOperation = 'source-over';
+    const k = trk(t, T_PANEL, 0.12, eQuart, 960);
+    g.fillStyle = K.black; g.fillRect(0, TOP - 960 * (1 - k), W, 960);
+    if (k < 0.97) return;
+    g.globalCompositeOperation = 'source-over';
+    // all three forms give one small pulse on the 2.75 off-beat while they are being read
+    const pu = 1 + 0.04 * Math.sin(Math.PI * trk(t, 2.78, 0.22, eLin, 60));
+    // yellow triangle, 139
+    {
+      const p = trk(t, 2.46, 0.18, ePop2, 200);
+      if (p > 0.001) {
+        g.save(); g.translate(360, 730); g.scale(p * pu, p * pu);
+        g.fillStyle = K.yellow; g.beginPath(); g.moveTo(-240, 0); g.lineTo(240, 0); g.lineTo(0, -480); g.closePath(); g.fill();
+        g.restore();
+        const q = trk(t, 2.5, 0.16, ePop2, 40);
+        if (q > 0.001) {
+          g.save(); g.translate(360, 730); g.scale(q * pu, q * pu); g.fillStyle = K.black; g.font = '900 158px Jost'; g.textAlign = 'center'; g.letterSpacing = '-3px';
+          g.fillText('139', 0, -40); g.restore();
+        }
+      }
+    }
+    // red square, $2
+    {
+      const p = trk(t, 2.52, 0.18, ePop2, 200);
+      if (p > 0.001) {
+        g.save(); g.translate(960, FORM_Y); g.scale(p * pu, p * pu);
+        g.fillStyle = K.red; g.fillRect(-240, -240, 480, 480);
+        g.restore();
+        const q = trk(t, 2.56, 0.16, ePop2, 40);
+        if (q > 0.001) {
+          g.save(); g.translate(960, FORM_Y); g.scale(q * pu, q * pu); g.fillStyle = K.knock; g.font = '900 270px Jost'; g.textAlign = 'center'; g.letterSpacing = '-6px';
+          g.fillText('$2', 0, 90); g.restore();
+        }
+      }
+    }
+    // blue circle, $10
+    {
+      const p = trk(t, 2.58, 0.18, ePop2, 200);
+      if (p > 0.001) {
+        g.save(); g.translate(1560, FORM_Y); g.scale(p * pu, p * pu);
+        g.fillStyle = K.blue; g.beginPath(); g.arc(0, 0, 240, 0, Math.PI * 2); g.fill();
+        g.restore();
+        const q = trk(t, 2.62, 0.16, ePop2, 40);
+        if (q > 0.001) {
+          g.save(); g.translate(1560, FORM_Y); g.scale(q * pu, q * pu); g.fillStyle = K.knock; g.font = '900 236px Jost'; g.textAlign = 'center'; g.letterSpacing = '-6px';
+          g.fillText('$10', 0, 82); g.restore();
+        }
+      }
+    }
+    g.letterSpacing = '0px';
+  }
+
+  // black cell squares that spin away while the plate clears
+  function drawClearCells(g, t) {
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = K.black;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const s0 = tOut(c, r);
+      if (t < s0 || t > s0 + 0.16) continue;
+      const k = trk(t, s0, 0.16, eQuart, 100);
+      const s = 1 - k;
+      g.save(); g.translate(cellCx(c), cellCy(r)); g.rotate(k * HALF_PI); g.scale(s, s);
+      g.fillRect(-G / 2, -G / 2, G, G); g.restore();
+    }
+  }
+
+  function clipCells(g, pred) {
+    g.beginPath();
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (pred(c, r)) g.rect(c * G, TOP + r * G, G, G);
+    g.clip();
+  }
+
+  function drawScene(g, t) {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    const mosaic = t >= T_BURST - 0.03 && t < T_CLEAR + 0.5;
+    g.save();
+    if (mosaic) clipCells(g, (c, r) => t < tIn(c, r) || t >= tOut(c, r));
+    drawPoster(g, t);
+    g.restore();
+    if (t >= T_BURST - 0.03 && t < T_PANEL + 0.2) { g.save(); drawTiles(g, t); g.restore(); }
+    if (t >= T_PANEL && t < T_CLEAR + 0.5) {
+      g.save(); clipCells(g, (c, r) => t < tOut(c, r)); drawPanel(g, t); g.restore();
+      drawClearCells(g, t);
+    }
+  }
+
+  // ---------- crisp micro layer: type, crop marks, labels (RGBA, no roughening) ----------
+  function drawMicro(m, t) {
+    m.setTransform(1, 0, 0, 1, 0, 0); m.globalAlpha = 1; m.globalCompositeOperation = 'source-over';
+    m.clearRect(0, 0, W, H);
+    m.strokeStyle = K.dark; m.fillStyle = K.dark; m.lineWidth = 1.6;
+    m.beginPath();
+    for (const x of [120, 1800]) { m.moveTo(x, 14); m.lineTo(x, 44); m.moveTo(x, 1036); m.lineTo(x, 1066); }
+    m.moveTo(76, TOP); m.lineTo(106, TOP); m.moveTo(1814, TOP); m.lineTo(1844, TOP);
+    m.moveTo(76, BOT); m.lineTo(106, BOT); m.moveTo(1814, BOT); m.lineTo(1844, BOT);
+    m.stroke();
+    for (const y of [29, 1050]) {
+      m.beginPath(); m.arc(960, y, 11, 0, Math.PI * 2); m.stroke();
+      m.beginPath(); m.moveTo(960 - 19, y); m.lineTo(960 + 19, y); m.moveTo(960, y - 19); m.lineTo(960, y + 19); m.stroke();
+    }
+    m.font = '700 15px Jost'; m.letterSpacing = '2.6px'; m.textBaseline = 'middle';
+    const beat = Math.min(10, Math.floor(t / BEAT + 1e-6) + 1);
+    m.textAlign = 'left';
+    m.fillText(`BEAT ${String(beat).padStart(2, '0')} / 10`, 150, 29);
+    m.fillText('SONNET 5.5  ·  CONSTRUCTED IN 10 BEATS  ·  120 BPM  ·  M = 120 PX', 150, 1050);
+    m.textAlign = 'right';
+    m.fillText('KINETIC POSTER  ·  NO. 5.5  ·  2026', 1772, 29);
+    // ten-step beat counter in the footer
+    for (let i = 0; i < 10; i++) {
+      const on = clamp((t - i * BEAT) / 0.12);
+      const x = 1090 + i * 22;
+      m.strokeStyle = K.dark; m.lineWidth = 1.4; m.strokeRect(x + 0.5, 1043.5, 13, 13);
+      if (on > 0) { const s = 13 * eSnap(on); m.fillStyle = K.dark; m.fillRect(x + 0.5 + (13 - s) / 2, 1043.5 + (13 - s) / 2, s, s); }
+    }
+    // colour swatches appear as each colour is first used
+    const sw = [[K.yellow, 0.75], [K.red, 0.0], [K.blue, 1.0], [K.black, 0.5]];
+    let x = 1500;
+    for (const [col, at] of sw) {
+      const k = eSnap(clamp((t - at) / 0.2));
+      if (k > 0) { m.fillStyle = col; m.fillRect(x, 1043, 24 * k, 14); }
+      x += 32;
+    }
+    // caption beside the wordmark
+    const ck = clamp((t - 3.36) / 0.3);
+    if (ck > 0) {
+      m.save(); m.translate(292, BOT); m.rotate(-HALF_PI);
+      m.font = '700 19px Jost'; m.letterSpacing = '5px'; m.textAlign = 'left'; m.textBaseline = 'middle'; m.fillStyle = K.dark;
+      const txt = '139 TOK/S  ·  $2 / $10 PER 1M TOKENS';
+      const full = m.measureText(txt).width;
+      m.beginPath(); m.rect(0, -20, full * eSnap(ck) + 4, 40); m.clip();
+      m.fillText(txt, 0, 0);
+      m.restore();
+    }
+    // labels on the black plate (white knock-out), clipped to the cells the plate still covers
+    if (t >= T_PANEL + 0.1 && t < T_CLEAR + 0.5) {
+      m.save();
+      m.beginPath();
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (t < tOut(c, r)) m.rect(c * G, TOP + r * G, G, G);
+      m.clip();
+      m.fillStyle = '#fff'; m.strokeStyle = '#fff';
+      m.font = '700 25px Jost'; m.letterSpacing = '7px'; m.textAlign = 'center'; m.textBaseline = 'alphabetic';
+      const labs = [[360, 'TOKENS / SECOND', 2.52], [960, 'INPUT / 1M TOKENS', 2.58], [1560, 'OUTPUT / 1M TOKENS', 2.64]];
+      for (const [cx, txt, at] of labs) {
+        const k = eSnap(clamp((t - at) / 0.16));
+        if (k <= 0) continue;
+        m.save(); m.beginPath(); const w = 520 * k; m.rect(cx - w / 2, 770, w, 70); m.clip();
+        m.fillText(txt, cx + 3, 818); m.restore();
+        m.globalAlpha = 1; m.fillRect(cx - 240 * k, 772, 480 * k, 2);
+      }
+      const ak = eSnap(clamp((t - 2.76) / 0.2));
+      if (ak > 0) {
+        m.globalAlpha = 0.7 * ak; m.font = '700 15px Jost'; m.letterSpacing = '4px';
+        m.fillText('SOURCE: ARTIFICIAL ANALYSIS  ·  30 SEP 2026  ·  MAX EFFORT', 960, 984);
+      }
+      m.restore();
+    }
+  }
+
+  // ---------- WebGL finishing pass ----------
+  const glc = document.getElementById('c');
+  const gl = glc.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false, alpha: false });
+  let prog, tex = {}, uFrame, uShake;
+  const VS = `#version 300 es
+  void main(){ vec2 p = vec2((gl_VertexID<<1)&2, gl_VertexID&2); gl_Position = vec4(p*2.0-1.0, 0.0, 1.0); }`;
+  const FS = `#version 300 es
+  precision highp float;
+  uniform sampler2D uPaper, uGrid, uInk, uMicro, uNoise;
+  uniform vec2 uRes; uniform float uFrame; uniform vec2 uShake;
+  out vec4 o;
+  float lum(vec3 c){ return dot(c, vec3(0.30,0.45,0.25)); }
+  vec3 inkAt(vec2 p){ return texture(uInk, p/uRes).rgb; }
+  float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
+  void main(){
+    vec2 p = gl_FragCoord.xy + uShake;
+    vec2 uv = p/uRes;
+    vec2 nuv = p/512.0;
+    vec4 n1 = texture(uNoise, nuv);
+    vec4 n2 = texture(uNoise, nuv + vec2(0.37,0.61));
+    vec2 d = vec2(n1.r-0.5, n2.r-0.5)*1.5 + vec2(n1.g-0.5, n2.g-0.5)*1.2 + vec2(n1.b-0.5, n2.b-0.5)*0.7;
+    vec2 q = p + d;
+    vec3 c0 = inkAt(q);
+    float lb = 0.25*(lum(inkAt(q+vec2(2.0,0.0)))+lum(inkAt(q-vec2(2.0,0.0)))+lum(inkAt(q+vec2(0.0,2.0)))+lum(inkAt(q-vec2(0.0,2.0))));
+    float rim = clamp(lb-lum(c0), 0.0, 0.6);
+    c0 *= 1.0 - rim*0.25;
+    float cov = 1.0 - min(min(c0.r,c0.g),c0.b);
+    float covHide = smoothstep(0.002, 0.006, cov);
+    float m = (n1.r*0.55 + n1.g*0.45) - 0.5;
+    c0 = pow(max(c0, vec3(1e-3)), vec3(1.0 + m*0.24));
+    float dust = smoothstep(0.80, 0.94, n1.b);
+    float pin = step(0.9972, n1.a);
+    float knock = clamp(dust*0.07 + pin*0.26, 0.0, 1.0) * smoothstep(0.12, 0.5, cov);
+    c0 = mix(c0, vec3(1.0), knock);
+    vec3 paper = texture(uPaper, uv).rgb;
+    float gr = texture(uGrid, uv).r;
+    vec3 col = paper * c0 * mix(gr, 1.0, covHide);
+    vec4 mk = texture(uMicro, uv);
+    col = mix(col, paper*mk.rgb, mk.a);
+    col += (h21(p + uFrame*7.31) - 0.5) * (1.6/255.0);
+    o = vec4(col, 1.0);
+  }`;
+  function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  function initGL() {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+    const mkTex = (unit, wrap) => {
+      const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
+      return t;
+    };
+    tex.paper = mkTex(0, gl.CLAMP_TO_EDGE); tex.grid = mkTex(1, gl.CLAMP_TO_EDGE); tex.ink = mkTex(2, gl.CLAMP_TO_EDGE);
+    tex.micro = mkTex(3, gl.CLAMP_TO_EDGE); tex.noise = mkTex(4, gl.REPEAT);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    const up = (unit, t, src) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); };
+    up(0, tex.paper, paperC); up(1, tex.grid, gridC);
+    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, tex.noise);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, noiseData);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    ['uPaper', 'uGrid', 'uInk', 'uMicro', 'uNoise'].forEach((n, i) => gl.uniform1i(gl.getUniformLocation(prog, n), i));
+    gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), W, H);
+    uFrame = gl.getUniformLocation(prog, 'uFrame');
+    uShake = gl.getUniformLocation(prog, 'uShake');
+    gl.viewport(0, 0, W, H);
+  }
+  // small damped thud on the heavy hits (bar slams, the swing lands, the plate slams, the 5.5 stamps)
+  const HITS = [[0.70, 3.0], [1.90, 3.0], [2.48, 8.0], [3.62, 3.5]];
+  function shakeY(t) {
+    let y = 0;
+    for (const [t0, amp] of HITS) {
+      const d = t - t0;
+      if (d >= 0 && d < 0.5) y += amp * Math.exp(-11 * d) * Math.cos(2 * Math.PI * 6 * d);
+    }
+    return y;
+  }
+
+  // ---------- frame render with adaptive sub-frame motion blur ----------
+  function renderInk(t) {
+    SPD = 0; TF = t;
+    drawScene(sceneX, t);
+    const N = clamp(Math.ceil(SPD * SHUTTER / 2.0), 1, 128);
+    inkX.setTransform(1, 0, 0, 1, 0, 0); inkX.globalAlpha = 1; inkX.globalCompositeOperation = 'source-over';
+    if (N === 1) { inkX.drawImage(sceneC, 0, 0); return 1; }
+    const n2 = Math.min(N, 8), n1 = Math.ceil(N / n2), total = n1 * n2;
+    for (let a = 0; a < n1; a++) {
+      for (let b = 0; b < n2; b++) {
+        const i = a * n2 + b;
+        drawScene(sceneX, t - SHUTTER / 2 + SHUTTER * (i + 0.5) / total);
+        grpX.globalAlpha = 1 / (b + 1); grpX.drawImage(sceneC, 0, 0);
+      }
+      inkX.globalAlpha = 1 / (a + 1); inkX.drawImage(grpC, 0, 0);
+    }
+    inkX.globalAlpha = 1;
+    return total;
+  }
+  function render(t) {
+    const n = renderInk(t);
+    drawMicro(microX, t);
+    const up = (unit, t0, src) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t0); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); };
+    up(2, tex.ink, inkC); up(3, tex.micro, microC);
+    gl.uniform1f(uFrame, Math.floor(t * FPS + 1e-6));
+    gl.uniform2f(uShake, 0, shakeY(t));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    window.__samples = n;
+  }
+
+  window.DURATION = 5;
+  window.ready = (async () => {
+    await Promise.all(['900 120px Jost', '700 20px Jost', '600 15px Jost'].map(f => document.fonts.load(f)));
+    await document.fonts.ready;
+    buildPaper(); buildNoise(); buildTiles();
+    layoutWord(inkX);
+    initGL();
+  })();
+  window.renderAt = async t => { await window.ready; render(t); };
+  window.__info = () => ({ fonts: document.fonts.check('900 100px Jost'), word: wordLay, tiles: tiles.length });
+
+  if (!location.search.includes('capture')) {
+    window.ready.then(() => {
+      const t0 = performance.now();
+      (function loop() { render(((performance.now() - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); })();
+    });
+  }
+})();
+</script>
+</body>
+</html>

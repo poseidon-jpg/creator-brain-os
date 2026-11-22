@@ -1,0 +1,11 @@
+{
+ "rev": 0,
+ "order": [
+  "rank",
+  "modes",
+  "prompts"
+ ],
+ "note": "",
+ "tone": true,
+ "items": {}
+}

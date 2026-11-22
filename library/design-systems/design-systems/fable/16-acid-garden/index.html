@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACID GARDEN — Psychedelic Rave Series</title>
+<meta name="description" content="ACID GARDEN is a nomadic psychedelic rave series. Warehouse ecosystems, liquid sound, blacklight botany. Next bloom: Sydney, August 2026.">
+<meta name="theme-color" content="#070709">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23070709'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23ccff00'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ff2fb3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%239d4dff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lime:#ccff00;
+    --violet:#9d4dff;
+    --pink:#ff2fb3;
+    --ink:#070709;
+    --ink2:#0d0d14;
+    --paperline:rgba(204,255,0,.14);
+    --mono:'Space Mono',monospace;
+    --display:'Rubik Mono One',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:#e9ffe0;
+    font-family:var(--mono);
+    overflow-x:hidden;
+    line-height:1.6;
+  }
+  ::selection{background:var(--pink);color:var(--ink)}
+
+  /* ---------- warped checkerboard layer ---------- */
+  .checker{
+    position:fixed;inset:-20vh -20vw;
+    z-index:0;pointer-events:none;
+    background:
+      repeating-conic-gradient(from 0deg, rgba(157,77,255,.12) 0% 25%, transparent 0% 50%);
+    background-size:72px 72px;
+    filter:url(#warp-bg);
+    animation:checkdrift 40s linear infinite;
+    opacity:.8;
+  }
+  @keyframes checkdrift{
+    from{background-position:0 0}
+    to{background-position:144px 288px}
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(7,7,9,.85) 100%);
+  }
+
+  main{position:relative;z-index:2}
+
+  /* ---------- ticker ---------- */
+  .ticker{
+    position:sticky;top:0;z-index:50;
+    background:var(--lime);color:var(--ink);
+    font-weight:700;font-size:.72rem;letter-spacing:.12em;
+    overflow:hidden;white-space:nowrap;
+    border-bottom:3px solid var(--ink);
+    text-transform:uppercase;
+  }
+  .ticker-track{display:inline-block;padding:.45em 0;animation:tick 22s linear infinite}
+  @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ticker span{margin:0 1.4em}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky;top:1.85rem;z-index:49;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:.9rem 4vw;
+    background:rgba(7,7,9,.9);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(204,255,0,.1);
+  }
+  .logo{
+    font-family:var(--display);font-size:1rem;color:var(--lime);
+    text-decoration:none;letter-spacing:.05em;
+    filter:url(#warp-soft);
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+    display:inline-block;
+  }
+  .logo:hover{transform:rotate(-3deg) scale(1.08);color:var(--pink)}
+  nav ul{display:flex;gap:1.6rem;list-style:none}
+  nav a.nl{
+    color:#e9ffe0;text-decoration:none;font-size:.75rem;
+    text-transform:uppercase;letter-spacing:.15em;
+    position:relative;
+  }
+  nav a.nl:hover{color:var(--pink)}
+  nav a.nl::after{
+    content:'';position:absolute;left:0;bottom:-4px;height:2px;width:0;
+    background:var(--pink);transition:width .3s cubic-bezier(.8,0,.2,1);
+  }
+  nav a.nl:hover::after{width:100%}
+
+  /* ---------- hero ---------- */
+  header.hero{
+    min-height:92vh;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:6vh 4vw 10vh;position:relative;
+  }
+  .spores{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .spore{
+    position:absolute;border-radius:50%;
+    filter:blur(1px);opacity:.75;
+    animation:sporefloat var(--dur,16s) ease-in-out infinite alternate;
+  }
+  @keyframes sporefloat{
+    from{transform:translate(0,0) scale(1)}
+    to{transform:translate(var(--dx,40px),var(--dy,-90px)) scale(1.35)}
+  }
+  .hero-eyebrow{
+    color:var(--violet);font-size:.8rem;letter-spacing:.4em;text-transform:uppercase;
+    margin-bottom:2.2rem;
+  }
+  h1.acid{
+    font-family:var(--display);
+    font-size:clamp(3rem, 13vw, 11rem);
+    line-height:.95;
+    color:var(--lime);
+    filter:url(#melt);
+    text-shadow:.04em .04em 0 var(--pink), -.04em -.04em 0 var(--violet);
+    cursor:crosshair;
+    user-select:none;
+  }
+  h1.acid .row2{color:var(--pink);text-shadow:.04em .04em 0 var(--violet), -.04em -.04em 0 var(--lime);display:block}
+  .hero-sub{
+    max-width:34ch;margin-top:2.6rem;font-size:clamp(.85rem,1.4vw,1rem);
+    color:#cfe8c8;
+  }
+  .hero-cta{
+    margin-top:3rem;display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;
+  }
+  .btn{
+    font-family:var(--mono);font-weight:700;font-size:.85rem;
+    text-transform:uppercase;letter-spacing:.15em;text-decoration:none;
+    padding:1rem 2.2rem;border:2px solid var(--lime);color:var(--lime);
+    background:transparent;position:relative;overflow:hidden;
+    transition:color .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+    display:inline-block;
+  }
+  .btn::before{
+    content:'';position:absolute;inset:0;background:var(--lime);
+    transform:translateY(101%);transition:transform .3s cubic-bezier(.8,0,.2,1);
+    z-index:-1;
+  }
+  .btn:hover{color:var(--ink);transform:translateY(-3px)}
+  .btn:hover::before{transform:translateY(0)}
+  .btn.pink{border-color:var(--pink);color:var(--pink)}
+  .btn.pink::before{background:var(--pink)}
+  .btn.pink:hover{color:var(--ink)}
+  .scroll-hint{
+    position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);
+    font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--violet);
+    animation:bob 2.4s ease-in-out infinite;white-space:nowrap;
+  }
+  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,10px)}}
+
+  /* ---------- wavy dividers ---------- */
+  .divider{display:block;width:100%;height:clamp(70px,12vw,160px);margin:-1px 0}
+  .divider path{filter:url(#warp-soft)}
+
+  /* ---------- section scaffolding ---------- */
+  section{padding:9vh 4vw;position:relative;overflow:hidden}
+  .ghost{
+    position:absolute;top:2vh;right:-2vw;z-index:0;pointer-events:none;
+    font-family:var(--display);font-size:clamp(8rem,26vw,22rem);line-height:1;
+    color:transparent;-webkit-text-stroke:2px rgba(157,77,255,.18);
+    filter:url(#warp-soft);user-select:none;
+    animation:ghostdrift 14s ease-in-out infinite alternate;
+  }
+  @keyframes ghostdrift{
+    from{transform:translateY(-2%) rotate(-2deg)}
+    to{transform:translateY(5%) rotate(2deg)}
+  }
+  section .wrap{position:relative;z-index:1}
+  .sec-label{
+    font-family:var(--display);
+    font-size:clamp(1.8rem,6vw,4.2rem);
+    line-height:1.05;
+    margin-bottom:.6em;
+    filter:url(#warp-soft);
+  }
+  .sec-kicker{
+    font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;
+    margin-bottom:1.4rem;display:block;
+  }
+  .wrap{max-width:1150px;margin:0 auto}
+
+  /* ---------- upcoming raves ---------- */
+  #raves .sec-label{color:var(--lime)}
+  #raves .sec-kicker{color:var(--pink)}
+  .rave-list{display:flex;flex-direction:column;gap:2px;margin-top:3rem}
+  .rave{
+    display:grid;
+    grid-template-columns:minmax(90px,.6fr) 1.6fr 1.2fr auto;
+    gap:1.5rem;align-items:center;
+    padding:1.8rem 1.6rem;
+    border:1px solid var(--paperline);
+    background:rgba(13,13,20,.72);
+    backdrop-filter:blur(3px);
+    transition:background .3s ease, border-color .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+    position:relative;overflow:hidden;
+  }
+  .rave::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:linear-gradient(var(--lime),var(--pink),var(--violet));
+    transform:scaleY(0);transform-origin:top;
+    transition:transform .35s cubic-bezier(.8,0,.2,1);
+  }
+  .rave:hover{background:rgba(157,77,255,.10);border-color:var(--violet);transform:translateX(6px)}
+  .rave:hover::before{transform:scaleY(1)}
+  .rave .date{
+    font-family:var(--display);font-size:1.05rem;color:var(--pink);line-height:1.25;
+  }
+  .rave .date small{display:block;font-family:var(--mono);font-weight:400;font-size:.68rem;color:var(--violet);letter-spacing:.2em;margin-top:.35em}
+  .rave h3{
+    font-family:var(--display);font-size:clamp(1rem,2.2vw,1.5rem);color:#f2ffe8;
+    letter-spacing:.02em;
+  }
+  .rave .venue{font-size:.75rem;color:#9fd39a;margin-top:.4em;letter-spacing:.08em}
+  .rave .lineup{font-size:.74rem;color:#cfe8c8;line-height:1.7}
+  .rave .lineup b{color:var(--lime);font-weight:700}
+  .rave .tix{
+    justify-self:end;font-size:.72rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.15em;color:var(--ink);background:var(--lime);
+    padding:.7em 1.3em;text-decoration:none;white-space:nowrap;
+    transition:background .25s ease,transform .2s ease;
+  }
+  .rave .tix:hover{background:var(--pink);transform:scale(1.06) rotate(-1.5deg)}
+  .rave .tix.soldout{background:#3a3a46;color:#8f8fa0;pointer-events:none}
+
+  /* ---------- past events ---------- */
+  #archive{background:rgba(13,13,20,.5)}
+  #archive .sec-label{color:var(--violet)}
+  #archive .sec-kicker{color:var(--lime)}
+  .arch-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:1.4rem;margin-top:3rem;
+  }
+  .arch{
+    border:1px solid var(--paperline);
+    padding:1.8rem 1.6rem 1.6rem;
+    background:var(--ink2);
+    position:relative;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1), border-color .3s ease;
+  }
+  .arch:hover{transform:translateY(-8px) rotate(-.6deg);border-color:var(--pink)}
+  .arch .glyph{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+  .arch:hover .glyph{transform:rotate(12deg) scale(1.15)}
+  .arch:hover .stamp{background:var(--pink);color:var(--ink)}
+  .arch .stamp{transition:background .3s,color .3s}
+  .arch .glyph{
+    width:64px;height:64px;margin-bottom:1.2rem;
+    filter:url(#warp-soft);
+  }
+  .arch h3{font-family:var(--display);font-size:1rem;color:var(--lime);margin-bottom:.5rem}
+  .arch .meta{font-size:.7rem;color:var(--violet);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem}
+  .arch p{font-size:.78rem;color:#bcd8b6}
+  .arch .stamp{
+    position:absolute;top:1.1rem;right:1.1rem;
+    font-size:.6rem;letter-spacing:.25em;color:var(--pink);
+    border:1px solid var(--pink);padding:.35em .7em;text-transform:uppercase;
+    transform:rotate(6deg);
+  }
+
+  /* ---------- ethos ---------- */
+  #ethos{text-align:center}
+  #ethos .sec-kicker{color:var(--violet)}
+  #ethos .sec-label{color:var(--pink)}
+  .ethos-lines{max-width:760px;margin:3rem auto 0;display:flex;flex-direction:column;gap:2.6rem}
+  .ethos-lines .rule{
+    font-size:clamp(.95rem,2vw,1.25rem);color:#e9ffe0;
+  }
+  .ethos-lines .rule b{
+    color:var(--lime);font-family:var(--display);font-weight:400;
+    display:block;font-size:clamp(1.1rem,2.6vw,1.7rem);margin-bottom:.5em;
+    filter:url(#warp-soft);
+  }
+  .ethos-lines .rule:nth-child(2n) b{color:var(--pink)}
+  .ethos-lines .rule:nth-child(3n) b{color:var(--violet)}
+
+  /* ---------- tickets ---------- */
+  #tickets .sec-label{color:var(--lime)}
+  #tickets .sec-kicker{color:var(--pink)}
+  .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.4rem;margin-top:3rem}
+  .tier{
+    border:2px solid var(--paperline);padding:2.2rem 1.8rem;
+    background:rgba(13,13,20,.8);position:relative;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .3s;
+    display:flex;flex-direction:column;
+  }
+  .tier:hover{transform:translateY(-10px);border-color:var(--lime)}
+  .tier.feat{border-color:var(--pink)}
+  .tier.feat::after{
+    content:'MOST PICKED';position:absolute;top:-.8em;left:50%;transform:translateX(-50%) rotate(-2deg);
+    background:var(--pink);color:var(--ink);font-size:.6rem;font-weight:700;
+    letter-spacing:.25em;padding:.4em 1em;white-space:nowrap;
+  }
+  .tier h3{font-family:var(--display);font-size:1rem;color:#f2ffe8;margin-bottom:.4rem}
+  .tier .price{
+    font-family:var(--display);font-size:2.4rem;color:var(--lime);
+    margin:.6rem 0 1.2rem;filter:url(#warp-soft);
+  }
+  .tier.feat .price{color:var(--pink)}
+  .tier ul{list-style:none;font-size:.76rem;color:#bcd8b6;flex:1}
+  .tier li{padding:.45em 0;border-bottom:1px dashed rgba(204,255,0,.12)}
+  .tier li::before{content:'✶ ';color:var(--violet)}
+  .tier .btn{margin-top:1.6rem;text-align:center;font-size:.75rem;padding:.9rem 1rem}
+  .tier .btn.dead{border-color:#3a3a46;color:#8f8fa0;pointer-events:none}
+  .tier .btn.dead::before{display:none}
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:8vh 4vw 4vh;text-align:center;
+    border-top:1px solid var(--paperline);
+    background:var(--ink2);position:relative;z-index:2;
+  }
+  .foot-word{
+    font-family:var(--display);
+    font-size:clamp(2rem,9vw,7rem);color:var(--violet);
+    filter:url(#melt);line-height:1;margin-bottom:3rem;
+    user-select:none;
+  }
+  .foot-links{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+  .foot-links a{color:#cfe8c8;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none}
+  .foot-links a:hover{color:var(--pink)}
+  .credit{font-size:.65rem;color:#6f8f6a;letter-spacing:.08em}
+  .credit a{color:var(--lime);text-decoration:none}
+  .credit a:hover{color:var(--pink)}
+
+  /* hue cycle on the whole background layer */
+  .hue-layer{animation:hue 24s linear infinite}
+  @keyframes hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+
+  /* reveal on scroll */
+  .rv{opacity:0;transform:translateY(34px);transition:opacity .7s cubic-bezier(.33,1,.68,1), transform .7s cubic-bezier(.22,1,.36,1)}
+  .rv.on{opacity:1;transform:none}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:900px){
+    .rave{grid-template-columns:1fr 1fr;grid-template-areas:"date tix" "name name" "lineup lineup";gap:.9rem}
+    .rave .date{grid-area:date}
+    .rave .name{grid-area:name}
+    .rave .lineup{grid-area:lineup}
+    .rave .tix{grid-area:tix}
+  }
+  @media(max-width:600px){
+    nav ul{display:none}
+    nav{justify-content:center}
+    .rave{padding:1.4rem 1.1rem}
+    h1.acid{line-height:1.12}
+    h1.acid .row2{margin-top:.08em}
+    section{padding:8vh 6vw}
+  }
+
+  /* ---------- reduced motion: kill the acid ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.15s !important}
+    .checker{animation:none;filter:none;opacity:.35}
+    .hue-layer{animation:none}
+    h1.acid,.foot-word{filter:none}
+    .sec-label,.logo,.tier .price,.ethos-lines .rule b,.arch .glyph,.divider path,.ghost{filter:none}
+    .spore{animation:none;opacity:.35}
+    .ghost{animation:none}
+    .rv{opacity:1;transform:none}
+    .scroll-hint{animation:none}
+    .ticker-track{animation:none;padding-left:1em}
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG filter definitions -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="melt" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence id="meltTurb" type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="warp-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence id="softTurb" type="fractalNoise" baseFrequency="0.02 0.06" numOctaves="1" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="warp-bg" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence id="bgTurb" type="turbulence" baseFrequency="0.004 0.007" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="90" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="hue-layer"><div class="checker" aria-hidden="true"></div></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack">
+    <span>NEXT BLOOM: AUG 22 · SYDNEY</span><span>✶</span>
+    <span>ACID GARDEN VOL. IX — SPORE LOGIC</span><span>✶</span>
+    <span>NO PHONES ON THE FLOOR</span><span>✶</span>
+    <span>EARLY SPORES FROM $49</span><span>✶</span>
+    <span>THE GARDEN GROWS AT NIGHT</span><span>✶</span>
+  </div>
+</div>
+
+<nav>
+  <a class="logo" href="#top">ACID GARDEN</a>
+  <ul>
+    <li><a class="nl" href="#raves">Raves</a></li>
+    <li><a class="nl" href="#archive">Archive</a></li>
+    <li><a class="nl" href="#ethos">Ethos</a></li>
+    <li><a class="nl" href="#tickets">Tickets</a></li>
+  </ul>
+</nav>
+
+<main id="top">
+
+  <header class="hero">
+    <div class="spores" aria-hidden="true" id="sporeField"></div>
+    <p class="hero-eyebrow">a psychedelic rave series · est. 2023</p>
+    <h1 class="acid" id="heroTitle">ACID<span class="row2">GARDEN</span></h1>
+    <p class="hero-sub">Warehouse ecosystems. Liquid sound. Blacklight botany. We plant a dancefloor, let it overgrow, and burn it down by sunrise.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#raves">Next Bloom</a>
+      <a class="btn pink" href="#tickets">Get Spores</a>
+    </div>
+    <p class="scroll-hint">scroll to germinate ↓</p>
+  </header>
+
+  <svg class="divider" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,60 C180,120 360,0 540,60 C720,120 900,0 1080,60 C1260,120 1350,20 1440,60 L1440,120 L0,120 Z" fill="#0d0d14"/>
+  </svg>
+
+  <section id="raves">
+    <span class="ghost" aria-hidden="true">IX</span>
+    <div class="wrap">
+      <span class="sec-kicker rv">// upcoming blooms</span>
+      <h2 class="sec-label rv">THE NEXT<br>THREE NIGHTS</h2>
+      <div class="rave-list">
+        <article class="rave rv">
+          <div class="date">AUG<br>22<small>SAT · 10PM–6AM</small></div>
+          <div class="name">
+            <h3>VOL. IX — SPORE LOGIC</h3>
+            <p class="venue">The Fermentary, 41 Bourke Rd, Alexandria · Sydney</p>
+          </div>
+          <p class="lineup"><b>MYCELIA</b> (live) · DJ CHLOROPHYLL · VVITCH HAZEL · NEON LOAM b2b PETRICHOR</p>
+          <a class="tix" href="#tickets">Tickets →</a>
+        </article>
+        <article class="rave rv">
+          <div class="date">SEP<br>19<small>SAT · 11PM–7AM</small></div>
+          <div class="name">
+            <h3>VOL. X — ROOT ACCESS</h3>
+            <p class="venue">Substation 9, Kensington · Melbourne</p>
+          </div>
+          <p class="lineup"><b>TERRARIUM</b> · ACID ORCHID (Berlin) · FERN GULLY HI-FI · SAP</p>
+          <a class="tix" href="#tickets">Tickets →</a>
+        </article>
+        <article class="rave rv">
+          <div class="date">OCT<br>31<small>SAT · 9PM–LATE</small></div>
+          <div class="name">
+            <h3>VOL. XI — NIGHT-BLOOMING</h3>
+            <p class="venue">The Glasshouse, Fortitude Valley · Brisbane</p>
+          </div>
+          <p class="lineup"><b>DATURA</b> (AV set) · MOTHCODE · GREEN THUMB · POLLINATOR CREW</p>
+          <a class="tix soldout" href="#tickets">Sold Out</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <svg class="divider" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" style="transform:scaleY(-1)">
+    <path d="M0,60 C180,120 360,0 540,60 C720,120 900,0 1080,60 C1260,120 1350,20 1440,60 L1440,120 L0,120 Z" fill="#0d0d14"/>
+  </svg>
+
+  <section id="archive">
+    <span class="ghost" aria-hidden="true">V–VIII</span>
+    <div class="wrap">
+      <span class="sec-kicker rv">// composted</span>
+      <h2 class="sec-label rv">PAST<br>GROWTH</h2>
+      <div class="arch-grid">
+        <article class="arch rv">
+          <span class="stamp">Decayed</span>
+          <svg class="glyph" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="#ccff00" stroke-width="3"/><circle cx="32" cy="32" r="12" fill="#ff2fb3"/></svg>
+          <h3>VOL. VIII — GREENHOUSE EFFECT</h3>
+          <p class="meta">May 2026 · Sydney · 1,400 heads</p>
+          <p>Eight hours of acid techno under 300 grow lamps. The fog machine died at 3am; the crowd did not.</p>
+        </article>
+        <article class="arch rv">
+          <span class="stamp">Decayed</span>
+          <svg class="glyph" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="10" width="44" height="44" fill="none" stroke="#9d4dff" stroke-width="3"/><path d="M10 54 L54 10" stroke="#ccff00" stroke-width="3"/></svg>
+          <h3>VOL. VII — PHOTOSYNTH</h3>
+          <p class="meta">Feb 2026 · Melbourne · 1,100 heads</p>
+          <p>Modular-only lineup. TERRARIUM's 4am live patch collapsed into pure noise and it became the moment of the year.</p>
+        </article>
+        <article class="arch rv">
+          <span class="stamp">Decayed</span>
+          <svg class="glyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 L56 56 L8 56 Z" fill="none" stroke="#ff2fb3" stroke-width="3"/><circle cx="32" cy="42" r="7" fill="#ccff00"/></svg>
+          <h3>VOL. VI — INVASIVE SPECIES</h3>
+          <p class="meta">Nov 2025 · Brisbane · 900 heads</p>
+          <p>Our first interstate transplant. Local crew POLLINATOR ran the front room; a rain leak became a water feature.</p>
+        </article>
+        <article class="arch rv">
+          <span class="stamp">Decayed</span>
+          <svg class="glyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 32 Q20 8 32 32 T56 32" fill="none" stroke="#ccff00" stroke-width="3"/><path d="M8 44 Q20 20 32 44 T56 44" fill="none" stroke="#9d4dff" stroke-width="3"/></svg>
+          <h3>VOL. V — SEED BANK</h3>
+          <p class="meta">Aug 2025 · Sydney · 750 heads</p>
+          <p>The night we started the free-water-and-earplugs table. Now a fixture at every Garden. Take care of your soil.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <svg class="divider" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,70 C240,10 480,110 720,50 C960,-10 1200,110 1440,50 L1440,0 L0,0 Z" fill="#0d0d14"/>
+  </svg>
+
+  <section id="ethos">
+    <div class="wrap">
+      <span class="sec-kicker rv">// garden rules</span>
+      <h2 class="sec-label rv">ETHOS</h2>
+      <div class="ethos-lines">
+        <p class="rule rv"><b>THE GARDEN IS A COMMONS.</b> No VIP, no bottle service, no velvet rope. Everyone waters, everyone blooms.</p>
+        <p class="rule rv"><b>NO PHONES ON THE FLOOR.</b> Stickers over lenses at the door. What grows in the Garden stays in your bloodstream, not your feed.</p>
+        <p class="rule rv"><b>LOOK AFTER YOUR SOIL.</b> Free water, free earplugs, trained welfare crew in green vests all night. Ask for "the gardener" at any bar if you need help.</p>
+        <p class="rule rv"><b>LEAVE NO TRACE, TAKE A CUTTING.</b> Every venue is returned cleaner than we found it. Every guest leaves with a seed packet. Literally.</p>
+      </div>
+    </div>
+  </section>
+
+  <svg class="divider" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" style="transform:scaleY(-1)">
+    <path d="M0,70 C240,10 480,110 720,50 C960,-10 1200,110 1440,50 L1440,0 L0,0 Z" fill="#0d0d14"/>
+  </svg>
+
+  <section id="tickets">
+    <span class="ghost" aria-hidden="true">$</span>
+    <div class="wrap">
+      <span class="sec-kicker rv">// vol. ix — spore logic · aug 22 · sydney</span>
+      <h2 class="sec-label rv">GET<br>SPORES</h2>
+      <div class="tiers">
+        <div class="tier rv">
+          <h3>EARLY SPORE</h3>
+          <p class="price">$49</p>
+          <ul>
+            <li>Full night entry, 10pm–6am</li>
+            <li>Seed packet on exit</li>
+            <li>First 200 only</li>
+          </ul>
+          <a class="btn dead" href="#top" aria-disabled="true">Sold Out</a>
+        </div>
+        <div class="tier feat rv">
+          <h3>SECOND BLOOM</h3>
+          <p class="price">$69</p>
+          <ul>
+            <li>Full night entry, 10pm–6am</li>
+            <li>Seed packet on exit</li>
+            <li>Re-entry until 1am</li>
+            <li>$5 goes to the welfare crew fund</li>
+          </ul>
+          <a class="btn pink" href="#top">Buy Now</a>
+        </div>
+        <div class="tier rv">
+          <h3>PERENNIAL PASS</h3>
+          <p class="price">$180</p>
+          <ul>
+            <li>All three 2026 blooms (Vol. IX–XI)</li>
+            <li>Priority entry lane</li>
+            <li>Annual zine + patch mailed to you</li>
+            <li>Name in the compost credits</li>
+          </ul>
+          <a class="btn" href="#top">Buy Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="foot-word" aria-hidden="true">OVERGROW</p>
+  <div class="foot-links">
+    <a href="#raves">Raves</a>
+    <a href="#archive">Archive</a>
+    <a href="#ethos">Ethos</a>
+    <a href="#tickets">Tickets</a>
+    <a href="mailto:roots@acidgarden.club">roots@acidgarden.club</a>
+  </div>
+  <p class="credit">ACID GARDEN is a fictional event series. · Designed &amp; built by Claude Fable · Part of the <a href="/">Fable 25 showcase</a></p>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // duplicate ticker for seamless loop
+  var tt = document.getElementById('tickerTrack');
+  if(tt){ tt.innerHTML += tt.innerHTML; }
+
+  // scroll reveals, staggered per section
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); }
+    });
+  }, {threshold:.12, rootMargin:'0px 0px -5% 0px'});
+  document.querySelectorAll('section, header.hero').forEach(function(sec){
+    sec.querySelectorAll('.rv').forEach(function(el, i){
+      el.style.transitionDelay = Math.min(i * 90, 540) + 'ms';
+      io.observe(el);
+    });
+  });
+
+  // hero spore field
+  var field = document.getElementById('sporeField');
+  var cols = ['#ccff00','#ff2fb3','#9d4dff'];
+  for(var i=0;i<14;i++){
+    var s = document.createElement('span');
+    s.className = 'spore';
+    var size = 4 + Math.random()*10;
+    s.style.width = s.style.height = size+'px';
+    s.style.left = (Math.random()*100)+'%';
+    s.style.top = (Math.random()*100)+'%';
+    s.style.background = cols[i%3];
+    s.style.setProperty('--dur', (10+Math.random()*14)+'s');
+    s.style.setProperty('--dx', (Math.random()*120-60)+'px');
+    s.style.setProperty('--dy', (-40-Math.random()*120)+'px');
+    s.style.animationDelay = (-Math.random()*12)+'s';
+    field.appendChild(s);
+  }
+
+  if(reduced) return; // no animated distortion below this line
+
+  // animate turbulence filters via rAF
+  var meltTurb = document.getElementById('meltTurb');
+  var softTurb = document.getElementById('softTurb');
+  var bgTurb = document.getElementById('bgTurb');
+  var t0 = performance.now();
+  function tick(now){
+    var t = (now - t0) / 1000;
+    var f1 = 0.012 + Math.sin(t * 0.7) * 0.006;
+    var f2 = 0.05 + Math.cos(t * 0.5) * 0.02;
+    meltTurb.setAttribute('baseFrequency', f1.toFixed(4) + ' ' + f2.toFixed(4));
+    var s1 = 0.02 + Math.sin(t * 0.9 + 2) * 0.008;
+    softTurb.setAttribute('baseFrequency', s1.toFixed(4) + ' 0.06');
+    var b1 = 0.004 + Math.sin(t * 0.15) * 0.0015;
+    bgTurb.setAttribute('baseFrequency', b1.toFixed(5) + ' 0.007');
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // hero title: mouse proximity intensifies the melt (discovery interaction)
+  var hero = document.getElementById('heroTitle');
+  var meltDisp = meltTurb.nextElementSibling;
+  document.addEventListener('mousemove', function(ev){
+    var r = hero.getBoundingClientRect();
+    var cx = r.left + r.width/2, cy = r.top + r.height/2;
+    var d = Math.hypot(ev.clientX - cx, ev.clientY - cy);
+    var max = Math.max(window.innerWidth, window.innerHeight) * 0.7;
+    var k = Math.max(0, 1 - d/max);
+    meltDisp.setAttribute('scale', (22 + k * 55).toFixed(1));
+  }, {passive:true});
+
+  // easter egg: click the hero title 5 times -> full acid mode
+  var clicks = 0;
+  hero.addEventListener('click', function(){
+    clicks++;
+    if(clicks === 5){
+      document.body.style.animation = 'hue 6s linear infinite';
+      hero.style.textShadow = '0 0 30px #ccff00, .06em .06em 0 #ff2fb3, -.06em -.06em 0 #9d4dff';
+      clicks = 0;
+    }
+  });
+})();
+</script>
+</body>
+</html>

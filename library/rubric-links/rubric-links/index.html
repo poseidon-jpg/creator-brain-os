@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUBRIC Links</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23ff6b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 6l18 10v16L24 42 6 32V16Z'/%3E%3Cpath d='M24 6v16l18 10' opacity='0.5'/%3E%3Cpath d='M24 22L6 32' opacity='0.5'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --border: #1a1a1a;
+      --border-hover: #333;
+      --text: #fff;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --accent: #50e3c2;
+      --radius-card: 16px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Brand block */
+    .gen-rubric-brand { padding: 20px 20px 0; }
+    .gen-rubric-name { font-size: 27px; font-weight: 700; letter-spacing: 4px; color: #e0e0e0; display: flex; align-items: center; }
+    .gen-rubric-tagline { font-size: 16px; color: var(--text-muted); margin-top: 2px; }
+    .gen-rubric-attribution { font-size: 10px; color: #444; margin-top: 4px; }
+    .gen-rubric-link { color: var(--text-muted); text-decoration: none; }
+    .gen-rubric-link:hover { color: #ff6b1a; }
+
+    .placeholder-tab {
+      max-width: 700px;
+      padding: 24px 20px 48px;
+    }
+    .placeholder-tab h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+    .placeholder-tab .desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .placeholder-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s var(--ease);
+    }
+    .placeholder-section:hover { border-color: var(--border-hover); }
+    .placeholder-section h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .link-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
+    a.link-item, .link-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: padding-left 0.15s var(--ease);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .link-item:hover { padding-left: 4px; }
+    .link-item:last-child { border-bottom: none; }
+    .link-item .link-title { font-size: 13px; color: #ccc; }
+    .link-item .link-url { font-size: 11px; color: var(--text-muted); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; color: #333; }
+  </style>
+</head>
+<body>
+  <!-- Brand Block -->
+  <div class="gen-rubric-brand">
+    <div class="gen-rubric-name">
+      <svg viewBox="0 0 48 48" width="36" height="36" fill="none" stroke="#ff6b1a" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" style="vertical-align:bottom;margin-right:8px;">
+        <path d="M24 6l18 10v16L24 42 6 32V16Z"/>
+        <path d="M24 6v16l18 10" opacity="0.5"/>
+        <path d="M24 22L6 32" opacity="0.5"/>
+        <path d="M6 16l18 10 18-10"/>
+      </svg>RUBRIC <span style="font-weight:400;color:var(--text-muted);font-size:22px;letter-spacing:1px;">Links</span>
+    </div>
+    <div class="gen-rubric-tagline">The command center for AI agents</div>
+    <div class="gen-rubric-attribution">
+      &copy; Created by <a href="https://robolabs.so/" target="_blank" class="gen-rubric-link">RoboLabs</a>.
+      Learn more at <a href="https://robonuggets.com" target="_blank" class="gen-rubric-link">RoboNuggets</a>
+    </div>
+  </div>
+
+  <div class="placeholder-tab">
+    <h2>Links</h2>
+    <p class="desc">Categorized links to tools, platforms, and resources.</p>
+    <div id="links-container"></div>
+  </div>
+
+  <script>
+    // Optional API auth: set window.RUBRIC_TOKEN to the server's RUBRIC_TOKEN to authorize /api calls
+    (function () {
+      const _fetch = window.fetch;
+      window.fetch = function (url, opts) {
+        opts = opts || {};
+        try {
+          const u = typeof url === 'string' ? url : (url && url.url) || '';
+          if (window.RUBRIC_TOKEN && u.indexOf('/api/') !== -1) {
+            opts.headers = Object.assign({}, opts.headers, { 'x-rubric-token': window.RUBRIC_TOKEN });
+          }
+        } catch (e) {}
+        return _fetch.call(this, url, opts);
+      };
+    })();
+
+    async function loadLinks() {
+      const container = document.getElementById('links-container');
+      try {
+        const res = await fetch('/api/links');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const categories = data.categories || [];
+
+        if (!categories.length || categories.every(c => !c.links || !c.links.length)) {
+          container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><div>No links configured</div></div>';
+          return;
+        }
+
+        container.innerHTML = categories.filter(c => c.links && c.links.length).map(cat =>
+          '<div class="placeholder-section"><h3>' + esc(cat.name) + '</h3>' +
+          cat.links.map(link =>
+            '<a class="link-item" href="' + esc(link.url) + '" target="_blank" rel="noopener">' +
+              '<svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + (link.icon || '') + '</svg>' +
+              '<div><div class="link-title">' + esc(link.title) + '</div>' +
+              '<div class="link-url">' + esc(link.url) + (link.description ? ' - ' + esc(link.description) : '') + '</div></div>' +
+            '</a>'
+          ).join('') +
+          '</div>'
+        ).join('');
+      } catch (err) {
+        container.innerHTML = '<div class="empty-state"><div>Failed to load links: ' + esc(err.message) + '</div></div>';
+      }
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    loadLinks();
+  </script>
+</body>
+</html>
